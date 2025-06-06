@@ -1,6 +1,5 @@
 package com.BE.config;
 
-
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
@@ -13,15 +12,16 @@ import java.io.IOException;
 
 @Configuration
 public class FirebaseConfig {
-    @Value("${fcm.credentials.file.path}")
-    private String credentialsFilePath;
+    // @Value("${fcm.credentials.file.path}")
+    // private String credentialsFilePath;
 
-    @Bean
-    public FirebaseApp firebaseApp() throws IOException {
-        FirebaseOptions options = FirebaseOptions.builder()
-                .setCredentials(GoogleCredentials.fromStream(new ClassPathResource(credentialsFilePath).getInputStream()))
-                .build();
-        return FirebaseApp.initializeApp(options);
-    }
+    // @Bean
+    // public FirebaseApp firebaseApp() throws IOException {
+    // FirebaseOptions options = FirebaseOptions.builder()
+    // .setCredentials(GoogleCredentials.fromStream(new
+    // ClassPathResource(credentialsFilePath).getInputStream()))
+    // .build();
+    // return FirebaseApp.initializeApp(options);
+    // }
 
 }

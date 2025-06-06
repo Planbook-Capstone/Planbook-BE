@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import com.BE.exception.exceptions.BadRequestException;
 
 import java.util.HashMap;
 import java.util.List;
@@ -41,7 +42,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseEntity<Map<String, String>> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
+    public ResponseEntity<Map<String, String>> handleMethodArgumentNotValidException(
+            MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
         for (FieldError error : ex.getBindingResult().getFieldErrors()) {
             errors.put(error.getField(), error.getDefaultMessage());
@@ -50,7 +52,8 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<Map<String, String>> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex, WebRequest request) {
+    public ResponseEntity<Map<String, String>> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex,
+            WebRequest request) {
         Map<String, String> errors = new HashMap<>();
 
         Throwable mostSpecificCause = ex.getMostSpecificCause();
@@ -65,9 +68,11 @@ public class GlobalExceptionHandler {
 
             if (targetType.isEnum()) {
                 String validValues = EnumUtils.getValidEnumValues(targetType.asSubclass(Enum.class));
-                message = String.format("Field '%s' has invalid value '%s'. Expected one of: %s", fieldName, value, validValues);
+                message = String.format("Field '%s' has invalid value '%s'. Expected one of: %s", fieldName, value,
+                        validValues);
             } else {
-                message = String.format("Field '%s' has invalid value '%s'. Expected type: %s", fieldName, value, targetType.getSimpleName());
+                message = String.format("Field '%s' has invalid value '%s'. Expected type: %s", fieldName, value,
+                        targetType.getSimpleName());
             }
         } else {
             message = mostSpecificCause.getMessage();
@@ -78,7 +83,8 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    public ResponseEntity<Map<String, String>> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException ex, WebRequest request) {
+    public ResponseEntity<Map<String, String>> handleMethodArgumentTypeMismatchException(
+            MethodArgumentTypeMismatchException ex, WebRequest request) {
         Map<String, String> errors = new HashMap<>();
         errors.put("message", ex.getMostSpecificCause().getMessage());
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
@@ -90,7 +96,8 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(EnumValidationException.class)
-    public ResponseEntity<Map<String, String>> handleEnumValidationException(EnumValidationException ex, WebRequest request) {
+    public ResponseEntity<Map<String, String>> handleEnumValidationException(EnumValidationException ex,
+            WebRequest request) {
         Map<String, String> errors = new HashMap<>();
         errors.put("message", ex.getMessage());
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
@@ -99,6 +106,13 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(InvalidRefreshTokenException.class)
     public ResponseEntity<String> handleInvalidRefreshTokenException(InvalidRefreshTokenException ex) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<Object> handleBadRequestException(BadRequestException ex) {
+        Map<String, String> errors = new HashMap<>();
+        errors.put("message", ex.getMessage());
+        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
     }
 
 }
