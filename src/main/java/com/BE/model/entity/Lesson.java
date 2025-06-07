@@ -1,9 +1,8 @@
 package com.BE.model.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import com.BE.enums.StatusEnum;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -17,4 +16,19 @@ public class Lesson {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     long id;
+
+    @Column(nullable = false)
+    String name;
+
+    @Enumerated(EnumType.STRING)
+    StatusEnum status;
+
+    String createdAt;
+    String updatedAt;
+
+    @ManyToOne
+    @JoinColumn(name = "chapter_id")
+    @JsonIgnore
+    Chapter chapter;
+
 }
