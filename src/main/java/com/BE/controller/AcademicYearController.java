@@ -1,0 +1,97 @@
+package com.BE.controller;
+
+import com.BE.enums.AcademicYearStatusEnum;
+import com.BE.model.request.AcademicYearRequest;
+import com.BE.model.response.AcademicYearResponse;
+import com.BE.service.interfaceServices.IAcademicYearService;
+import com.BE.utils.ResponseHandler;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+import java.util.UUID;
+
+@RestController
+@Tag(name = "Academic Year", description = "API for managing academic years")
+@RequestMapping("/api/academic-years")
+@SecurityRequirement(name = "api")
+@CrossOrigin("*")
+
+public class AcademicYearController {
+    @Autowired
+    private IAcademicYearService academicYearService;
+    @Autowired
+    private ResponseHandler responseHandler;
+
+    @Operation(summary = "Get all academic years", description = "Lấy danh sách tất cả các năm học.")
+    @ApiResponse(responseCode = "200", description = "Danh sách năm học.")
+    @GetMapping
+    public ResponseEntity getAll() {
+        return responseHandler.response(200, "Get all academic years success!", academicYearService.getAll());
+    }
+
+    @Operation(summary = "Create new academic year", description = "Tạo mới năm học. Default status là UPCOMING; Sẽ tự động tạo workspace cho tất cả user chưa có workspace cho năm này.", requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Dữ liệu tạo năm học mới", required = true, content = @Content(schema = @Schema(implementation = AcademicYearRequest.class), examples = @ExampleObject(value = "{\"startDate\":\"2025-09-01T00:00:00\",\"endDate\":\"2026-05-31T00:00:00\",\"yearLabel\":\"2025-2026\"}"))))
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Tạo thành công.", content = @Content(schema = @Schema(implementation = AcademicYearResponse.class), examples = @ExampleObject(value = "{\"id\":\"uuid\",\"startDate\":\"2025-06-05T00:00:00\",\"endDate\":\"2026-06-01T00:00:00\",\"yearLabel\":\"2025-2026\",\"status\":\"UPCOMING\",\"createdAt\":\"2024-06-01T10:00:00\",\"updatedAt\":\"2024-06-01T10:00:00\"}"))),
+            @ApiResponse(responseCode = "400", description = "Dữ liệu không hợp lệ hoặc thiếu trường bắt buộc.")
+    })
+    @PostMapping
+    public ResponseEntity create(@Valid @RequestBody AcademicYearRequest request) {
+        return responseHandler.response(200, "Create academic year success!", academicYearService.create(request));
+    }
+
+    @Operation(summary = "Update academic year", description = "Cập nhật thông tin năm học theo id. Status tự động đổi thành INACTIVE.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Cập nhật thành công.", content = @Content(schema = @Schema(implementation = AcademicYearResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Không tìm thấy năm học.")
+    })
+    @PutMapping("/{id}")
+    public ResponseEntity update(
+            @PathVariable UUID id,
+            @Valid @RequestBody AcademicYearRequest request) {
+        return responseHandler.response(200, "Update academic year success!", academicYearService.update(id, request));
+
+    }
+
+    @Operation(summary = "Update status academic year", description = "Cập nhật trạng thái năm học (ACTIVE, INACTIVE, UPCOMING).\n- Chỉ được phép có 1 năm học ACTIVE tại một thời điểm.\n- Nếu muốn active năm mới, phải dừng active năm hiện tại trước (chuyển về INACTIVE hoặc UPCOMING).\n- Nếu đã có năm học ACTIVE khác, hệ thống sẽ báo lỗi.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Cập nhật thành công.", content = @Content(schema = @Schema(implementation = AcademicYearResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Không tìm thấy năm học.")
+    })
+    @PutMapping("/{id}/status")
+    public ResponseEntity updateStatus(
+            @PathVariable UUID id,
+            @RequestParam AcademicYearStatusEnum status) {
+        return responseHandler.response(200, "Update academic year success!",
+                academicYearService.updateStatus(id, status));
+
+    }
+
+    @Operation(summary = "Delete academic year", description = "Xóa năm học theo id.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Xóa thành công."),
+            @ApiResponse(responseCode = "404", description = "Không tìm thấy năm học.")
+    })
+    @DeleteMapping("/{id}")
+    public ResponseEntity delete(@PathVariable UUID id) {
+        academicYearService.delete(id);
+        return responseHandler.response(200, "Delete academic year success!", 1);
+    }
+
+    @Operation(summary = "Get active academic year", description = "Lấy năm học đang hoạt động (ACTIVE).")
+    @ApiResponse(responseCode = "200", description = "Năm học đang hoạt động.")
+    @GetMapping("/active")
+    public ResponseEntity getActiveAcademicYear() {
+        var activeYear = academicYearService.getActiveAcademicYear();
+        return responseHandler.response(200, "Get active academic year success!", activeYear);
+    }
+}

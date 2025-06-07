@@ -1,6 +1,5 @@
 package com.BE.model.entity;
 
-
 import com.BE.enums.RoleEnum;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -16,7 +15,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.*;
 
-
 @Entity
 @Getter
 @Setter
@@ -28,9 +26,6 @@ public class User implements UserDetails {
     UUID id;
 
     String fullName;
-
-
-
 
     @Column(unique = true)
     String email;
@@ -48,8 +43,8 @@ public class User implements UserDetails {
     @JsonIgnore
     Set<RefreshToken> refreshTokens = new HashSet<>();
 
-
-
+    @OneToMany(mappedBy = "user")
+    private Set<WorkSpace> workSpaces = new HashSet<>();
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -62,7 +57,6 @@ public class User implements UserDetails {
     public boolean isAccountNonExpired() {
         return true;
     }
-
 
     @Override
     public boolean isAccountNonLocked() {

@@ -1,6 +1,5 @@
 package com.BE.service.implementServices;
 
-
 import com.BE.enums.RoleEnum;
 import com.BE.exception.exceptions.BadRequestException;
 import com.BE.exception.exceptions.InvalidRefreshTokenException;
@@ -10,11 +9,14 @@ import com.BE.model.request.*;
 import com.BE.model.response.AuthenResponse;
 import com.BE.model.response.AuthenticationResponse;
 import com.BE.model.entity.User;
+import com.BE.model.entity.WorkSpace;
 import com.BE.repository.UserRepository;
 import com.BE.service.EmailService;
 import com.BE.service.JWTService;
 import com.BE.service.RefreshTokenService;
+import com.BE.service.interfaceServices.IAcademicYearService;
 import com.BE.service.interfaceServices.IAuthenticationService;
+import com.BE.service.interfaceServices.IWorkSpaceService;
 import com.BE.utils.AccountUtils;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
@@ -28,7 +30,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
-
 
 @Service
 public class AuthenticationImpl implements IAuthenticationService {
@@ -57,65 +58,81 @@ public class AuthenticationImpl implements IAuthenticationService {
     @Autowired
     RefreshTokenService refreshTokenService;
 
+    @Autowired
+    IAcademicYearService academicYearService;
+
+    @Autowired
+    IWorkSpaceService workSpaceService;
+
     public User register(AuthenticationRequest request) {
         User user = userMapper.toUser(request);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRole(RoleEnum.USER);
-       try {
-           return userRepository.save(user);
-       }catch (DataIntegrityViolationException e){
-           System.out.println(e.getMessage());
-           throw new DataIntegrityViolationException("Duplicate UserName");
-       }
+        try {
+            // Create workspace for new user
+            WorkSpace ws = academicYearService.createWorkspaceForNewUser(user);
+            if (ws != null) {
+                user.getWorkSpaces().add(ws);
+                userRepository.save(user);
+                workSpaceService.save(ws);
+            }
+            return user;
+        } catch (DataIntegrityViolationException e) {
+            System.out.println(e.getMessage());
+            throw new DataIntegrityViolationException("Duplicate UserName");
+        }
     }
-//    @Cacheable()
-    public AuthenticationResponse authenticate(LoginRequestDTO request){
+
+    // @Cacheable()
+    public AuthenticationResponse authenticate(LoginRequestDTO request) {
         Authentication authentication = null;
         try {
             authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             request.getUsername().trim(),
-                            request.getPassword().trim()
-                    )
-            );
+                            request.getPassword().trim()));
         } catch (Exception e) {
-            throw new NullPointerException("Wrong Id Or Password") ;
+            throw new NullPointerException("Wrong Id Or Password");
         }
 
         User user = (User) authentication.getPrincipal();
         AuthenticationResponse authenticationResponse = userMapper.toAuthenticationResponse(user);
         String refresh = UUID.randomUUID().toString();
-        authenticationResponse.setToken(jwtService.generateToken(user,refresh ,false));
+        authenticationResponse.setToken(jwtService.generateToken(user, refresh, false));
         authenticationResponse.setRefreshToken(refresh);
         return authenticationResponse;
     }
 
-
-    public AuthenticationResponse loginGoogle (LoginGoogleRequest loginGoogleRequest) {
-        try{
+    public AuthenticationResponse loginGoogle(LoginGoogleRequest loginGoogleRequest) {
+        try {
             FirebaseToken decodeToken = FirebaseAuth.getInstance().verifyIdToken(loginGoogleRequest.getToken());
             String email = decodeToken.getEmail();
-            User user = userRepository.findByEmail(email).orElseThrow();
-            if(user == null) {
+            User user = userRepository.findByEmail(email).orElse(null);
+            if (user == null) {
                 user = new User();
                 user.setFullName(decodeToken.getName());
                 user.setEmail(email);
                 user.setUsername(email);
                 user.setRole(RoleEnum.USER);
+                // Save user first to get id
                 user = userRepository.save(user);
+                // Create workspace for new user
+                WorkSpace ws = academicYearService.createWorkspaceForNewUser(user);
+                if (ws != null) {
+                    user.getWorkSpaces().add(ws);
+                    userRepository.save(user);
+                }
             }
             AuthenticationResponse authenticationResponse = userMapper.toAuthenticationResponse(user);
             String refresh = UUID.randomUUID().toString();
-            authenticationResponse.setToken(jwtService.generateToken(user,refresh ,false));
+            authenticationResponse.setToken(jwtService.generateToken(user, refresh, false));
             authenticationResponse.setRefreshToken(refresh);
             return authenticationResponse;
-        } catch (FirebaseAuthException e)
-        {
+        } catch (FirebaseAuthException e) {
             e.printStackTrace();
         }
         return null;
     }
-
 
     public void forgotPasswordRequest(String email) {
         User user = userRepository.findByEmail(email).orElseThrow(() -> new BadRequestException("Email Not Found"));
@@ -145,8 +162,7 @@ public class AuthenticationImpl implements IAuthenticationService {
         return userRepository.save(user);
     }
 
-
-    public String admin(){
+    public String admin() {
         String name = accountUtils.getCurrentUser().getUsername();
         return name;
     }
@@ -154,20 +170,22 @@ public class AuthenticationImpl implements IAuthenticationService {
     @Override
     public AuthenResponse refresh(RefreshRequest refreshRequest) {
         AuthenResponse authenResponse = new AuthenResponse();
-//        String refresh = jwtService.getRefreshClaim(refreshRequest.getToken());
+        // String refresh = jwtService.getRefreshClaim(refreshRequest.getToken());
         if (refreshTokenService.validateRefreshToken(refreshRequest.getRefreshToken())) {
             System.out.println(refreshTokenService.getIdFromRefreshToken(refreshRequest.getRefreshToken()));
-            User user = userRepository.findById(refreshTokenService.getIdFromRefreshToken(refreshRequest.getRefreshToken())).orElseThrow(() -> new BadRequestException("User Not Found"));
-            authenResponse.setToken(jwtService.generateToken(user, refreshRequest.getRefreshToken(),true));
-        }else{
+            User user = userRepository
+                    .findById(refreshTokenService.getIdFromRefreshToken(refreshRequest.getRefreshToken()))
+                    .orElseThrow(() -> new BadRequestException("User Not Found"));
+            authenResponse.setToken(jwtService.generateToken(user, refreshRequest.getRefreshToken(), true));
+        } else {
             throw new InvalidRefreshTokenException("Invalid refresh token");
         }
         return authenResponse;
     }
+
     @Override
     public void logout(RefreshRequest refreshRequest) {
         String refresh = refreshRequest.getRefreshToken();
         refreshTokenService.deleteRefreshToken(refresh);
     }
 }
-
