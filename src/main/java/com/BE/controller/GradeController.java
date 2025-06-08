@@ -1,11 +1,14 @@
 package com.BE.controller;
 
 
+import com.BE.enums.StatusEnum;
 import com.BE.model.request.GradeRequest;
+import com.BE.model.request.StatusRequest;
 import com.BE.model.response.GradeResponse;
 import com.BE.service.interfaceServices.IGradeService;
 import com.BE.utils.ResponseHandler;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -16,11 +19,9 @@ import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @Tag(name = "Grade", description = "API for managing Grade")
@@ -140,6 +141,145 @@ public class GradeController {
             GradeRequest request) {
         GradeResponse response = gradeService.createGrade(request);
         return responseHandler.response(200, "Create Grade success!", response);
+    }
+
+
+    // --- API: LẤY DANH SÁCH KHỐI LỚP (GET All Grades) ---
+    @GetMapping
+    @Operation(
+            summary = "Lấy danh sách các khối lớp",
+            description = "API này hỗ trợ phân trang (pagination), tìm kiếm theo tên (search by name), " +
+                    "lọc theo trạng thái (filter by status) và sắp xếp (sort by field and direction). " +
+                    "Nếu các tham số tìm kiếm/lọc rỗng, nó sẽ trả về tất cả các khối lớp." +
+                    "**Số trang bắt đầu từ 1 (page=1)**, kích thước trang mặc định là 10 (size=10). " +
+                    "Hệ thống sẽ tự động điều chỉnh số trang để phù hợp với quy ước bắt đầu từ 0 của backend."
+    )
+    @ApiResponse(responseCode = "200", description = "Lấy danh sách khối lớp thành công.",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = Page.class),
+                    examples = @ExampleObject(name = "gradesListSuccessResponse", summary = "Phản hồi danh sách khối lớp thành công (có phân trang)",
+                            value = "{\n  \"statusCode\": 200,\n  \"message\": \"Grades retrieved successfully!\",\n  \"data\": {\n" +
+                                    "    \"content\": [\n" +
+                                    "      { \"id\": 1, \"name\": \"Lớp 10\", \"status\": \"ACTIVE\", \"createdAt\": \"2025-06-08T10:00:00Z\", \"updatedAt\": \"2025-06-08T10:00:00Z\" },\n" +
+                                    "      { \"id\": 2, \"name\": \"Lớp 11\", \"status\": \"ACTIVE\", \"createdAt\": \"2025-06-08T10:05:00Z\", \"updatedAt\": \"2025-06-08T10:05:00Z\" }\n" +
+                                    "    ],\n" +
+                                    "    \"pageable\": {\"pageNumber\": 0, \"pageSize\": 10, \"sort\": {\"empty\": true, \"sorted\": false, \"unsorted\": true}, \"offset\": 0, \"paged\": true, \"unpaged\": false},\n" +
+                                    "    \"last\": true,\n" +
+                                    "    \"totalElements\": 2,\n" +
+                                    "    \"totalPages\": 1,\n" +
+                                    "    \"size\": 10,\n" +
+                                    "    \"number\": 0,\n" +
+                                    "    \"sort\": {\"empty\": true, \"sorted\": false, \"unsorted\": true},\n" +
+                                    "    \"first\": true,\n" +
+                                    "    \"numberOfElements\": 2,\n" +
+                                    "    \"empty\": false\n" +
+                                    "  }\n}")))
+    @ApiResponse(responseCode = "500", description = "Lỗi máy chủ nội bộ.")
+    public ResponseEntity<Object> getAllGrades(
+            @RequestParam(defaultValue = "1") int page, // THAY ĐỔI Ở ĐÂY: Mặc định là 1
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String search,
+            @Parameter(
+                    description = "Trạng thái của khối lớp để lọc. Giá trị hợp lệ: ACTIVE, INACTIVE",
+                    schema = @Schema(
+                            type = "string",
+                            allowableValues = {"ACTIVE", "INACTIVE"},
+                            example = "ACTIVE"
+                    )
+            )
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false, defaultValue = "asc") String sortDirection) {
+
+        // THAY ĐỔI Ở ĐÂY: Trừ đi 1 để chuyển từ base-1 (FE) sang base-0 (Spring Data JPA)
+        int pageForBackend = page > 0 ? page - 1 : 0; // Đảm bảo không âm nếu FE gửi 0 hoặc số âm
+
+        Page<GradeResponse> gradePage = gradeService.getAllGrades(pageForBackend, size, search, status, sortBy, sortDirection);
+        return responseHandler.response(200, "Grades retrieved successfully!", gradePage);
+    }
+
+    // --- API: LẤY KHỐI LỚP THEO ID (GET Grade By ID) ---
+    @GetMapping("/{id}")
+    @Operation(
+            summary = "Lấy thông tin khối lớp theo ID",
+            description = "API này dùng để lấy chi tiết thông tin của một khối lớp dựa trên ID duy nhất của nó."
+    )
+    @ApiResponse(responseCode = "200", description = "Lấy thông tin khối lớp thành công.",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = GradeResponse.class),
+                    examples = @ExampleObject(name = "getGradeByIdSuccessResponse", summary = "Phản hồi thành công khi lấy khối lớp theo ID",
+                            value = "{\n  \"statusCode\": 200,\n  \"message\": \"Grade retrieved successfully!\",\n  \"data\": {\n    \"id\": 1,\n    \"name\": \"Lớp 10\",\n    \"status\": \"ACTIVE\",\n    \"createdAt\": \"2025-06-08T10:00:00Z\",\n    \"updatedAt\": \"2025-06-08T10:00:00Z\"\n  }\n}")))
+    @ApiResponse(responseCode = "404", description = "Không tìm thấy khối lớp với ID đã cung cấp.",
+            content = @Content(mediaType = "application/json", examples = @ExampleObject(name = "gradeNotFound", summary = "Lỗi không tìm thấy",
+                    value = "{\n  \"statusCode\": 404,\n  \"message\": \"Grade not found with ID: 99\",\n  \"details\": \"uri=/api/grades/99\"\n}")))
+    @ApiResponse(responseCode = "500", description = "Lỗi máy chủ nội bộ.")
+    public ResponseEntity<Object> getGradeById(@PathVariable long id) {
+        GradeResponse response = gradeService.getGradeById(id);
+        return responseHandler.response(200, "Grade retrieved successfully!", response);
+    }
+
+    // --- API: CẬP NHẬT TÊN KHỐI LỚP (UPDATE Name) ---
+    @PutMapping("/{id}")
+    @Operation(
+            summary = "Cập nhật tên khối lớp",
+            description = "API này cho phép cập nhật tên của một khối lớp hiện có bằng cách cung cấp ID và tên mới. " +
+                    "Tên mới không được trùng với tên của khối lớp khác và không được để trống."
+    )
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            description = "Thông tin mới của khối lớp. Chỉ cần cung cấp tên khối lớp để cập nhật. Tên không được để trống.",
+            required = true,
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = GradeRequest.class),
+                    examples = @ExampleObject(name = "updateGradeNameExample", summary = "Ví dụ cập nhật tên khối lớp", value = "{\"name\": \"Lớp 10 Cập nhật\"}")))
+    @ApiResponse(responseCode = "200", description = "Cập nhật khối lớp thành công.",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = GradeResponse.class),
+                    examples = @ExampleObject(name = "updateGradeSuccessResponse", summary = "Phản hồi thành công khi cập nhật",
+                            value = "{\n  \"statusCode\": 200,\n  \"message\": \"Grade updated successfully!\",\n  \"data\": {\n    \"id\": 1,\n    \"name\": \"Lớp 10 Cập nhật\",\n    \"status\": \"ACTIVE\",\n    \"createdAt\": \"2025-06-08T10:00:00Z\",\n    \"updatedAt\": \"2025-06-08T10:30:00Z\"\n  }\n}")))
+    @ApiResponse(responseCode = "400", description = "Yêu cầu không hợp lệ (tên trống, tên trùng).",
+            content = @Content(mediaType = "application/json", examples = {
+                    @ExampleObject(name = "updateBadRequestValidation", summary = "Lỗi validation khi cập nhật", value = "{\n  \"statusCode\": 400,\n  \"message\": \"Validation failed: Grade name cannot be blank\",\n  \"details\": \"uri=/api/grades/1\"\n}"),
+                    @ExampleObject(name = "updateBadRequestDuplicateName", summary = "Lỗi trùng tên khi cập nhật", value = "{\n  \"statusCode\": 400,\n  \"message\": \"Grade with name 'Lớp 11' already exists.\",\n  \"details\": \"uri=/api/grades/1\"\n}")}))
+    @ApiResponse(responseCode = "404", description = "Không tìm thấy khối lớp để cập nhật.",
+            content = @Content(mediaType = "application/json", examples = @ExampleObject(name = "updateGradeNotFound", summary = "Lỗi không tìm thấy khi cập nhật",
+                    value = "{\n  \"statusCode\": 404,\n  \"message\": \"Grade not found with ID: 99\",\n  \"details\": \"uri=/api/grades/99\"\n}")))
+    @ApiResponse(responseCode = "500", description = "Lỗi máy chủ nội bộ.")
+    public ResponseEntity<Object> updateGrade(@PathVariable long id, @Valid @RequestBody GradeRequest request) {
+        GradeResponse response = gradeService.updateGrade(id, request);
+        return responseHandler.response(200, "Grade updated successfully!", response);
+    }
+
+
+    // --- API: CẬP NHẬT TRẠNG THÁI KHỐI LỚP (PATCH Status) ---
+    @PatchMapping("/{id}/status")
+    @Operation(
+            summary = "Cập nhật trạng thái của khối lớp (bao gồm vô hiệu hóa/kích hoạt)",
+            description = "API này cho phép cập nhật trạng thái hoạt động của khối lớp thành 'ACTIVE' hoặc 'INACTIVE'. " +
+                    "Sử dụng query parameter 'newStatus' để truyền trạng thái mới."
+    )
+// ĐẶT @Parameter NGAY TRƯỚC @RequestParam
+    @Parameter(
+            name = "newStatus", // QUAN TRỌNG: Chỉ định rõ tên tham số mà @Parameter này mô tả
+            description = "Trạng thái mới cho khối lớp. Giá trị hợp lệ: ACTIVE, INACTIVE",
+            required = true,
+            schema = @Schema(
+                    type = "string",
+                    allowableValues = {"ACTIVE", "INACTIVE"},
+                    example = "ACTIVE"
+            )
+    )
+    @ApiResponse(responseCode = "200", description = "Cập nhật trạng thái khối lớp thành công.",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = GradeResponse.class),
+                    examples = @ExampleObject(name = "statusUpdateSuccessResponse", summary = "Phản hồi thành công khi cập nhật trạng thái",
+                            value = "{\n  \"statusCode\": 200,\n  \"message\": \"Grade status updated successfully!\",\n  \"data\": {\n    \"id\": 1,\n    \"name\": \"Lớp 10\",\n    \"status\": \"ACTIVE\",\n    \"createdAt\": \"2025-06-08T10:00:00Z\",\n    \"updatedAt\": \"2025-06-08T10:40:00Z\"\n  }\n}")))
+    @ApiResponse(responseCode = "400", description = "Trạng thái không hợp lệ.",
+            content = @Content(mediaType = "application/json", examples = @ExampleObject(name = "invalidStatus", summary = "Lỗi trạng thái không hợp lệ",
+                    value = "{\n  \"statusCode\": 400,\n  \"message\": \"Invalid status value. Must be 'ACTIVE' or 'INACTIVE'.\",\n  \"details\": \"uri=/api/grades/1/status\"\n}")))
+    @ApiResponse(responseCode = "404", description = "Không tìm thấy khối lớp.",
+            content = @Content(mediaType = "application/json", examples = @ExampleObject(name = "statusUpdateNotFound", summary = "Lỗi không tìm thấy khi cập nhật trạng thái",
+                    value = "{\n  \"statusCode\": 404,\n  \"message\": \"Grade not found with ID: 99\",\n  \"details\": \"uri=/api/grades/99/status\"\n}")))
+    @ApiResponse(responseCode = "500", description = "Lỗi máy chủ nội bộ.")
+    public ResponseEntity<Object> updateGradeStatus(
+            @PathVariable long id,
+            @RequestParam String newStatus) {
+        GradeResponse response = gradeService.changeGradeStatus(id, newStatus);
+        return responseHandler.response(200, "Grade status updated successfully!", response);
     }
 
 
