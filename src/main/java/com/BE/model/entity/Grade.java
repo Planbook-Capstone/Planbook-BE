@@ -19,7 +19,7 @@ public class Grade {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     long id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     String name;
 
     @Enumerated(EnumType.STRING)

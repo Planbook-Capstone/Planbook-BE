@@ -32,7 +32,7 @@ public class AuthenExceptionHandler {
 
     @ExceptionHandler(value = DataIntegrityViolationException.class)
     public ResponseEntity<Object> handlerDataIntegrityViolationException(DataIntegrityViolationException exception) {
-        return new ResponseEntity<>(exception.getMessage(), HttpStatus.FORBIDDEN);
+        return new ResponseEntity<>(exception.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(BadRequestException.class)
