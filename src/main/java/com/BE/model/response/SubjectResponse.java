@@ -54,13 +54,13 @@ public class SubjectResponse {
     )
     String updatedAt;
 
-    @Schema(
-            description = "ID của khối lớp mà môn học này thuộc về.",
-            type = "integer",
-            format = "int64",
-            example = "1"
-    )
-    Long gradeId; // ID của Grade mà Subject này thuộc về
+//    @Schema(
+//            description = "ID của khối lớp mà môn học này thuộc về.",
+//            type = "integer",
+//            format = "int64",
+//            example = "1"
+//    )
+//    Long gradeId; // ID của Grade mà Subject này thuộc về
 
     @Schema(
             description = "Thông tin chi tiết về khối lớp mà môn học này thuộc về.",

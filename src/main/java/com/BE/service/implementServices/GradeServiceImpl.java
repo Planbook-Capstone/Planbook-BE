@@ -45,7 +45,7 @@ public class GradeServiceImpl implements IGradeService {
 
         // Set thời gian tạo
         grade.setCreatedAt(dateNowUtils.dateNow());
-
+        grade.setUpdatedAt(dateNowUtils.dateNow());
         // Set status mặc định nếu có logic (tuỳ theo enum của bạn)
         grade.setStatus(StatusEnum.ACTIVE); // hoặc StatusEnum.PENDING,...
 

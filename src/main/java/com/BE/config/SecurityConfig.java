@@ -48,7 +48,9 @@ public class SecurityConfig  {
             "/api/refresh",
             "/api/logout",
             "/api/grade",
-            "/api/grade/**"
+            "/api/grade/**",
+            "/api/subject",
+            "/api/subject/**/"
 
     };
 
