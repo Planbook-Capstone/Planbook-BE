@@ -1,8 +1,6 @@
 package com.BE.service.interfaceServices;
 
-import com.BE.enums.StatusEnum;
 import com.BE.model.request.GradeRequest;
-import com.BE.model.request.StatusRequest;
 import com.BE.model.response.GradeResponse;
 import org.springframework.data.domain.Page;
 
