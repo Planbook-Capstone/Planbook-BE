@@ -11,6 +11,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -27,38 +28,29 @@ public class DataLoaderConfig implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        log.info("Checking and initializing default roles and users...");
+        log.info("Checking and initializing default users...");
 
-        User adminUser = User.builder()
-                .username("admin")
-                .password(passwordEncoder.encode("admin"))
-                .email("admin@gmail.com")
-                .fullName("admin")
-                .role(RoleEnum.ADMIN)
-                .build();
+        createUserIfNotExist("admin", "admin@gmail.com", "admin", RoleEnum.ADMIN);
+        createUserIfNotExist("teacher", "teacher@gmail.com", "teacher", RoleEnum.TEACHER);
+        createUserIfNotExist("staff", "staff@gmail.com", "staff", RoleEnum.STAFF);
 
-        User teacherUser = User.builder()
-                .username("teacher")
-                .password(passwordEncoder.encode("teacher"))
-                .email("teacher@gmail.com")
-                .fullName("teacher")
-                .role(RoleEnum.TEACHER)
-                .build();
-
-        User staffUser = User.builder()
-                .username("staff")
-                .password(passwordEncoder.encode("staff"))
-                .email("staff@gmail.com")
-                .fullName("staff")
-                .role(RoleEnum.STAFF)
-                .build();
-
-        userRepository.save(adminUser);
-        userRepository.save(teacherUser);
-        userRepository.save(staffUser);
-
-        log.info("Created default admin, staff, teacher User");
+        log.info("Default admin, staff, teacher users initialization completed.");
     }
 
-
+    private void createUserIfNotExist(String username, String email, String fullName, RoleEnum role) {
+        Optional<User> existingUser = userRepository.findByUsername(username);
+        if (existingUser.isEmpty()) {
+            User newUser = User.builder()
+                    .username(username)
+                    .password(passwordEncoder.encode(username)) // It's a bad practice to use the username as a password, consider using a more secure password.
+                    .email(email)
+                    .fullName(fullName)
+                    .role(role)
+                    .build();
+            userRepository.save(newUser);
+            log.info("Created default {} user", username);
+        } else {
+            log.info("{} user already exists", username);
+        }
+    }
 }
