@@ -67,7 +67,7 @@ public class AuthenticationImpl implements IAuthenticationService {
     public User register(AuthenticationRequest request) {
         User user = userMapper.toUser(request);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setRole(RoleEnum.USER);
+        user.setRole(RoleEnum.TEACHER);
         try {
             // Create workspace for new user
             WorkSpace ws = academicYearService.createWorkspaceForNewUser(user);
@@ -113,7 +113,7 @@ public class AuthenticationImpl implements IAuthenticationService {
                 user.setFullName(decodeToken.getName());
                 user.setEmail(email);
                 user.setUsername(email);
-                user.setRole(RoleEnum.USER);
+                user.setRole(RoleEnum.TEACHER);
                 // Save user first to get id
                 user = userRepository.save(user);
                 // Create workspace for new user
