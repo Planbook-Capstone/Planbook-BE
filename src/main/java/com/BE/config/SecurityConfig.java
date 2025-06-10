@@ -43,6 +43,7 @@ public class SecurityConfig  {
             "/swagger-resources/**",
             "/api/register",
             "/api/login",
+            "/api/login-google",
             "/api/forgot-password",
             "/api/status",
             "/api/refresh",

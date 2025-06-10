@@ -18,9 +18,12 @@ import com.BE.service.interfaceServices.IAcademicYearService;
 import com.BE.service.interfaceServices.IAuthenticationService;
 import com.BE.service.interfaceServices.IWorkSpaceService;
 import com.BE.utils.AccountUtils;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseAuthException;
-import com.google.firebase.auth.FirebaseToken;
+
+
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.JWTVerifier;
+import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -29,6 +32,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -63,6 +67,8 @@ public class AuthenticationImpl implements IAuthenticationService {
 
     @Autowired
     IWorkSpaceService workSpaceService;
+
+
 
     public User register(AuthenticationRequest request) {
         User user = userMapper.toUser(request);
@@ -104,34 +110,70 @@ public class AuthenticationImpl implements IAuthenticationService {
     }
 
     public AuthenticationResponse loginGoogle(LoginGoogleRequest loginGoogleRequest) {
+
         try {
-            FirebaseToken decodeToken = FirebaseAuth.getInstance().verifyIdToken(loginGoogleRequest.getToken());
-            String email = decodeToken.getEmail();
+
+            // Supabase sử dụng thuật toán HS256
+            Algorithm algorithm = Algorithm.HMAC256("X71//sL4YPoXUOHmhyWAA9+KMqEzaITwJ7q9ptLiCtoDTQ5GuZvWfT7ArcaKBXuH7rQEI4GsSswLd3ET4oG0eA==");
+
+            // 2. Xây dựng bộ xác thực (Verifier)
+            // Bạn có thể thêm các yêu cầu khác như 'issuer' hoặc 'audience' nếu cần
+            JWTVerifier verifier = JWT.require(algorithm)
+                    .withAudience("authenticated") // JWT của Supabase thường có aud là 'authenticated'
+                    .build();
+
+            // 3. Xác thực token. Nếu không hợp lệ, nó sẽ ném ra JWTVerificationException
+            DecodedJWT decodedJWT = verifier.verify(loginGoogleRequest.getToken());
+
+
+            // 4. Lấy thông tin từ payload. 'sub' chính là User ID (UUID) trong Supabase
+            String supabaseUserId = decodedJWT.getSubject();
+            String email = decodedJWT.getClaim("email").asString();
+            // (MỚI) Lấy tên đầy đủ từ 'user_metadata' do Google cung cấp
+            Map<String, Object> userMetadata = decodedJWT.getClaim("user_metadata").asMap();
+            String fullNameFromGoogle = null;
+            if (userMetadata != null) {
+                // Supabase thường đặt tên đầy đủ vào key 'full_name' hoặc 'name'
+                if (userMetadata.containsKey("full_name")) {
+                    fullNameFromGoogle = (String) userMetadata.get("full_name");
+                } else if (userMetadata.containsKey("name")) {
+                    fullNameFromGoogle = (String) userMetadata.get("name");
+                }
+            }
+
+            // Tìm hoặc tạo mới User
             User user = userRepository.findByEmail(email).orElse(null);
             if (user == null) {
                 user = new User();
-                user.setFullName(decodeToken.getName());
+                user.setFullName(fullNameFromGoogle);
                 user.setEmail(email);
                 user.setUsername(email);
-                user.setRole(RoleEnum.TEACHER);
-                // Save user first to get id
-                user = userRepository.save(user);
-                // Create workspace for new user
+                user.setRole(RoleEnum.TEACHER); // Hoặc kiểm tra quyền nếu cần
+
+                // Tạo workspace nếu là user mới
                 WorkSpace ws = academicYearService.createWorkspaceForNewUser(user);
                 if (ws != null) {
                     user.getWorkSpaces().add(ws);
                     userRepository.save(user);
                 }
+
+                user = userRepository.save(user);
+
+
             }
+
+            // Sinh token JWT như cũ
             AuthenticationResponse authenticationResponse = userMapper.toAuthenticationResponse(user);
             String refresh = UUID.randomUUID().toString();
             authenticationResponse.setToken(jwtService.generateToken(user, refresh, false));
             authenticationResponse.setRefreshToken(refresh);
             return authenticationResponse;
-        } catch (FirebaseAuthException e) {
+
+        } catch (Exception e) {
             e.printStackTrace();
+            return null;
         }
-        return null;
+
     }
 
     public void forgotPasswordRequest(String email) {
