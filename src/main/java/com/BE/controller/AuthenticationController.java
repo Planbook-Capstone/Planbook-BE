@@ -6,6 +6,12 @@ import com.BE.model.request.*;
 import com.BE.model.response.AuthenticationResponse;
 import com.BE.service.interfaceServices.IAuthenticationService;
 import com.BE.utils.ResponseHandler;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,7 +47,40 @@ public class AuthenticationController {
     public ResponseEntity<User> register(@Valid @RequestBody AuthenticationRequest user){
         return responseHandler.response(200, "Register success!", iAuthenticationService.register(user));
     }
+
     @PostMapping("/login")
+    @Operation(summary = "User login", description = "Authenticates a user and returns authentication tokens.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Login successful",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthenticationResponse.class))),
+            @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid credentials"),
+            @ApiResponse(responseCode = "400", description = "Bad Request - Missing or invalid fields")
+    })
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            description = "Thông tin đăng nhập của người dùng (username và password).",
+            required = true,
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = LoginRequestDTO.class),
+                    examples = {
+                            @ExampleObject(
+                                    name = "Admin Login Example",
+                                    summary = "Đăng nhập với tài khoản Admin",
+                                    value = "{\"username\": \"admin\", \"password\": \"admin\"}"
+                            ),
+                            @ExampleObject(
+                                    name = "Teacher Login Example",
+                                    summary = "Đăng nhập với tài khoản Teacher",
+                                    value = "{\"username\": \"teacher\", \"password\": \"teacher\"}"
+                            ),
+                            @ExampleObject(
+                                    name = "Staff Login Example",
+                                    summary = "Đăng nhập với tài khoản Staff",
+                                    value = "{\"username\": \"staff\", \"password\": \"staff\"}"
+                            )
+                    }
+            )
+    )
     public  ResponseEntity<AuthenticationResponse> login(@RequestBody LoginRequestDTO loginRequestDTO){
         return responseHandler.response(200, "Login success!", iAuthenticationService.authenticate(loginRequestDTO));
     }
