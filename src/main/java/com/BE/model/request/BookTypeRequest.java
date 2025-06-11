@@ -16,9 +16,10 @@ import lombok.experimental.FieldDefaults;
 @Schema(description = "Request DTO để tạo hoặc cập nhật thông tin Loại Sách")
 public class BookTypeRequest {
 
+
     @Schema(
-            description = "Tên của loại sách (ví dụ: 'Sách giáo khoa', 'Sách bài tập', 'Truyện')",
-            example = "Sách giáo khoa",
+            description = "Tên của công cụ hỗ trợ (ví dụ: 'Chấm điểm', 'Tạo giáo án', 'Tạo slide bài giảng', 'Tạo đề thi')", // ĐÃ THAY ĐỔI MÔ TẢ
+            example = "Chấm điểm", // ĐÃ THAY ĐỔI VÍ DỤ
             required = true,
             type = "string"
     )
@@ -27,15 +28,15 @@ public class BookTypeRequest {
     String name;
 
     @Schema(
-            description = "Mô tả chi tiết về loại sách",
-            example = "Loại sách dùng cho việc học tập chính khóa trên lớp.",
+            description = "Mô tả chi tiết về công cụ hỗ trợ", // ĐÃ THAY ĐỔI MÔ TẢ
+            example = "Công cụ giúp giảng viên quản lý và chấm điểm bài tập, bài kiểm tra của sinh viên.", // ĐÃ THAY ĐỔI VÍ DỤ
             type = "string",
             nullable = true
     )
     String description;
 
     @Schema(
-            description = "Icon đại diện cho loại sách, có thể là base64 encoded string",
+            description = "Icon đại diện cho công cụ hỗ trợ, có thể là base64 encoded string", // ĐÃ THAY ĐỔI MÔ TẢ
             example = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==",
             type = "string",
             nullable = true

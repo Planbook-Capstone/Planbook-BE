@@ -18,36 +18,36 @@ import java.util.UUID; // Quan trọng: Sử dụng UUID cho ID
 public class BookTypeResponse {
 
     @Schema(
-            description = "ID duy nhất của loại sách. Giá trị này được hệ thống tự động sinh dưới dạng UUID.",
-            type = "string", // Kiểu string cho UUID trong JSON
+            description = "ID duy nhất của công cụ hỗ trợ. Giá trị này được hệ thống tự động sinh dưới dạng UUID.", // ĐÃ THAY ĐỔI MÔ TẢ
+            type = "string",
             format = "uuid",
             example = "a1b2c3d4-e5f6-7890-1234-567890abcdef"
     )
-    UUID id; // Quan trọng: Kiểu UUID
+    UUID id;
 
     @Schema(
-            description = "Tên của loại sách.",
+            description = "Tên của công cụ hỗ trợ.", // ĐÃ THAY ĐỔI MÔ TẢ
             type = "string",
-            example = "Sách giáo khoa"
+            example = "Chấm điểm" // ĐÃ THAY ĐỔI VÍ DỤ
     )
     String name;
 
     @Schema(
-            description = "Mô tả chi tiết về loại sách.",
+            description = "Mô tả chi tiết về công cụ hỗ trợ.", // ĐÃ THAY ĐỔI MÔ TẢ
             type = "string",
-            example = "Loại sách dùng cho việc học tập chính khóa trên lớp."
+            example = "Công cụ giúp giảng viên quản lý và chấm điểm bài tập, bài kiểm tra của sinh viên." // ĐÃ THAY ĐỔI VÍ DỤ
     )
     String description;
 
     @Schema(
-            description = "Icon đại diện cho loại sách, thường là base64 encoded string của hình ảnh.",
+            description = "Icon đại diện cho công cụ hỗ trợ, thường là base64 encoded string của hình ảnh.", // ĐÃ THAY ĐỔI MÔ TẢ
             type = "string",
             example = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg=="
     )
     String icon;
 
     @Schema(
-            description = "Trạng thái hoạt động của loại sách. Có thể là 'ACTIVE' hoặc 'INACTIVE'.",
+            description = "Trạng thái hoạt động của công cụ hỗ trợ. Có thể là 'ACTIVE' hoặc 'INACTIVE'.", // ĐÃ THAY ĐỔI MÔ TẢ
             type = "string",
             allowableValues = { "ACTIVE", "INACTIVE" },
             example = "ACTIVE"
@@ -55,7 +55,7 @@ public class BookTypeResponse {
     StatusEnum status;
 
     @Schema(
-            description = "Thời điểm loại sách được tạo lần đầu. Định dạng theo chuẩn ISO 8601.",
+            description = "Thời điểm công cụ hỗ trợ được tạo lần đầu. Định dạng theo chuẩn ISO 8601.", // ĐÃ THAY ĐỔI MÔ TẢ
             type = "string",
             format = "date-time",
             example = "2025-06-11T10:30:00Z"
@@ -63,10 +63,11 @@ public class BookTypeResponse {
     String createdAt;
 
     @Schema(
-            description = "Thời điểm loại sách được cập nhật gần đây nhất. Định dạng theo chuẩn ISO 8601.",
+            description = "Thời điểm công cụ hỗ trợ được cập nhật gần đây nhất. Định dạng theo chuẩn ISO 8601.", // ĐÃ THAY ĐỔI MÔ TẢ
             type = "string",
             format = "date-time",
             example = "2025-06-11T11:00:00Z"
     )
     String updatedAt;
+
 }
