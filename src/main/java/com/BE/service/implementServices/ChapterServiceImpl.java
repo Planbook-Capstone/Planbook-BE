@@ -45,7 +45,7 @@ public class ChapterServiceImpl implements IChapterService {
     @Override
     public ChapterResponse createChapter(ChapterRequest request) {
         // Kiểm tra tên chương đã tồn tại trong cùng một Book chưa
-        if (chapterRepository.findByNameAndBookId(request.getName(), request.getBookId()).isPresent()) {
+        if (chapterRepository.findByNameAndBookId(request.getName().trim(), request.getBookId()).isPresent()) {
             throw new DataIntegrityViolationException("Chapter with name '" + request.getName() + "' already exists for Book ID: " + request.getBookId());
         }
 

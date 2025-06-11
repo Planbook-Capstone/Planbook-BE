@@ -46,7 +46,7 @@ public class LessonServiceImpl implements ILessonService {
     @Override
     public LessonResponse createLesson(LessonRequest request) {
         // Kiểm tra tên bài học đã tồn tại trong cùng một Chapter chưa
-        if (lessonRepository.findByNameAndChapterId(request.getName(), request.getChapterId()).isPresent()) {
+        if (lessonRepository.findByNameAndChapterId(request.getName().trim(), request.getChapterId()).isPresent()) {
             throw new DataIntegrityViolationException("Lesson with name '" + request.getName() + "' already exists for Chapter ID: " + request.getChapterId());
         }
 

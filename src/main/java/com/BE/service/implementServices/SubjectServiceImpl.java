@@ -46,7 +46,7 @@ public class SubjectServiceImpl implements ISubjectService {
     public SubjectResponse createSubject(SubjectRequest request) {
         // Kiểm tra tên môn học đã tồn tại trong cùng một Grade chưa
         // Nên dùng DuplicateResourceException để consistent với API
-        if (subjectRepository.findByNameAndGradeId(request.getName(), request.getGradeId()).isPresent()) {
+        if (subjectRepository.findByNameAndGradeId(request.getName().trim(), request.getGradeId()).isPresent()) {
             throw new DataIntegrityViolationException("Subject with name '" + request.getName() + "' already exists for Grade ID: " + request.getGradeId());
         }
 
