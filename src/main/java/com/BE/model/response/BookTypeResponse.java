@@ -46,6 +46,15 @@ public class BookTypeResponse {
     )
     String icon;
 
+    // THÊM TRƯỜNG MỚI NÀY
+    @Schema(
+            description = "Số lượng token bị trừ cho mỗi lượt hỏi khi sử dụng công cụ này.",
+            example = "10",
+            type = "integer",
+            format = "int32"
+    )
+    Integer tokenCostPerQuery;
+
     @Schema(
             description = "Trạng thái hoạt động của công cụ hỗ trợ. Có thể là 'ACTIVE' hoặc 'INACTIVE'.", // ĐÃ THAY ĐỔI MÔ TẢ
             type = "string",
