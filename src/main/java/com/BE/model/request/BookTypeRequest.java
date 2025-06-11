@@ -1,6 +1,8 @@
 package com.BE.model.request;
 
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AccessLevel;
@@ -42,4 +44,16 @@ public class BookTypeRequest {
             nullable = true
     )
     String icon;
+
+    // THÊM TRƯỜNG MỚI NÀY
+    @Schema(
+            description = "Số lượng token bị trừ cho mỗi lượt hỏi khi sử dụng công cụ này. Phải là số nguyên không âm.",
+            example = "10", // Đặt ví dụ phù hợp
+            required = true, // Hoặc false tùy theo yêu cầu của bạn
+            type = "integer",
+            format = "int32"
+    )
+    @NotNull(message = "Token cost per query cannot be null") // Nếu bạn muốn nó bắt buộc
+    @Min(value = 0, message = "Token cost per query must be a non-negative integer") // Đảm bảo giá trị không âm
+            Integer tokenCostPerQuery;
 }

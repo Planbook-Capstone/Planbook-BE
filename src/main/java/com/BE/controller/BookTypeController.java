@@ -35,14 +35,13 @@ public class BookTypeController {
     IBookTypeService bookTypeService;
 
 
-
     // --- API: TẠO LOẠI CÔNG CỤ (POST) ---
     @PostMapping
     @Operation(
-            summary = "Tạo một loại công cụ hỗ trợ giảng viên mới", // ĐÃ THAY ĐỔI MÔ TẢ SUMMARY
-            description = "API này cho phép tạo một loại công cụ hỗ trợ giảng viên mới với tên, mô tả và icon. Tên công cụ phải là duy nhất.", // ĐÃ THAY ĐỔI MÔ TẢ DESCRIPTION
+            summary = "Tạo một loại công cụ hỗ trợ giảng viên mới",
+            description = "API này cho phép tạo một loại công cụ hỗ trợ giảng viên mới với tên, mô tả, icon và chi phí token. Tên công cụ phải là duy nhất.",
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "Thông tin chi tiết của loại công cụ cần tạo.", // ĐÃ THAY ĐỔI MÔ TẢ REQUEST BODY
+                    description = "Thông tin chi tiết của loại công cụ cần tạo.",
                     required = true,
                     content = @Content(
                             mediaType = "application/json",
@@ -51,34 +50,34 @@ public class BookTypeController {
                                     @ExampleObject(
                                             name = "createGradingToolExample",
                                             summary = "Ví dụ tạo Loại Công cụ: Chấm điểm",
-                                            value = "{\n  \"name\": \"Chấm điểm\",\n  \"description\": \"Công cụ giúp giảng viên quản lý và chấm điểm bài tập, bài kiểm tra của sinh viên.\",\n  \"icon\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==\"\n}"
+                                            value = "{\n  \"name\": \"Chấm điểm\",\n  \"description\": \"Công cụ giúp giảng viên quản lý và chấm điểm bài tập, bài kiểm tra của sinh viên.\",\n  \"icon\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==\",\n  \"tokenCostPerQuery\": 5\n}" // ĐÃ THÊM tokenCostPerQuery
                                     ),
                                     @ExampleObject(
                                             name = "createLessonPlanToolExample",
                                             summary = "Ví dụ tạo Loại Công cụ: Tạo giáo án",
-                                            value = "{\n  \"name\": \"Tạo giáo án\",\n  \"description\": \"Công cụ hỗ trợ xây dựng và quản lý các giáo án điện tử.\",\n  \"icon\": null\n}"
+                                            value = "{\n  \"name\": \"Tạo giáo án\",\n  \"description\": \"Công cụ hỗ trợ xây dựng và quản lý các giáo án điện tử.\",\n  \"icon\": null,\n  \"tokenCostPerQuery\": 10\n}" // ĐÃ THÊM tokenCostPerQuery
                                     ),
                                     @ExampleObject(
                                             name = "createSlideToolExample",
                                             summary = "Ví dụ tạo Loại Công cụ: Tạo slide bài giảng",
-                                            value = "{\n  \"name\": \"Tạo slide bài giảng\",\n  \"description\": \"Công cụ giúp thiết kế và trình bày slide bài giảng một cách chuyên nghiệp.\",\n  \"icon\": null\n}"
+                                            value = "{\n  \"name\": \"Tạo slide bài giảng\",\n  \"description\": \"Công cụ giúp thiết kế và trình bày slide bài giảng một cách chuyên nghiệp.\",\n  \"icon\": null,\n  \"tokenCostPerQuery\": 15\n}" // ĐÃ THÊM tokenCostPerQuery
                                     ),
                                     @ExampleObject(
                                             name = "createExamToolExample",
                                             summary = "Ví dụ tạo Loại Công cụ: Tạo đề thi",
-                                            value = "{\n  \"name\": \"Tạo đề thi\",\n  \"description\": \"Công cụ hỗ trợ tạo và quản lý các đề thi trắc nghiệm, tự luận.\",\n  \"icon\": null\n}"
+                                            value = "{\n  \"name\": \"Tạo đề thi\",\n  \"description\": \"Công cụ hỗ trợ tạo và quản lý các đề thi trắc nghiệm, tự luận.\",\n  \"icon\": null,\n  \"tokenCostPerQuery\": 20\n}" // ĐÃ THÊM tokenCostPerQuery
                                     )
                             }
                     )
             )
     )
-    @ApiResponse(responseCode = "201", description = "Loại công cụ được tạo thành công.", // ĐÃ THAY ĐỔI MÔ TẢ RESPONSE
+    @ApiResponse(responseCode = "201", description = "Loại công cụ được tạo thành công.",
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = BookTypeResponse.class)))
-    @ApiResponse(responseCode = "400", description = "Dữ liệu yêu cầu không hợp lệ hoặc tên loại công cụ đã tồn tại.", // ĐÃ THAY ĐỔI MÔ TẢ RESPONSE
+    @ApiResponse(responseCode = "400", description = "Dữ liệu yêu cầu không hợp lệ hoặc tên loại công cụ đã tồn tại.",
             content = @Content(mediaType = "application/json", examples = {
                     @ExampleObject(name = "invalidInput", summary = "Lỗi dữ liệu đầu vào không hợp lệ",
                             value = "{\n  \"statusCode\": 400,\n  \"message\": \"BookType name cannot be blank\",\n  \"details\": \"uri=/api/book-type\"\n}"),
-                    @ExampleObject(name = "duplicateBookTypeName", summary = "Lỗi tên loại công cụ đã tồn tại", // ĐÃ THAY ĐỔI MÔ TẢ EXAMPLE
+                    @ExampleObject(name = "duplicateBookTypeName", summary = "Lỗi tên loại công cụ đã tồn tại",
                             value = "{\n  \"statusCode\": 400,\n  \"message\": \"BookType with name 'Chấm điểm' already exists\",\n  \"details\": \"uri=/api/book-type\"\n}")
             }))
     @ApiResponse(responseCode = "500", description = "Lỗi máy chủ nội bộ.")
@@ -90,10 +89,10 @@ public class BookTypeController {
     // --- API: LẤY DANH SÁCH LOẠI CÔNG CỤ (GET All BookTypes) ---
     @GetMapping
     @Operation(
-            summary = "Lấy danh sách các loại công cụ hỗ trợ giảng viên", // ĐÃ THAY ĐỔI MÔ TẢ SUMMARY
+            summary = "Lấy danh sách các loại công cụ hỗ trợ giảng viên",
             description = "API này hỗ trợ phân trang, tìm kiếm theo tên, lọc theo trạng thái và sắp xếp."
     )
-    @ApiResponse(responseCode = "200", description = "Lấy danh sách loại công cụ thành công.", // ĐÃ THAY ĐỔI MÔ TẢ RESPONSE
+    @ApiResponse(responseCode = "200", description = "Lấy danh sách loại công cụ thành công.",
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = Page.class)))
     @ApiResponse(responseCode = "400", description = "Giá trị tham số không hợp lệ.",
             content = @Content(mediaType = "application/json", examples = @ExampleObject(name = "invalidParams", summary = "Lỗi tham số phân trang/sắp xếp",
@@ -104,7 +103,7 @@ public class BookTypeController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String search,
             @Parameter(
-                    description = "Trạng thái của loại công cụ để lọc. Giá trị hợp lệ: ACTIVE, INACTIVE", // ĐÃ THAY ĐỔI MÔ TẢ PARAM
+                    description = "Trạng thái của loại công cụ để lọc. Giá trị hợp lệ: ACTIVE, INACTIVE",
                     schema = @Schema(
                             type = "string",
                             allowableValues = {"ACTIVE", "INACTIVE"},
@@ -122,21 +121,21 @@ public class BookTypeController {
     // --- API: LẤY LOẠI CÔNG CỤ BẰNG ID (GET By ID) ---
     @GetMapping("/{id}")
     @Operation(
-            summary = "Lấy thông tin một loại công cụ hỗ trợ giảng viên theo ID", // ĐÃ THAY ĐỔI MÔ TẢ SUMMARY
-            description = "API này trả về thông tin chi tiết của một loại công cụ dựa trên ID duy nhất (UUID) của nó." // ĐÃ THAY ĐỔI MÔ TẢ DESCRIPTION
+            summary = "Lấy thông tin một loại công cụ hỗ trợ giảng viên theo ID",
+            description = "API này trả về thông tin chi tiết của một loại công cụ dựa trên ID duy nhất (UUID) của nó."
     )
     @Parameter(
             name = "id",
-            description = "ID (UUID) của loại công cụ cần lấy.", // ĐÃ THAY ĐỔI MÔ TẢ PARAM
+            description = "ID (UUID) của loại công cụ cần lấy.",
             required = true,
             schema = @Schema(type = "string", format = "uuid", example = "a1b2c3d4-e5f6-7890-1234-567890abcdef")
     )
-    @ApiResponse(responseCode = "200", description = "Lấy thông tin loại công cụ thành công.", // ĐÃ THAY ĐỔI MÔ TẢ RESPONSE
+    @ApiResponse(responseCode = "200", description = "Lấy thông tin loại công cụ thành công.",
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = BookTypeResponse.class)))
     @ApiResponse(responseCode = "400", description = "ID không hợp lệ (không phải định dạng UUID).",
             content = @Content(mediaType = "application/json", examples = @ExampleObject(name = "invalidUUID", summary = "Lỗi ID không hợp lệ",
                     value = "{\n  \"statusCode\": 400,\n  \"message\": \"Invalid UUID string: 'invalid-id'\",\n  \"details\": \"uri=/api/book-type/invalid-id\"\n}")))
-    @ApiResponse(responseCode = "404", description = "Không tìm thấy loại công cụ.", // ĐÃ THAY ĐỔI MÔ TẢ EXAMPLE
+    @ApiResponse(responseCode = "404", description = "Không tìm thấy loại công cụ.",
             content = @Content(mediaType = "application/json", examples = @ExampleObject(name = "bookTypeNotFound", summary = "Lỗi không tìm thấy loại công cụ",
                     value = "{\n  \"statusCode\": 404,\n  \"message\": \"BookType not found with ID: a1b2c3d4-e5f6-7890-1234-567890abcde0\",\n  \"details\": \"uri=/api/book-type/a1b2c3d4-e5f6-7890-1234-567890abcde0\"\n}")))
     @ApiResponse(responseCode = "500", description = "Lỗi máy chủ nội bộ.")
@@ -148,24 +147,24 @@ public class BookTypeController {
     // --- API: CẬP NHẬT LOẠI CÔNG CỤ (PUT) ---
     @PutMapping("/{id}")
     @Operation(
-            summary = "Cập nhật thông tin một loại công cụ hỗ trợ giảng viên", // ĐÃ THAY ĐỔI MÔ TẢ SUMMARY
-            description = "API này cho phép cập nhật tên, mô tả và icon của một loại công cụ dựa trên ID (UUID) của nó. Tên công cụ phải là duy nhất (trừ chính nó).", // ĐÃ THAY ĐỔI MÔ TẢ DESCRIPTION
+            summary = "Cập nhật thông tin một loại công cụ hỗ trợ giảng viên",
+            description = "API này cho phép cập nhật tên, mô tả, icon và chi phí token của một loại công cụ dựa trên ID (UUID) của nó. Tên công cụ phải là duy nhất (trừ chính nó).",
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "Thông tin chi tiết của loại công cụ cần cập nhật.", // ĐÃ THAY ĐỔI MÔ TẢ REQUEST BODY
+                    description = "Thông tin chi tiết của loại công cụ cần cập nhật.",
                     required = true,
                     content = @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = BookTypeRequest.class),
                             examples = {
                                     @ExampleObject(
-                                            name = "updateGradingToolNameExample",
-                                            summary = "Ví dụ cập nhật tên công cụ 'Chấm điểm'",
-                                            value = "{\n  \"name\": \"Chấm điểm (Đã nâng cấp)\",\n  \"description\": \"Công cụ giúp giảng viên quản lý và chấm điểm bài tập, bài kiểm tra của sinh viên, với nhiều tính năng mới.\",\n  \"icon\": null\n}"
+                                            name = "updateGradingToolExample", // ĐÃ THAY ĐỔI TÊN EXAMPLE
+                                            summary = "Ví dụ cập nhật công cụ 'Chấm điểm' (cả token)",
+                                            value = "{\n  \"name\": \"Chấm điểm (Đã nâng cấp)\",\n  \"description\": \"Công cụ giúp giảng viên quản lý và chấm điểm bài tập, bài kiểm tra của sinh viên, với nhiều tính năng mới.\",\n  \"icon\": null,\n  \"tokenCostPerQuery\": 7\n}" // ĐÃ THÊM tokenCostPerQuery và sửa giá trị
                                     ),
                                     @ExampleObject(
-                                            name = "updateLessonPlanToolDescriptionAndIconExample",
-                                            summary = "Ví dụ cập nhật mô tả và icon cho 'Tạo giáo án'",
-                                            value = "{\n  \"name\": \"Tạo giáo án\",\n  \"description\": \"Công cụ số hóa và quản lý giáo án điện tử toàn diện.\",\n  \"icon\": \"data:image/jpeg;base64,.....\"\n}"
+                                            name = "updateLessonPlanToolExample", // ĐÃ THAY ĐỔI TÊN EXAMPLE
+                                            summary = "Ví dụ cập nhật công cụ 'Tạo giáo án' (cả token)",
+                                            value = "{\n  \"name\": \"Tạo giáo án\",\n  \"description\": \"Công cụ số hóa và quản lý giáo án điện tử toàn diện.\",\n  \"icon\": \"data:image/jpeg;base64,.....\",\n  \"tokenCostPerQuery\": 12\n}" // ĐÃ THÊM tokenCostPerQuery và sửa giá trị
                                     )
                             }
                     )
@@ -173,20 +172,20 @@ public class BookTypeController {
     )
     @Parameter(
             name = "id",
-            description = "ID (UUID) của loại công cụ cần cập nhật.", // ĐÃ THAY ĐỔI MÔ TẢ PARAM
+            description = "ID (UUID) của loại công cụ cần cập nhật.",
             required = true,
             schema = @Schema(type = "string", format = "uuid", example = "a1b2c3d4-e5f6-7890-1234-567890abcdef")
     )
-    @ApiResponse(responseCode = "200", description = "Loại công cụ được cập nhật thành công.", // ĐÃ THAY ĐỔI MÔ TẢ RESPONSE
+    @ApiResponse(responseCode = "200", description = "Loại công cụ được cập nhật thành công.",
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = BookTypeResponse.class)))
-    @ApiResponse(responseCode = "400", description = "Dữ liệu yêu cầu không hợp lệ, ID không hợp lệ hoặc tên loại công cụ đã tồn tại.", // ĐÃ THAY ĐỔI MÔ TẢ RESPONSE
+    @ApiResponse(responseCode = "400", description = "Dữ liệu yêu cầu không hợp lệ, ID không hợp lệ hoặc tên loại công cụ đã tồn tại.",
             content = @Content(mediaType = "application/json", examples = {
                     @ExampleObject(name = "invalidInput", summary = "Lỗi dữ liệu đầu vào không hợp lệ",
                             value = "{\n  \"statusCode\": 400,\n  \"message\": \"BookType name cannot be blank\",\n  \"details\": \"uri=/api/book-type/a1b2c3d4-e5f6-7890-1234-567890abcdef\"\n}"),
-                    @ExampleObject(name = "duplicateBookTypeName", summary = "Lỗi tên loại công cụ đã tồn tại", // ĐÃ THAY ĐỔI MÔ TẢ EXAMPLE
+                    @ExampleObject(name = "duplicateBookTypeName", summary = "Lỗi tên loại công cụ đã tồn tại",
                             value = "{\n  \"statusCode\": 400,\n  \"message\": \"BookType with name 'Chấm điểm' already exists\",\n  \"details\": \"uri=/api/book-type/a1b2c3d4-e5f6-7890-1234-567890abcdef\"\n}")
             }))
-    @ApiResponse(responseCode = "404", description = "Không tìm thấy loại công cụ.", // ĐÃ THAY ĐỔI MÔ TẢ EXAMPLE
+    @ApiResponse(responseCode = "404", description = "Không tìm thấy loại công cụ.",
             content = @Content(mediaType = "application/json", examples = @ExampleObject(name = "bookTypeNotFound", summary = "Lỗi không tìm thấy loại công cụ",
                     value = "{\n  \"statusCode\": 404,\n  \"message\": \"BookType not found with ID: a1b2c3d4-e5f6-7890-1234-567890abcde0\",\n  \"details\": \"uri=/api/book-type/a1b2c3d4-e5f6-7890-1234-567890abcde0\"\n}")))
     @ApiResponse(responseCode = "500", description = "Lỗi máy chủ nội bộ.")
@@ -198,11 +197,12 @@ public class BookTypeController {
     // --- API: CẬP NHẬT TRẠNG THÁI LOẠI CÔNG CỤ (PATCH Status) ---
     @PatchMapping("/{id}/status")
     @Operation(
-            summary = "Cập nhật trạng thái của loại công cụ hỗ trợ giảng viên (bao gồm vô hiệu hóa/kích hoạt)", // ĐÃ THAY ĐỔI MÔ TẢ SUMMARY
-            description = "API này cho phép cập nhật trạng thái hoạt động của loại công cụ thành 'ACTIVE' hoặc 'INACTIVE' dựa trên ID (UUID) của nó. Khi một loại công cụ bị 'INACTIVE', nó có thể không được hiển thị hoặc sử dụng trong một số chức năng của ứng dụng.", // ĐÃ THAY ĐỔI MÔ TẢ DESCRIPTION
+            summary = "Cập nhật trạng thái của loại công cụ hỗ trợ giảng viên (bao gồm vô hiệu hóa/kích hoạt)",
+            description = "API này cho phép cập nhật trạng thái hoạt động của loại công cụ thành 'ACTIVE' hoặc 'INACTIVE' dựa trên ID (UUID) của nó. Khi một loại công cụ bị 'INACTIVE', nó có thể không được hiển thị hoặc sử dụng trong một số chức năng của ứng dụng.",
             parameters = @Parameter(
                     name = "newStatus",
-                    description = "Trạng thái mới cho loại công cụ. Giá trị hợp lệ: ACTIVE, INACTIVE", // ĐÃ THAY ĐỔI MÔ TẢ PARAM
+                    description = "Trạng thái mới cho loại công cụ. Giá trị hợp lệ: ACTIVE, INACTIVE",
+                    required = true,
                     schema = @Schema(
                             type = "string",
                             allowableValues = {"ACTIVE", "INACTIVE"},
@@ -212,11 +212,11 @@ public class BookTypeController {
     )
     @Parameter(
             name = "id",
-            description = "ID (UUID) của loại công cụ cần cập nhật trạng thái.", // ĐÃ THAY ĐỔI MÔ TẢ PARAM
+            description = "ID (UUID) của loại công cụ cần cập nhật trạng thái.",
             required = true,
             schema = @Schema(type = "string", format = "uuid", example = "a1b2c3d4-e5f6-7890-1234-567890abcdef")
     )
-    @ApiResponse(responseCode = "200", description = "Cập nhật trạng thái loại công cụ thành công.", // ĐÃ THAY ĐỔI MÔ TẢ RESPONSE
+    @ApiResponse(responseCode = "200", description = "Cập nhật trạng thái loại công cụ thành công.",
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = BookTypeResponse.class)))
     @ApiResponse(responseCode = "400", description = "ID không hợp lệ hoặc trạng thái không hợp lệ.",
             content = @Content(mediaType = "application/json", examples = {
@@ -225,7 +225,7 @@ public class BookTypeController {
                     @ExampleObject(name = "invalidStatus", summary = "Lỗi trạng thái không hợp lệ",
                             value = "{\n  \"statusCode\": 400,\n  \"message\": \"Invalid status value: 'PENDING'. Must be ACTIVE or INACTIVE.\",\n  \"details\": \"uri=/api/book-type/a1b2c3d4-e5f6-7890-1234-567890abcdef/status\"\n}")
             }))
-    @ApiResponse(responseCode = "404", description = "Không tìm thấy loại công cụ.", // ĐÃ THAY ĐỔI MÔ TẢ EXAMPLE
+    @ApiResponse(responseCode = "404", description = "Không tìm thấy loại công cụ.",
             content = @Content(mediaType = "application/json", examples = @ExampleObject(name = "bookTypeNotFound", summary = "Lỗi không tìm thấy loại công cụ",
                     value = "{\n  \"statusCode\": 404,\n  \"message\": \"BookType not found with ID: a1b2c3d4-e5f6-7890-1234-567890abcde0\",\n  \"details\": \"uri=/api/book-type/a1b2c3d4-e5f6-7890-1234-567890abcde0/status\"\n}")))
     @ApiResponse(responseCode = "500", description = "Lỗi máy chủ nội bộ.")
