@@ -9,9 +9,6 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface BookTypeMapper {
 
-    // Map BookTypeRequest to BookType entity
-    // Bỏ qua id, status, createdAt, updatedAt vì chúng được xử lý trong service
-
     BookType toBookType(BookTypeRequest request);
 
     // Map BookType entity to BookTypeResponse DTO
