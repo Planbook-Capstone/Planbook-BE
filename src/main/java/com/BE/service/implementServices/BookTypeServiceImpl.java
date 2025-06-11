@@ -42,7 +42,7 @@ public class BookTypeServiceImpl implements IBookTypeService {
     @Override
     public BookTypeResponse createBookType(BookTypeRequest request) {
         // Kiểm tra tên loại sách đã tồn tại chưa
-        if (bookTypeRepository.findByNameIgnoreCase(request.getName()).isPresent()) {
+        if (bookTypeRepository.findByNameIgnoreCase(request.getName().trim()).isPresent()) {
             throw new DataIntegrityViolationException("BookType with name '" + request.getName() + "' already exists.");
         }
 

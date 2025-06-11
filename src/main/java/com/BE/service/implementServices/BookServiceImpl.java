@@ -45,7 +45,7 @@ public class BookServiceImpl implements IBookService {
     @Override
     public BookResponse createBook(BookRequest request) {
         // Kiểm tra tên sách đã tồn tại trong cùng một Subject chưa
-        if (bookRepository.findByNameAndSubjectId(request.getName(), request.getSubjectId()).isPresent()) {
+        if (bookRepository.findByNameAndSubjectId(request.getName().trim(), request.getSubjectId()).isPresent()) {
             throw new DataIntegrityViolationException("Book with name '" + request.getName() + "' already exists for Subject ID: " + request.getSubjectId());
         }
 
