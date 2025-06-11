@@ -58,7 +58,9 @@ public class SecurityConfig  {
             "/api/chapter",
             "/api/chapter/**",
             "/api/lesson",
-            "/api/lesson/**"
+            "/api/lesson/**",
+            "/api/book-type",
+            "/api/book-type/**"
 
     };
 
