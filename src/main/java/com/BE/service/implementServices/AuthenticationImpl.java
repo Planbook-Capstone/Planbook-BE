@@ -25,6 +25,7 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -67,6 +68,9 @@ public class AuthenticationImpl implements IAuthenticationService {
 
     @Autowired
     IWorkSpaceService workSpaceService;
+
+    @Value("${supabase.jwt.secret}")
+    private String supabaseJwtSecret;
 
 
 
@@ -114,7 +118,7 @@ public class AuthenticationImpl implements IAuthenticationService {
         try {
 
             // Supabase sử dụng thuật toán HS256
-            Algorithm algorithm = Algorithm.HMAC256("X71//sL4YPoXUOHmhyWAA9+KMqEzaITwJ7q9ptLiCtoDTQ5GuZvWfT7ArcaKBXuH7rQEI4GsSswLd3ET4oG0eA==");
+            Algorithm algorithm = Algorithm.HMAC256(supabaseJwtSecret);
 
             // 2. Xây dựng bộ xác thực (Verifier)
             // Bạn có thể thêm các yêu cầu khác như 'issuer' hoặc 'audience' nếu cần
