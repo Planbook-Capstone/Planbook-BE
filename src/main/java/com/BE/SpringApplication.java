@@ -5,12 +5,22 @@ import io.swagger.v3.oas.annotations.enums.SecuritySchemeIn;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
 import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
+import io.swagger.v3.oas.annotations.servers.Server;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;
 
 @SpringBootApplication
 @EnableCaching
-@OpenAPIDefinition(info = @Info(title = "Planbook API", version = "2.0", description = "Information"))
+//@OpenAPIDefinition(info = @Info(title = "Planbook API", version = "2.0", description = "Information"))
+@OpenAPIDefinition(
+		servers = @Server(url = "https://planbook.vn"),
+		info = @Info(
+				title = "Planbook API",
+				version = "2.0",
+				description = "Information"
+		)
+)
+
 @SecurityScheme(name = "api", scheme = "bearer", type = SecuritySchemeType.HTTP, in = SecuritySchemeIn.HEADER)
 public class SpringApplication {
 
