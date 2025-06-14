@@ -104,8 +104,8 @@ jobs:
                 SPRING_SECRETKEY: "${{ secrets.SPRING_APP_SECRET_KEY }}"
                 SPRING_KAFKA_BOOTSTRAP_SERVERS: "kafka:29092"
                 KAFKA_TOPIC_NAME: "${{ secrets.KAFKA_TOPIC }}"
-                SPRING_MAIL_HOST: "${{ secrets.MAIL_HOST }}" # Sử dụng secret
-                SPRING_MAIL_PORT: "${{ secrets.MAIL_PORT }}" # Sử dụng secret
+                SPRING_MAIL_HOST: "${{ secrets.MAIL_HOST }}"
+                SPRING_MAIL_PORT: "${{ secrets.MAIL_PORT }}"
                 SPRING_MAIL_USERNAME: "${{ secrets.MAIL_USERNAME }}"
                 SPRING_MAIL_PASSWORD: "${{ secrets.MAIL_PASSWORD }}"
                 SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: "true"
@@ -132,29 +132,6 @@ jobs:
           EOF
         shell: bash
 
-      - name: Backup current docker-compose.yml and images on VPS
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            cd /var/www/be || exit 1
-            # Backup docker-compose.yml
-            if [ -f docker-compose.yml ]; then
-              cp docker-compose.yml docker-compose.yml.bak
-              echo "Backed up docker-compose.yml to docker-compose.yml.bak"
-            fi
-            # Tag current backend image as old-version for rollback
-            # Check if planbook-be:latest exists before tagging
-            if docker images -q planbook-be:latest > /dev/null; then
-              docker tag planbook-be:latest planbook-be:old-version
-              echo "Tagged planbook-be:latest as planbook-be:old-version"
-            else
-              echo "No planbook-be:latest image found to backup. This might be the first deployment or a cleanup issue."
-            fi
-            echo "Old docker-compose.yml and image backup attempt completed."
-
       - name: Copy Project Files to VPS
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -164,23 +141,15 @@ jobs:
           source: "."
           target: /var/www/be/
 
-      - name: Stop and Remove Old Backend Container on VPS (Prepare for new deployment)
+      - name: Stop and Remove Old Backend Container on VPS
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd /var/www/be || exit 1
-            echo "Stopping and removing old planbook-be container if it exists..."
-            docker stop planbook-be 2>/dev/null || true
-            docker rm -f planbook-be 2>/dev/null || true
-            # Remove the 'latest' tag to ensure the new build gets this tag cleanly
-            docker rmi planbook-be:latest 2>/dev/null || true
-            echo "Old backend container and image cleaned up (if existed). Dependent services will be managed by 'docker compose up'."
-            
-            # Additional check for port 8080 (optional but good practice)
-            echo "Checking and freeing up port 8080 (if still in use by other processes)..."
+            cd /var/www/be || { echo "Error: /var/www/be directory not found on VPS."; exit 1; }
+            echo "Checking and freeing up port 8080..."
             PORT_TO_FREE=8080
             PID_ON_PORT=$(sudo lsof -t -i :$PORT_TO_FREE)
             if [ -n "$PID_ON_PORT" ]; then
@@ -188,117 +157,30 @@ jobs:
               sudo kill -9 $PID_ON_PORT 2>/dev/null || true
               sleep 1
               if sudo lsof -i :$PORT_TO_FREE > /dev/null; then
-                echo "Warning: Port $PORT_TO_FREE is still in use after killing process $PID_ON_PORT. Manual intervention may be needed."
+                echo "Warning: Port $PORT_TO_FREE is still in use after killing process $PID_TO_KILL. Manual intervention may be needed."
               else
-                echo "Port $PORT_TO_FREE is now free." # <--- ĐÃ SỬA LỖI Ở ĐÂY
-              fi # <--- ĐÃ SỬA LỖI Ở ĐÂY
+                echo "Port $PORT_TO_FREE is now free."
+              fi
             else
               echo "Port $PORT_TO_FREE is already free."
             fi
+
+            echo "Stopping and removing old backend container if it exists..."
+            docker stop planbook-be 2>/dev/null || true
+            docker rm -f planbook-be 2>/dev/null || true
+            docker rmi planbook-be:latest 2>/dev/null || true
             
-            # Ensure jq is installed for health check step later
-            if ! command -v jq &> /dev/null; then
-                echo "jq is not installed. Installing jq..."
-                sudo apt-get update && sudo apt-get install -y jq
-            else
-                echo "jq is already installed."
-            fi
+            echo "Old backend container and image cleaned up. Dependent services will be managed by 'docker compose up'."
 
-
-      - name: Deploy new version and perform health check
-        id: deploy_check # ID này được sử dụng để kiểm tra kết quả của bước này
+      - name: Start Application with Docker Compose on VPS
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd /var/www/be || exit 1
-            echo "Building new 'backend' image without cache..."
-            # Buộc Docker build lại image 'backend' mà không dùng cache
-            docker compose -f docker-compose.yml build --no-cache backend
-
-            echo "Starting Docker Compose services with new version..."
-            # Sau đó, khởi động các services. KHÔNG dùng --build ở đây nữa
-            docker compose -f docker-compose.yml up -d --remove-orphans
-
-            echo "Waiting for backend service to become healthy (max 120 seconds)..."
-            # Health check loop for backend service
-            MAX_ATTEMPTS=20
-            RETRY_INTERVAL=6 # 6 giây mỗi lần thử, tổng cộng 120 giây
+            cd /var/www/be || { echo "Error: /var/www/be directory not found on VPS."; exit 1; }
+            echo "Building and starting Docker Compose services..."
+            docker compose -f docker-compose.yml up --build -d --remove-orphans # Removed 'backend' from here to start all services
             
-            # Chờ một chút để Docker Compose thực sự khởi động các containers
-            sleep 10 
-
-            for i in $(seq 1 $MAX_ATTEMPTS); do
-              CONTAINER_ID=$(docker ps -qf "name=planbook-be")
-              if [ -z "$CONTAINER_ID" ]; then
-                echo "Error: Backend container 'planbook-be' not found. Likely failed to start. Aborting deployment."
-                exit 1 # Báo lỗi để kích hoạt rollback
-              fi
-            
-              # Kiểm tra health check của Spring Boot qua endpoint /actuator/health
-              HEALTH_STATUS=$(docker exec $CONTAINER_ID curl -s http://localhost:8080/actuator/health | jq -r '.status // "UNKNOWN"')
-            
-              echo "Attempt $i: Backend application health status: $HEALTH_STATUS"
-
-              if [ "$HEALTH_STATUS" == "UP" ]; then
-                echo "Backend application is UP and healthy!"
-                exit 0 # Thành công, thoát khỏi vòng lặp
-              fi
-            
-              if [ "$HEALTH_STATUS" == "DOWN" ]; then
-                echo "Backend application is DOWN. Aborting deployment."
-                exit 1 # Báo lỗi để kích hoạt rollback
-              fi
-
-              sleep $RETRY_INTERVAL
-            done
-            
-            echo "Backend application did not become healthy within the timeout ($((MAX_ATTEMPTS * RETRY_INTERVAL))s)."
-            exit 1 # Báo lỗi sau khi hết thời gian chờ
-
-        timeout-minutes: 5 # Tổng thời gian timeout cho bước này
-        continue-on-error: true # Cho phép các bước tiếp theo (rollback) chạy ngay cả khi bước này thất bại
-
-      - name: Rollback if deployment failed
-        # Chỉ chạy bước này nếu bước 'deploy_check' không thành công ('success')
-        if: steps.deploy_check.outcome != 'success'
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            cd /var/www/be || exit 1
-            echo "Deployment failed! Initiating rollback to previous version..."
-            
-            # 1. Stop and remove newly deployed (failed) containers
-            docker compose down 2>/dev/null || true
-            echo "Stopped all current Docker Compose services."
-            
-            # 2. Restore old docker-compose.yml
-            if [ -f docker-compose.yml.bak ]; then
-              mv docker-compose.yml.bak docker-compose.yml
-              echo "Restored docker-compose.yml from backup."
-            else
-              echo "Warning: No docker-compose.yml.bak found for rollback. Cannot restore old compose file."
-              # Continue anyway, might just be the image causing issues
-            fi
-
-            # 3. Revert backend image to old-version tag
-            # First, ensure the 'latest' tag points to the old version
-            if docker images -q planbook-be:old-version > /dev/null; then
-              docker rmi -f planbook-be:latest 2>/dev/null || true # Remove the failed 'latest' image
-              docker tag planbook-be:old-version planbook-be:latest
-              echo "Restored planbook-be:old-version to planbook-be:latest."
-            else
-              echo "Warning: No 'planbook-be:old-version' image found for rollback. Cannot revert backend image."
-              # Continue anyway, rely on restored compose file
-            fi
-            
-            echo "Starting services with previous configuration..."
-            docker compose -f docker-compose.yml up -d --remove-orphans
-            
-            echo "Rollback sequence completed. Please manually verify the application on VPS."
-            exit 1 # Mark the GitHub Action as failed to clearly indicate a rollback occurred
+            echo "Docker Compose services started. Check logs with 'docker compose logs -f planbook-be'"
