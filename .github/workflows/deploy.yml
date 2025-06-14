@@ -23,7 +23,6 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      # Bước này vẫn cần để tạo file JAR mà Dockerfile sẽ COPY vào image
       - name: Maven Clean and Package
         run: mvn clean package -DskipTests
 
@@ -79,11 +78,10 @@ jobs:
                 - "6379:6379"
 
             backend:
-              # SỬ DỤNG 'build' ĐỂ BUILD IMAGE TRÊN VPS
               build:
-                context: . # context là thư mục hiện tại (khi docker compose chạy trên VPS)
+                context: .
                 dockerfile: Dockerfile
-              image: planbook-be:latest # Đặt tên tag cho image cục bộ trên VPS
+              image: planbook-be:latest
               container_name: backend-app
               restart: always
               ports:
@@ -124,14 +122,13 @@ jobs:
         shell: bash
 
       - name: Copy Project Files to VPS
-        uses: appleboy/scp-action@v0.1.7 # <--- GIỮ NGUYÊN PHIÊN BẢN BAN ĐẦU
+        uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "." # <--- THAY ĐỔI DUY NHẤT Ở ĐÂY: COPY TOÀN BỘ THƯ MỤC HIỆN TẠI
+          source: "."
           target: /var/www/be/
-          # Không có rsync: true ở đây vì v0.1.7 không hỗ trợ
 
       - name: Stop and Remove Old Containers on VPS
         uses: appleboy/ssh-action@v1.0.3
@@ -142,7 +139,10 @@ jobs:
           script: |
             cd /var/www/be || { echo "Error: /var/www/be directory not found on VPS."; exit 1; }
             echo "Stopping and removing old Docker Compose services..."
-            docker compose down || true
+            # Dừng và xóa tất cả các service. -v để xóa cả volumes (nếu có). --remove-orphans để xóa các container không còn trong config.
+            # -f để buộc xóa các container đang chạy
+            docker compose down -v --remove-orphans || true
+            # Xóa image của ứng dụng backend để đảm bảo build image mới nhất
             docker rmi planbook-be:latest || true
             echo "Old containers and images cleaned up."
 
@@ -156,6 +156,7 @@ jobs:
             cd /var/www/be || { echo "Error: /var/www/be directory not found on VPS."; exit 1; }
             echo "Building and starting new Docker Compose services..."
             
+            # Sửa lỗi cú pháp: Dùng dấu = thay vì :
             export SPRING_DATASOURCE_URL="${{ secrets.DB_URL }}"
             export SPRING_DATASOURCE_USERNAME="${{ secrets.DB_USERNAME }}"
             export SPRING_DATASOURCE_PASSWORD="${{ secrets.DB_PASSWORD }}"
@@ -164,7 +165,7 @@ jobs:
             export KAFKA_TOPIC_NAME="${{ secrets.KAFKA_TOPIC }}"
             export SPRING_MAIL_HOST="${{ secrets.MAIL_HOST }}"
             export SPRING_MAIL_PORT="${{ secrets.MAIL_PORT }}"
-            export SPRING_MAIL_USERNAME: "${{ secrets.MAIL_USERNAME }}" # Có thể bị lỗi ở đây nếu dấu ":" không hợp lệ
+            export SPRING_MAIL_USERNAME="${{ secrets.MAIL_USERNAME }}" # <--- ĐÃ SỬA TẠI ĐÂY
             export SPRING_MAIL_PASSWORD="${{ secrets.MAIL_PASSWORD }}"
             export SPRING_DATA_REDIS_HOST="${{ secrets.REDIS_HOST }}"
             export SPRING_DATA_REDIS_PORT="${{ secrets.REDIS_PORT }}"
