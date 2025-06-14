@@ -91,10 +91,6 @@ jobs:
                 - zookeeper
                 - kafka
                 - redis
-              # =========================================================
-              # Đã di chuyển HEALTHCHECK ra ngoài khối DEPLOY
-              # để phù hợp với cú pháp Docker Compose/Swarm
-              # =========================================================
               healthcheck: # <-- Đặt ở cấp độ service, ngang hàng với `build`, `ports`, `depends_on`, `deploy`
                 test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
                 interval: 30s
@@ -145,7 +141,7 @@ jobs:
             echo "Attempting to clean up old standalone Docker Compose containers (if any)..."
             # Thử dừng và xóa các container Docker Compose cũ (nếu có, không thuộc Swarm)
             docker compose -f docker-compose.yml down -v --remove-orphans --timeout 0 2>/dev/null || true
-            # Thử dừng và xóa các container backend cũ riêng lẻ (nếu có)
+            # Thử dừng và xóa các container backend cũ riêng lẻ (ví dụ: tên `container_name` cũ)
             docker stop planbook-be zookeeper kafka kafdrop redis 2>/dev/null || true
             docker rm -f planbook-be zookeeper kafka kafdrop redis 2>/dev/null || true
             # Xóa image backend cũ để đảm bảo Docker Swarm build lại phiên bản mới
@@ -187,17 +183,34 @@ jobs:
             SERVICE_NAME="planbook-stack_backend" # Tên dịch vụ backend trong Swarm (tên stack_tên service)
 
             while [ $ATTEMPTS -lt $MAX_ATTEMPTS ]; do
-              # Lấy số lượng replica đang chạy
+              # Đầu tiên, kiểm tra xem dịch vụ có tồn tại không
+              SERVICE_EXISTS=$(docker service ls --filter name="$SERVICE_NAME" --format "{{.Name}}" | wc -l)
+              if [ "$SERVICE_EXISTS" -eq 0 ]; then
+                echo "  Attempt $((ATTEMPTS+1))/$MAX_ATTEMPTS: Service '$SERVICE_NAME' does not exist yet. Waiting..."
+                sleep 5
+                ATTEMPTS=$((ATTEMPTS+1))
+                continue # Tiếp tục vòng lặp
+              fi
+
+              # Lấy số lượng replica mong muốn. Thêm .Service để đảm bảo nó ở đúng cấp độ.
+              # Sử dụng 2>/dev/null để ẩn lỗi nếu trường không tồn tại (ví dụ: dịch vụ chưa fully initialized)
+              REPLICAS_EXPECTED=$(docker service inspect "$SERVICE_NAME" --format '{{.Spec.Mode.Replicated.Replicas}}' 2>/dev/null || echo 0)
+              if [ "$REPLICAS_EXPECTED" -eq 0 ]; then
+                # Nếu dịch vụ không phải replicated mode (ví dụ global) hoặc chưa sẵn sàng, giả định là 1 replica
+                REPLICAS_EXPECTED=1
+              fi
+
+              # Lấy số lượng replica đang chạy và health status
               RUNNING_REPLICAS=$(docker service ps "$SERVICE_NAME" --filter "desired-state=running" --format "{{.CurrentState}}" | grep -i "Running" | wc -l)
-              # Lấy số lượng replica mong muốn
-              REPLICAS_EXPECTED=$(docker service inspect --format '{{.Spec.Replicas}}' "$SERVICE_NAME")
               
               # Lấy trạng thái health của service (từ một replica bất kỳ, nếu có nhiều)
-              HEALTH_STATUS_OUTPUT=$(docker service ps "$SERVICE_NAME" --format "{{.ID}}\t{{.Name}}\t{{.CurrentState}}\t{{.Health}}" | grep "$SERVICE_NAME" | head -n 1)
+              HEALTH_STATUS_OUTPUT=$(docker service ps "$SERVICE_NAME" --format "{{.Health}}" | grep -v '---' | head -n 1) # Chỉ lấy trạng thái health, bỏ qua dòng header
               HEALTH_STATUS="unknown"
-              if echo "$HEALTH_STATUS_OUTPUT" | grep -q "healthy"; then
+              if [ -z "$HEALTH_STATUS_OUTPUT" ]; then
+                HEALTH_STATUS="not_reported" # Có thể chưa có healthcheck data
+              elif echo "$HEALTH_STATUS_OUTPUT" | grep -q -i "healthy"; then
                   HEALTH_STATUS="healthy"
-              elif echo "$HEALTH_STATUS_OUTPUT" | grep -q "unhealthy"; then
+              elif echo "$HEALTH_STATUS_OUTPUT" | grep -q -i "unhealthy"; then
                   HEALTH_STATUS="unhealthy"
               fi
 
