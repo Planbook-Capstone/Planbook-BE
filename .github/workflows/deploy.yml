@@ -104,8 +104,8 @@ jobs:
                 SPRING_SECRETKEY: "${{ secrets.SPRING_APP_SECRET_KEY }}"
                 SPRING_KAFKA_BOOTSTRAP_SERVERS: "kafka:29092"
                 KAFKA_TOPIC_NAME: "${{ secrets.KAFKA_TOPIC }}"
-                SPRING_MAIL_HOST: "${{ secrets.MAIL_HOST }}"
-                SPRING_MAIL_PORT: "${{ secrets.MAIL_PORT }}"
+                SPRING_MAIL_HOST: "${{ secrets.MAIL_HOST }}" # Sử dụng secret
+                SPRING_MAIL_PORT: "${{ secrets.MAIL_PORT }}" # Sử dụng secret
                 SPRING_MAIL_USERNAME: "${{ secrets.MAIL_USERNAME }}"
                 SPRING_MAIL_PASSWORD: "${{ secrets.MAIL_PASSWORD }}"
                 SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: "true"
@@ -191,14 +191,22 @@ jobs:
                 echo "Warning: Port $PORT_TO_FREE is still in use after killing process $PID_ON_PORT. Manual intervention may be needed."
               else
                 echo "Port $PORT_TO_FREE is now free."
-              fi
+              F I
             else
               echo "Port $PORT_TO_FREE is already free."
+            fi
+            
+            # Ensure jq is installed for health check step later
+            if ! command -v jq &> /dev/null; then
+                echo "jq is not installed. Installing jq..."
+                sudo apt-get update && sudo apt-get install -y jq
+            else
+                echo "jq is already installed."
             fi
 
 
       - name: Deploy new version and perform health check
-        id: deploy_check
+        id: deploy_check # ID này được sử dụng để kiểm tra kết quả của bước này
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -206,44 +214,55 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd /var/www/be || exit 1
-            echo "Building and starting Docker Compose services with new version..."
-            # --force-recreate to ensure new containers are created from potentially new images
-            # --build to rebuild the 'backend' image with the latest source
-            docker compose -f docker-compose.yml up --build -d --remove-orphans
+            echo "Building new 'backend' image without cache..."
+            # Buộc Docker build lại image 'backend' mà không dùng cache
+            docker compose -f docker-compose.yml build --no-cache backend
+
+            echo "Starting Docker Compose services with new version..."
+            # Sau đó, khởi động các services. KHÔNG dùng --build ở đây nữa
+            docker compose -f docker-compose.yml up -d --remove-orphans
 
             echo "Waiting for backend service to become healthy (max 120 seconds)..."
-            # Health check loop for backend service (requires HEALTHCHECK in Dockerfile)
-            MAX_RETRIES=20
-            RETRY_INTERVAL=6 # 6 seconds per retry, total 120 seconds
+            # Health check loop for backend service
+            MAX_ATTEMPTS=20
+            RETRY_INTERVAL=6 # 6 giây mỗi lần thử, tổng cộng 120 giây
             
-            # Give Docker Compose a moment to actually start the containers
+            # Chờ một chút để Docker Compose thực sự khởi động các containers
             sleep 10 
 
-            for i in $(seq 1 $MAX_RETRIES); do
-              CONTAINER_ID=$(docker ps -aqf "name=planbook-be")
+            for i in $(seq 1 $MAX_ATTEMPTS); do
+              CONTAINER_ID=$(docker ps -qf "name=planbook-be")
               if [ -z "$CONTAINER_ID" ]; then
-                echo "Backend container not found, likely failed to start. Aborting deployment."
-                exit 1 # Indicate failure
+                echo "Error: Backend container 'planbook-be' not found. Likely failed to start. Aborting deployment."
+                exit 1 # Báo lỗi để kích hoạt rollback
               fi
             
-              HEALTH_STATUS=$(docker inspect --format='{{json .State.Health.Status}}' $CONTAINER_ID 2>/dev/null || echo "\"unknown\"")
-              echo "Attempt $i: Backend health status: $HEALTH_STATUS"
+              # Kiểm tra health check của Spring Boot qua endpoint /actuator/health
+              HEALTH_STATUS=$(docker exec $CONTAINER_ID curl -s http://localhost:8080/actuator/health | jq -r '.status // "UNKNOWN"')
+            
+              echo "Attempt $i: Backend application health status: $HEALTH_STATUS"
 
-              if [ "$HEALTH_STATUS" == "\"healthy\"" ]; then
-                echo "Backend service is healthy."
-                exit 0 # Success
-              elif [ "$HEALTH_STATUS" == "\"unhealthy\"" ]; then
-                echo "Backend service is unhealthy. Aborting deployment."
-                exit 1 # Failure
+              if [ "$HEALTH_STATUS" == "UP" ]; then
+                echo "Backend application is UP and healthy!"
+                exit 0 # Thành công, thoát khỏi vòng lặp
               fi
+            
+              if [ "$HEALTH_STATUS" == "DOWN" ]; then
+                echo "Backend application is DOWN. Aborting deployment."
+                exit 1 # Báo lỗi để kích hoạt rollback
+              fi
+
               sleep $RETRY_INTERVAL
             done
-            echo "Backend service did not become healthy within the timeout ($((MAX_RETRIES * RETRY_INTERVAL))s)."
-            exit 1 # Failure after timeout
-        timeout-minutes: 5 # Total timeout for this step
-        continue-on-error: true # Allow subsequent steps (rollback) to run even if this fails
+            
+            echo "Backend application did not become healthy within the timeout ($((MAX_ATTEMPTS * RETRY_INTERVAL))s)."
+            exit 1 # Báo lỗi sau khi hết thời gian chờ
+
+        timeout-minutes: 5 # Tổng thời gian timeout cho bước này
+        continue-on-error: true # Cho phép các bước tiếp theo (rollback) chạy ngay cả khi bước này thất bại
 
       - name: Rollback if deployment failed
+        # Chỉ chạy bước này nếu bước 'deploy_check' không thành công ('success')
         if: steps.deploy_check.outcome != 'success'
         uses: appleboy/ssh-action@v1.0.3
         with:
