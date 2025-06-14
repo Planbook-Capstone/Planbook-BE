@@ -116,9 +116,9 @@ public class AuthenticationController {
     }
 
 
-    @GetMapping("/action")
+    @GetMapping("/git-action")
     public ResponseEntity hihi(){
-        return ResponseEntity.ok("action User Successfully");
+        return ResponseEntity.ok("Git-action Successfully");
     }
 
     @PreAuthorize("hasRole('ADMIN')")
