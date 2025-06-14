@@ -1,4 +1,4 @@
-name: Deploy Spring Boot Backend
+name: Deploy Spring Boot Backend with Docker Compose (Local Build)
 
 on:
   push:
@@ -13,6 +13,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # KHÔNG CẦN SET UP DOCKER BUILDX NẾU CHỈ BUILD TRÊN VPS (NHƯNG CỨ ĐỂ ĐÓ CŨNG KHÔNG HẠI)
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
@@ -20,54 +24,125 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Maven Clean
-        run: mvn clean
+      # Bước này vẫn cần để tạo file JAR mà Dockerfile sẽ COPY vào image
+      - name: Maven Clean and Package
+        run: mvn clean package -DskipTests
 
-      - name: Maven Package (Skip Tests)
-        run: mvn package -DskipTests
+      # --- KHÔNG CÒN BƯỚC ĐĂNG NHẬP DOCKER HUB ---
+      # --- KHÔNG CÒN BƯỚC BUILD VÀ PUSH IMAGE LÊN DOCKER HUB ---
 
-      - name: Get JAR file name
-        id: get_jar_name
+      - name: Create docker-compose.yml on runner
         run: |
-          # Tìm tên file JAR đã build trong thư mục 'target'
-          FULL_JAR_PATH=$(ls target/*.jar | head -1) # Lấy đường dẫn đầy đủ từ runner
-          JAR_NAME=$(basename $FULL_JAR_PATH) # Lấy chỉ tên file (ví dụ: be.jar)
-          echo "JAR_NAME=$JAR_NAME" >> $GITHUB_OUTPUT # Lưu TÊN FILE JAR vào output
-          echo "FULL_JAR_PATH=$FULL_JAR_PATH" >> $GITHUB_OUTPUT # Lưu ĐƯỜNG DẪN ĐẦY ĐỦ vào output
-          echo "Detected JAR path: $FULL_JAR_PATH"
-          echo "Detected JAR name: $JAR_NAME"
+          # Tạo nội dung của docker-compose.yml với các biến môi trường từ GitHub Secrets
+          # (backend service SẼ DÙNG 'build:' thay vì 'image:')
+          cat <<EOF > docker-compose.yml
+          version: '3.8'
 
-      - name: Clean up old deployment on VPS
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            cd /var/www/be || { echo "Error: /var/www/be directory not found on VPS."; exit 1; }
-            echo "Performing deep cleanup on VPS before new copy..."
-            PID=$(sudo lsof -t -i :8080)
-            if [ -n "$PID" ]; then
-              echo "Killing existing process on port 8080 (PID: $PID)"
-              sudo kill -9 $PID
-              sleep 5
-            else
-              echo "No existing process found on port 8080."
-            fi
-            sudo rm -rf *.jar target/ application.log # Xóa cả thư mục target cũ
-            echo "Cleanup complete."
+          services:
+            zookeeper:
+              image: zookeeper:latest
+              container_name: zookeeper
+              restart: always
+              ports:
+                - "2181:2181"
+              environment:
+                ZOO_MY_ID: 1
+                ZOO_SERVERS: server.1=zookeeper:2888:3888
 
-      - name: Copy JAR to VPS
+            kafka:
+              image: confluentinc/cp-kafka:7.5.0
+              container_name: kafka
+              restart: always
+              ports:
+                - "9092:9092"
+              environment:
+                KAFKA_BROKER_ID: 1
+                KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+                KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+                KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+                KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+                KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+              depends_on:
+                - zookeeper
+
+            kafdrop:
+              image: obsidiandynamics/kafdrop:latest
+              container_name: kafdrop
+              restart: always
+              ports:
+                - "9000:9000"
+              environment:
+                KAFKA_BROKERCONNECT: kafka:29092
+                JVM_OPTS: "-Xms16M -Xmx48M"
+              depends_on:
+                - kafka
+
+            redis:
+              image: redis:latest
+              container_name: redis
+              restart: always
+              ports:
+                - "6379:6379"
+
+            backend:
+              build:
+                context: . 
+                dockerfile: Dockerfile
+              image: planbook-be:latest 
+              container_name: backend-app
+              restart: always
+              ports:
+                - "8080:8080"
+              environment:
+                SPRING_DATASOURCE_URL: "${{ secrets.DB_URL }}"
+                SPRING_DATASOURCE_USERNAME: "${{ secrets.DB_USERNAME }}"
+                SPRING_DATASOURCE_PASSWORD: "${{ secrets.DB_PASSWORD }}"
+                SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: "org.hibernate.dialect.MySQL8Dialect"
+                SPRING_JPA_HIBERNATE_DDL_AUTO: "update"
+                SPRING_MAIN_ALLOW_CIRCULAR_REFERENCES: "true"
+                SPRING_MVC_PATHMATCH_MATCHING_STRATEGY: "ANT_PATH_MATCHER"
+                SUPABASE_JWT_SECRET: "${{ secrets.SUPABASE_JWT_SECRET_KEY }}"
+                SPRING_SECRETKEY: "${{ secrets.SPRING_APP_SECRET_KEY }}"
+                SPRING_KAFKA_BOOTSTRAP_SERVERS: "kafka:29092"
+                KAFKA_TOPIC_NAME: "${{ secrets.KAFKA_TOPIC }}"
+                SPRING_MAIL_HOST: "${{ secrets.MAIL_HOST }}"
+                SPRING_MAIL_PORT: "${{ secrets.MAIL_PORT }}"
+                SPRING_MAIL_USERNAME: "${{ secrets.MAIL_USERNAME }}"
+                SPRING_MAIL_PASSWORD: "${{ secrets.MAIL_PASSWORD }}"
+                SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: "true"
+                SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: "true"
+                SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_REQUIRED: "true"
+                SPRING_MAIL_PROPERTIES_MAIL_SMTP_CONNECTIONTIMEOUT: "5000"
+                SPRING_MAIL_PROPERTIES_MAIL_SMTP_TIMEOUT: "5000"
+                SPRING_MAIL_PROPERTIES_MAIL_SMTP_WRITETIMEOUT: "5000"
+                SPRING_MAIL_DEFAULT_ENCODING: "UTF-8"
+                SPRING_DATA_REDIS_HOST: "redis"
+                SPRING_DATA_REDIS_PORT: "6379"
+                SPRING_CACHE_TYPE: "redis"
+                SPRING_DURATION: "${{ secrets.APP_DURATION }}"
+                SPRING_PROFILES_ACTIVE: "prod"
+              depends_on:
+                - zookeeper
+                - kafka
+                - redis
+          EOF
+        shell: bash
+
+      - name: Copy Project Files to VPS
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: ${{ steps.get_jar_name.outputs.FULL_JAR_PATH }} # Sử dụng đường dẫn đầy đủ từ runner
-          target: /var/www/be/ # Copy thẳng vào thư mục này, scp-action sẽ tạo target/be.jar ở đây
+          # Copy toàn bộ thư mục dự án (trừ .git, target/* không phải .jar)
+          # Bao gồm: Dockerfile, docker-compose.yml và file JAR đã build
+          source: ". Dockerfile target/*.jar docker-compose.yml" # copy cả dự án
+          target: /var/www/be/
+          # Đảm bảo rsync là true để chỉ copy những thay đổi
+          # Nếu không dùng rsync, có thể cần `rsync: true` hoặc chỉ định cụ thể các files/folders
+          # Ví dụ: source: "Dockerfile docker-compose.yml target/*.jar"
 
-      # === BƯỚC MỚI ĐƯỢC THÊM VÀO: DI CHUYỂN FILE JAR RA NGOÀI THƯ MỤC 'target' ===
-      - name: Move JAR from target/ to root
+      - name: Stop and Remove Old Containers on VPS
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -75,37 +150,14 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd /var/www/be || { echo "Error: /var/www/be directory not found on VPS."; exit 1; }
-            echo "Moving JAR from target/ to /var/www/be/..."
-            # Kiểm tra xem file JAR có trong target/ không
-            if [ -f "target/${{ steps.get_jar_name.outputs.JAR_NAME }}" ]; then
-              mv "target/${{ steps.get_jar_name.outputs.JAR_NAME }}" "./${{ steps.get_jar_name.outputs.JAR_NAME }}"
-              echo "Successfully moved ${{ steps.get_jar_name.outputs.JAR_NAME }} to /var/www/be/."
-              # Xóa thư mục target rỗng sau khi di chuyển file (tùy chọn)
-              rmdir target || true # rmdir chỉ xóa thư mục rỗng
-            else
-              echo "Error: JAR file not found in target/ as expected. Aborting move."
-              exit 1
-            fi
+            echo "Stopping and removing old Docker Compose services..."
+            docker compose down || true
+            # Xóa image cũ của ứng dụng backend để đảm bảo build image mới nhất
+            # Đảm bảo tên image cục bộ khớp với tên bạn đã chọn
+            docker rmi planbook-be:latest || true # <-- ĐÃ THAY ĐỔI Ở ĐÂY
+            echo "Old containers and images cleaned up."
 
-      - name: Verify JAR copied to VPS
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            echo "Verifying JAR file on VPS..."
-            ls -l /var/www/be/ # Liệt kê nội dung thư mục đích
-            # Sau khi di chuyển, file JAR_NAME sẽ nằm trực tiếp trong /var/www/be/
-            if [ -f "/var/www/be/${{ steps.get_jar_name.outputs.JAR_NAME }}" ]; then
-              echo "JAR file successfully copied and moved to /var/www/be/."
-            else
-              echo "Error: JAR file NOT found in /var/www/be/ after move operation."
-              exit 1 # Thoát workflow nếu không tìm thấy file
-            fi
-            echo "Verification complete."
-
-      - name: Start Application on VPS
+      - name: Start Application with Docker Compose on VPS
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -113,46 +165,29 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd /var/www/be || { echo "Error: /var/www/be directory not found on VPS."; exit 1; }
+            echo "Building and starting new Docker Compose services..."
+            
+            # Đảm bảo Docker Compose được cài đặt và có trong PATH
+            # (Bạn đã làm bước này rồi: sudo apt install docker-compose-plugin -y)
 
-            # Dòng này bây giờ sẽ dùng JAR_NAME đã được làm sạch từ step get_jar_name
-            # Nó đã được di chuyển ra ngoài thư mục target bởi bước 'Move JAR from target/ to root'
-            NEW_JAR_FULL_NAME=${{ steps.get_jar_name.outputs.JAR_NAME }}
-            if [ -z "$NEW_JAR_FULL_NAME" ]; then
-              echo "Error: No JAR file name available from previous steps. Deployment failed."
-              exit 1
-            fi
-            mv "$NEW_JAR_FULL_NAME" be.jar
-            echo "Renamed $NEW_JAR_FULL_NAME to be.jar"
-
-            echo "Exporting environment variables..."
+            # Truyền các biến môi trường từ GitHub Secrets vào môi trường của SSH
+            # Điều này cho phép docker-compose.yml đọc chúng khi được 'up'
             export SPRING_DATASOURCE_URL="${{ secrets.DB_URL }}"
             export SPRING_DATASOURCE_USERNAME="${{ secrets.DB_USERNAME }}"
             export SPRING_DATASOURCE_PASSWORD="${{ secrets.DB_PASSWORD }}"
-            export SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT="org.hibernate.dialect.MySQL8Dialect"
-            export SPRING_JPA_HIBERNATE_DDL_AUTO="update"
-            export SPRING_MAIN_ALLOW_CIRCULAR_REFERENCES="true"
-            export SPRING_MVC_PATHMATCH_MATCHING_STRATEGY="ANT_PATH_MATCHER"
             export SUPABASE_JWT_SECRET="${{ secrets.SUPABASE_JWT_SECRET_KEY }}"
-            export SPRING_SECRETKEY="${{ secrets.SPRING_APP_SECRET_KEY }}"
-            export SPRING_KAFKA_BOOTSTRAP_SERVERS="${{ secrets.KAFKA_BOOTSTRAP_SERVERS }}"
-            export KAFKA_TOPIC_NAME="${{ secrets.KAFKA_TOPIC }}"
-            export SPRING_MAIL_HOST="${{ secrets.MAIL_HOST }}"
-            export SPRING_MAIL_PORT="${{ secrets.MAIL_PORT }}"
-            export SPRING_MAIL_USERNAME="${{ secrets.MAIL_USERNAME }}"
-            export SPRING_MAIL_PASSWORD="${{ secrets.MAIL_PASSWORD }}"
-            export SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH="true"
-            export SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE="true"
-            export SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_REQUIRED="true"
-            export SPRING_MAIL_PROPERTIES_MAIL_SMTP_CONNECTIONTIMEOUT="5000"
-            export SPRING_MAIL_PROPERTIES_MAIL_SMTP_TIMEOUT="5000"
-            export SPRING_MAIL_PROPERTIES_MAIL_SMTP_WRITETIMEOUT="5000"
-            export SPRING_MAIL_DEFAULT_ENCODING="UTF-8"
-            export SPRING_DATA_REDIS_HOST="${{ secrets.REDIS_HOST }}"
-            export SPRING_DATA_REDIS_PORT="${{ secrets.REDIS_PORT }}"
-            export SPRING_CACHE_TYPE="redis"
-            export SPRING_DURATION="${{ secrets.APP_DURATION }}"
-            export SPRING_PROFILES_ACTIVE="prod"
-
-            echo "Starting new application instance..."
-            nohup java -jar be.jar > application.log 2>&1 &
-            echo "Application started. Check logs on VPS with 'tail -f /var/www/be/application.log'"
+            export SPRING_SECRETKEY: "${{ secrets.SPRING_APP_SECRET_KEY }}"
+            export KAFKA_TOPIC_NAME: "${{ secrets.KAFKA_TOPIC }}"
+            export SPRING_MAIL_HOST: "${{ secrets.MAIL_HOST }}"
+            export SPRING_MAIL_PORT: "${{ secrets.MAIL_PORT }}"
+            export SPRING_MAIL_USERNAME: "${{ secrets.MAIL_USERNAME }}"
+            export SPRING_MAIL_PASSWORD: "${{ secrets.MAIL_PASSWORD }}"
+            export SPRING_DATA_REDIS_HOST: "${{ secrets.REDIS_HOST }}"
+            export SPRING_DATA_REDIS_PORT: "${{ secrets.REDIS_PORT }}"
+            export SPRING_DURATION: "${{ secrets.APP_DURATION }}"
+            
+            # Build lại image backend cục bộ trên VPS và khởi động tất cả dịch vụ
+            # --build sẽ đảm bảo Dockerfile được đọc và image mới được tạo từ source hiện tại
+            # -d để chạy ở chế độ nền
+            docker compose up --build -d
+            echo "Docker Compose services started. Check logs with 'docker compose logs -f backend-app'"
