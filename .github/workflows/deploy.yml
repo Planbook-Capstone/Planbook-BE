@@ -41,11 +41,7 @@ jobs:
               ports:
                 - "2181:2181"
               environment:
-                # Xóa ZOO_MY_ID và ZOO_SERVERS khi chỉ chạy 1 node Zookeeper độc lập
-                # ZOO_SERVERS gây nhầm lẫn và có thể khiến Zookeeper không lắng nghe đúng cổng client.
-                ZOO_CLIENT_PORT: 2181 # Chỉ định rõ cổng client cho Zookeeper
-                # Nếu bạn thực sự cần ZOO_MY_ID cho mục đích logging hoặc giám sát, có thể giữ lại,
-                # nhưng ZOO_SERVERS cần phải loại bỏ khi ở chế độ standalone.
+                ZOO_CLIENT_PORT: 2181 
 
             kafka:
               image: confluentinc/cp-kafka:7.5.0
@@ -83,12 +79,11 @@ jobs:
                 - "6379:6379"
 
             backend:
-              # SỬ DỤNG 'build' ĐỂ BUILD IMAGE TRÊN VPS
               build:
-                context: . # context là thư mục hiện tại (khi docker compose chạy trên VPS)
+                context: .
                 dockerfile: Dockerfile
-              image: planbook-be:latest # Đặt tên tag cho image cục bộ trên VPS
-              container_name: backend-app
+              image: planbook-be:latest
+              container_name: planbook-be # ĐÃ THAY ĐỔI TÊN CONTAINER Ở ĐÂY
               restart: always
               ports:
                 - "8080:8080"
@@ -129,12 +124,12 @@ jobs:
 
       # Bước này copy tất cả file cần thiết lên VPS
       - name: Copy Project Files to VPS
-        uses: appleboy/scp-action@v0.1.7 # Vẫn sử dụng phiên bản cũ
+        uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "." # Copy toàn bộ thư mục hiện tại lên VPS
+          source: "."
           target: /var/www/be/
 
       # Bước này dừng và xóa các container cũ
@@ -148,16 +143,12 @@ jobs:
             cd /var/www/be || { echo "Error: /var/www/be directory not found on VPS."; exit 1; }
             echo "Stopping and removing old Docker Compose services..."
 
-            # NEW: Kill bất kỳ tiến trình nào đang sử dụng cổng 8080 để đảm bảo nó trống
             echo "Checking and freeing up port 8080..."
             PORT_TO_FREE=8080
-            # Lấy PID của tiến trình đang sử dụng cổng
             PID_ON_PORT=$(sudo lsof -t -i :$PORT_TO_FREE)
             if [ -n "$PID_ON_PORT" ]; then
               echo "Found process on port $PORT_TO_FREE with PID: $PID_ON_PORT. Attempting to kill it..."
-              # Giết tiến trình một cách cưỡng bức. 2>/dev/null để ẩn lỗi nếu tiến trình đã chết.
               sudo kill -9 $PID_ON_PORT 2>/dev/null || true
-              # Đợi một chút để cổng được giải phóng hoàn toàn
               sleep 1
               if sudo lsof -i :$PORT_TO_FREE > /dev/null; then
                 echo "Warning: Port $PORT_TO_FREE is still in use after killing process $PID_ON_PORT. Manual intervention may be needed."
@@ -168,19 +159,13 @@ jobs:
               echo "Port $PORT_TO_FREE is already free."
             fi
 
-            # 1. Thử down docker compose project nếu có. Thêm --timeout 0 để đảm bảo xóa bất chấp.
-            # 2>/dev/null để ẩn các thông báo "No active containers" hoặc các cảnh báo khác nếu không có gì để down
             docker compose -f docker-compose.yml down -v --remove-orphans --timeout 0 2>/dev/null || true
             
-            # 2. Xóa từng container CƯỠNG BỨC bằng tên của chúng, để đảm bảo không còn xung đột
-            # CHỈ XÓA CÁC CONTAINER LIÊN QUAN ĐẾN BACKEND VÀ CÁC THÀNH PHẦN HỖ TRỢ
-            # 2>/dev/null để ẩn các lỗi "No such container" nếu chúng không tồn tại
             echo "Attempting to forcefully stop and remove individual backend-related containers..."
-            docker stop backend-app zookeeper kafka kafdrop redis 2>/dev/null || true
-            docker rm -f backend-app zookeeper kafka kafdrop redis 2>/dev/null || true
+            # THAY ĐỔI TÊN CONTAINER TẠI ĐÂY
+            docker stop planbook-be zookeeper kafka kafdrop redis 2>/dev/null || true
+            docker rm -f planbook-be zookeeper kafka kafdrop redis 2>/dev/null || true
             
-            # 3. Xóa image của ứng dụng backend để đảm bảo build image mới nhất
-            # 2>/dev/null để ẩn các lỗi "No such image" nếu image không tồn tại
             docker rmi planbook-be:latest 2>/dev/null || true
             
             echo "Old backend-related containers and images cleaned up."
@@ -196,7 +181,6 @@ jobs:
             cd /var/www/be || { echo "Error: /var/www/be directory not found on VPS."; exit 1; }
             echo "Building and starting new Docker Compose services..."
             
-            # Đảm bảo các biến môi trường được export đúng cú pháp (dùng =)
             export SPRING_DATASOURCE_URL="${{ secrets.DB_URL }}"
             export SPRING_DATASOURCE_USERNAME="${{ secrets.DB_USERNAME }}"
             export SPRING_DATASOURCE_PASSWORD="${{ secrets.DB_PASSWORD }}"
@@ -211,6 +195,6 @@ jobs:
             export SPRING_DATA_REDIS_PORT="${{ secrets.REDIS_PORT }}"
             export SPRING_DURATION="${{ secrets.APP_DURATION }}"
             
-            # Chạy Docker Compose up, chỉ định rõ file cấu hình
             docker compose -f docker-compose.yml up --build -d
-            echo "Docker Compose services started. Check logs with 'docker compose logs -f backend-app'"
+            # THAY ĐỔI TÊN CONTAINER TẠI ĐÂY KHI KIỂM TRA LOG
+            echo "Docker Compose services started. Check logs with 'docker compose logs -f planbook-be'"
