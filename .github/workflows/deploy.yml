@@ -24,7 +24,7 @@ jobs:
         run: mvn clean # Thực hiện giai đoạn 'clean' để xóa các artifacts build cũ
 
       - name: Maven Package (Skip Tests)
-        run: mvn package -DskipTests # Thực hiện giai đoạn 'package' để đóng gói ứng dụng thành JAR, bỏ qua các bài kiểm thử
+        run: mvn mvn package -DskipTests # Thực hiện giai đoạn 'package' để đóng gói ứng dụng thành JAR, bỏ qua các bài kiểm thử
 
       - name: Get JAR file name
         id: get_jar_name # Đặt một ID để tham chiếu output của bước này sau này
@@ -34,17 +34,43 @@ jobs:
           echo "JAR_NAME=$JAR_NAME" >> $GITHUB_OUTPUT # Lưu tên JAR vào output để các bước sau sử dụng
           echo "Detected JAR: $JAR_NAME"
 
-      - name: Copy JAR to VPS
-        uses: appleboy/scp-action@v0.1.7 # Sử dụng action của bên thứ 3 để sao chép file qua SCP
+      # === BƯỚC MỚI: Làm sạch trên VPS TRƯỚC khi sao chép file JAR mới ===
+      - name: Clean up old deployment on VPS
+        uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.VPS_HOST }} # Lấy IP/hostname của VPS từ GitHub Secret
-          username: ${{ secrets.VPS_USER }} # Lấy username SSH từ GitHub Secret
-          key: ${{ secrets.SSH_PRIVATE_KEY }} # Lấy SSH private key từ GitHub Secret
-          source: ${{ steps.get_jar_name.outputs.JAR_NAME }} # Đường dẫn file JAR trên môi trường GitHub Actions
-          target: /var/www/be/ # Đường dẫn đích trên VPS của bạn
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            # Di chuyển vào thư mục ứng dụng trên VPS
+            cd /var/www/be || { echo "Error: /var/www/be directory not found on VPS."; exit 1; }
+            echo "Performing deep cleanup on VPS before new copy..."
+            # Kill bất kỳ tiến trình cũ nào đang chạy để giải phóng file lock
+            PID=$(sudo lsof -t -i :8080)
+            if [ -n "$PID" ]; then
+              echo "Killing existing process on port 8080 (PID: $PID)"
+              sudo kill -9 $PID
+              sleep 5 # Đợi một chút để đảm bảo cổng được giải phóng
+            else
+              echo "No existing process found on port 8080."
+            fi
+            # Bây giờ, xóa các file cũ. Đảm bảo tất cả JARs cũ và thư mục target đã bị xóa.
+            sudo rm -rf *.jar target/ application.log
+            echo "Cleanup complete."
 
-      - name: Deploy and Restart Application
-        uses: appleboy/ssh-action@v1.0.3 # Sử dụng action của bên thứ 3 để chạy lệnh SSH trên VPS
+      # === Bước Copy JAR gốc (bây giờ chạy SAU bước làm sạch) ===
+      - name: Copy JAR to VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: ${{ steps.get_jar_name.outputs.JAR_NAME }}
+          target: /var/www/be/ # File JAR sẽ được đặt trực tiếp vào đây
+
+      # === Bước Khởi động ứng dụng đã sửa đổi (chỉ quản lý JAR đã copy và khởi động ứng dụng) ===
+      - name: Start Application on VPS
+        uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
@@ -53,65 +79,31 @@ jobs:
             # Di chuyển vào thư mục ứng dụng trên VPS
             cd /var/www/be || { echo "Error: /var/www/be directory not found on VPS."; exit 1; }
 
-            # BẮT ĐẦU PHẦN CHỈNH SỬA TẠI ĐÂY: LÀM SẠCH TRIỆT ĐỂ TRÊN VPS
-            echo "Performing deep cleanup on VPS..."
-            sudo rm -rf *.jar target/ application.log # Xóa tất cả JARs, thư mục target và log cũ
-            echo "Cleanup complete."
-
-            # Kiểm tra và kill tiến trình Java cũ đang chạy trên cổng 8080 (hoặc cổng cấu hình)
-            PID=$(sudo lsof -t -i :8080)
-            if [ -n "$PID" ]; then
-              echo "Killing existing process on port 8080 (PID: $PID)"
-              sudo kill -9 $PID
-              sleep 10 # Chờ lâu hơn để đảm bảo cổng được giải phóng hoàn toàn
-            else
-              echo "No existing process found on port 8080. Starting fresh."
-            fi
-
-            # Đổi tên file JAR mới copy thành be.jar và di chuyển nó về đúng vị trí
-            # File JAR được scp-action copy sẽ có tên đầy đủ của Maven (ví dụ: Planbook-BE-0.0.1-SNAPSHOT.jar)
-            # Nó sẽ nằm trực tiếp trong /var/www/be/ sau khi cleanup triệt để và copy lại
-            NEW_JAR_FULL_NAME=$(ls *.jar | head -1) # Lấy tên đầy đủ của JAR vừa được copy
+            # Đổi tên file JAR mới được copy thành be.jar
+            # Vì bước làm sạch trước đó đã xóa các JAR cũ và thư mục target,
+            # chỉ còn một file JAR duy nhất trong /var/www/be/ từ scp-action.
+            NEW_JAR_FULL_NAME=$(ls *.jar | head -1)
             if [ -z "$NEW_JAR_FULL_NAME" ]; then
-              echo "Error: No JAR file found after SCP. Deployment failed."
+              echo "Error: No JAR file found after SCP. This should not happen if previous steps succeeded."
               exit 1
             fi
             mv "$NEW_JAR_FULL_NAME" be.jar
             echo "Renamed $NEW_JAR_FULL_NAME to be.jar"
-            # KẾT THÚC PHẦN CHỈNH SỬA
 
-            # Export các biến môi trường từ GitHub Secrets cho ứng dụng Spring Boot
+            # Export các biến môi trường (phần này đã đúng)
             echo "Exporting environment variables..."
-
-            # DATABASE CONFIG
             export SPRING_DATASOURCE_URL="${{ secrets.DB_URL }}"
             export SPRING_DATASOURCE_USERNAME="${{ secrets.DB_USERNAME }}"
             export SPRING_DATASOURCE_PASSWORD="${{ secrets.DB_PASSWORD }}"
-
-            # JPA CONFIG
             export SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT="org.hibernate.dialect.MySQL8Dialect"
             export SPRING_JPA_HIBERNATE_DDL_AUTO="update"
             export SPRING_MAIN_ALLOW_CIRCULAR_REFERENCES="true"
-
-            # MVC CONFIG
             export SPRING_MVC_PATHMATCH_MATCHING_STRATEGY="ANT_PATH_MATCHER"
-            # Nếu bạn có SERVER_PORT secret:
-            # export SERVER_PORT="${{ secrets.SERVER_PORT }}"
-
-            # CUSTOM SECRETS
+            # export SERVER_PORT="${{ secrets.SERVER_PORT }}" # Bỏ comment nếu bạn có SECRET này
             export SUPABASE_JWT_SECRET="${{ secrets.SUPABASE_JWT_SECRET_KEY }}"
             export SPRING_SECRETKEY="${{ secrets.SPRING_APP_SECRET_KEY }}"
-
-            # KAFKA CONFIG
             export SPRING_KAFKA_BOOTSTRAP_SERVERS="${{ secrets.KAFKA_BOOTSTRAP_SERVERS }}"
             export KAFKA_TOPIC_NAME="${{ secrets.KAFKA_TOPIC }}"
-
-            # THYMELEAF CONFIG (Thường không cần là biến môi trường, để trong application.properties là đủ)
-            # export SPRING_THYMELEAF_PREFIX="classpath:/templates/"
-            # export SPRING_THYMELEAF_SUFFIX=".html"
-            # export SPRING_THYMELEAF_MODE="HTML"
-
-            # EMAIL CONFIG
             export SPRING_MAIL_HOST="${{ secrets.MAIL_HOST }}"
             export SPRING_MAIL_PORT="${{ secrets.MAIL_PORT }}"
             export SPRING_MAIL_USERNAME="${{ secrets.MAIL_USERNAME }}"
@@ -123,17 +115,14 @@ jobs:
             export SPRING_MAIL_PROPERTIES_MAIL_SMTP_TIMEOUT="5000"
             export SPRING_MAIL_PROPERTIES_MAIL_SMTP_WRITETIMEOUT="5000"
             export SPRING_MAIL_DEFAULT_ENCODING="UTF-8"
-
-            # REDIS CONFIG
             export SPRING_DATA_REDIS_HOST="${{ secrets.REDIS_HOST }}"
             export SPRING_DATA_REDIS_PORT="${{ secrets.REDIS_PORT }}"
             export SPRING_CACHE_TYPE="redis"
-
-            # DURATION
             export SPRING_DURATION="${{ secrets.APP_DURATION }}"
+            # Đặt profile hoạt động cho môi trường production, điều này sẽ tắt Swagger nếu cấu hình đúng trong code
+            export SPRING_PROFILES_ACTIVE="prod" # KHUYẾN NGHỊ cho môi trường production
 
             # Chạy ứng dụng Spring Boot ở chế độ nền (background)
             echo "Starting new application instance..."
-            # chmod +x be.jar # Đảm bảo file JAR có quyền thực thi (thường không cần nhưng thêm vào cho chắc)
             nohup java -jar be.jar > application.log 2>&1 &
             echo "Application started. Check logs on VPS with 'tail -f /var/www/be/application.log'"
