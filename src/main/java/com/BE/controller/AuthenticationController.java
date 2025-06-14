@@ -116,9 +116,9 @@ public class AuthenticationController {
     }
 
 
-    @GetMapping("/git-action")
+    @GetMapping("/docker-compose")
     public ResponseEntity hihi(){
-        return ResponseEntity.ok("Git-action Successfully");
+        return ResponseEntity.ok("docker-compose Successfully");
     }
 
     @PreAuthorize("hasRole('ADMIN')")
