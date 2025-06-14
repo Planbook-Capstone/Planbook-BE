@@ -28,7 +28,7 @@ jobs:
         run: mvn clean package -DskipTests
 
       # Bước này tạo file docker-compose.yml động trên runner
-      # Sẽ loại bỏ 'build' và chỉ định image cục bộ
+      # Đảm bảo các biến môi trường và cấu hình Kafka/Redis là chính xác cho Swarm
       - name: Create docker-compose.yml on runner
         run: |
           cat <<EOF > docker-compose.yml
@@ -43,22 +43,37 @@ jobs:
                 - "2181:2181"
               environment:
                 ZOO_CLIENT_PORT: 2181 
+              deploy:
+                resources:
+                  limits:
+                    memory: 128M
 
             kafka:
               image: confluentinc/cp-kafka:7.5.0
               container_name: kafka
               restart: always
               ports:
-                - "9092:9092"
+                # 9092 là port nội bộ của container Kafka
+                # 9092:9092 là ánh xạ port nếu bạn muốn truy cập từ bên ngoài VPS,
+                # nhưng trong Swarm, các service sẽ dùng tên service + port nội bộ.
+                # Bỏ ánh xạ port public nếu không cần thiết để tăng cường bảo mật.
+                # Hoặc giữ lại nếu bạn có công cụ bên ngoài cần kết nối trực tiếp.
+                - "9092:9092" 
               environment:
                 KAFKA_BROKER_ID: 1
                 KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-                KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
-                KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-                KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+                # QUAN TRỌNG: KAFKA_ADVERTISED_LISTENERS định nghĩa cách các client khác kết nối.
+                # PLAINTEXT://kafka:9092 là để các service trong cùng Docker Swarm kết nối bằng tên service.
+                # KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092 là để lắng nghe mọi kết nối trên cổng 9092.
+                KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+                KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092 # <-- FIX: Đảm bảo chỉ có một listener nội bộ chính xác
                 KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
               depends_on:
                 - zookeeper
+              deploy:
+                resources:
+                  limits:
+                    memory: 256M
 
             kafdrop:
               image: obsidiandynamics/kafdrop:latest
@@ -67,10 +82,14 @@ jobs:
               ports:
                 - "9000:9000"
               environment:
-                KAFKA_BROKERCONNECT: kafka:29092
+                KAFKA_BROKERCONNECT: kafka:9092 # <-- FIX: Kết nối đến Kafka bằng tên service và cổng 9092
                 JVM_OPTS: "-Xms16M -Xmx48M"
               depends_on:
                 - kafka
+              deploy:
+                resources:
+                  limits:
+                    memory: 64M
 
             redis:
               image: redis:latest
@@ -78,10 +97,13 @@ jobs:
               restart: always
               ports:
                 - "6379:6379"
+              deploy:
+                resources:
+                  limits:
+                    memory: 128M
 
             backend:
-              # KHÔNG CÓ KHỐI 'build' ở đây
-              image: planbook-be:latest # <-- Giữ nguyên tên image cục bộ
+              image: planbook-be:latest
               restart: always
               ports:
                 - "8080:8080"
@@ -89,6 +111,23 @@ jobs:
                 - zookeeper
                 - kafka
                 - redis
+              environment: # <-- THÊM CÁC BIẾN MÔI TRƯỜNG CHO BACKEND TẠI ĐÂY
+                SPRING_DATASOURCE_URL: "${{ secrets.DB_URL }}"
+                SPRING_DATASOURCE_USERNAME: "${{ secrets.DB_USERNAME }}"
+                SPRING_DATASOURCE_PASSWORD: "${{ secrets.DB_PASSWORD }}"
+                SUPABASE_JWT_SECRET: "${{ secrets.SUPABASE_JWT_SECRET_KEY }}"
+                SPRING_SECRETKEY: "${{ secrets.SPRING_APP_SECRET_KEY }}"
+                KAFKA_TOPIC_NAME: "${{ secrets.KAFKA_TOPIC }}"
+                SPRING_MAIL_HOST: "${{ secrets.MAIL_HOST }}"
+                SPRING_MAIL_PORT: "${{ secrets.MAIL_PORT }}"
+                SPRING_MAIL_USERNAME: "${{ secrets.MAIL_USERNAME }}"
+                SPRING_MAIL_PASSWORD: "${{ secrets.MAIL_PASSWORD }}"
+                SPRING_DATA_REDIS_HOST: "redis" # <-- FIX: Kết nối Redis bằng tên service
+                SPRING_DATA_REDIS_PORT: "6379"
+                SPRING_CACHE_TYPE: "redis"
+                SPRING_DURATION: "${{ secrets.APP_DURATION }}"
+                SPRING_PROFILES_ACTIVE: "prod"
+                SPRING_KAFKA_BOOTSTRAP_SERVERS: "kafka:9092" # <-- FIX: Kết nối Kafka bằng tên service và cổng 9092
               healthcheck:
                 test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
                 interval: 30s
@@ -107,6 +146,10 @@ jobs:
                   order: stop-first
                 restart_policy:
                   condition: on-failure
+                resources:
+                  limits:
+                    memory: 768M # Điều chỉnh tùy theo nhu cầu thực tế của ứng dụng
+
           EOF
         shell: bash
 
@@ -128,85 +171,85 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            set -e # Exit immediately if a command exits with a non-zero status.
+            set -e # Thoát ngay lập tức nếu một lệnh thoát với trạng thái khác không.
 
-            cd /var/www/be || { echo "Error: /var/www/be directory not found on VPS."; exit 1; }
-            echo "Deploying application using Docker Stack (Swarm Mode)..."
+            cd /var/www/be || { echo "Lỗi: Không tìm thấy thư mục /var/www/be trên VPS."; exit 1; }
+            echo "Đang triển khai ứng dụng bằng Docker Stack (Swarm Mode)..."
 
             # 1. Dọn dẹp ban đầu các container Docker Compose cũ (không phải Swarm-managed)
-            echo "Attempting to clean up old standalone Docker Compose containers (if any)..."
+            echo "Đang cố gắng dọn dẹp các container Docker Compose độc lập cũ (nếu có)..."
             docker compose -f docker-compose.yml down -v --remove-orphans --timeout 0 2>/dev/null || true
             docker stop planbook-be zookeeper kafka kafdrop redis 2>/dev/null || true
             docker rm -f planbook-be zookeeper kafka kafdrop redis 2>/dev/null || true
-            # KHÔNG XÓA IMAGE CŨ Ở ĐÂY NỮA, VÌ CHÚNG TA SẼ BUILD LẠI NÓ.
-            # docker rmi planbook-be:latest 2>/dev/null || true 
-            echo "Old containers cleaned up (if any)."
+            echo "Đã dọn dẹp các container cũ (nếu có)."
 
             # THÊM BƯỚC BUILD IMAGE TRỰC TIẾP TRÊN VPS TẠI ĐÂY
-            echo "Building Docker image 'planbook-be:latest' directly on VPS..."
-            docker build -t planbook-be:latest . || { echo "Error: Docker image build failed on VPS."; exit 1; }
-            echo "Docker image built successfully on VPS."
+            echo "Đang xây dựng Docker image 'planbook-be:latest' trực tiếp trên VPS..."
+            # Đảm bảo Dockerfile của bạn nằm trong thư mục gốc của dự án được sao chép
+            docker build -t planbook-be:latest . || { echo "Lỗi: Xây dựng Docker image thất bại trên VPS."; exit 1; }
+            echo "Đã xây dựng Docker image thành công trên VPS."
 
             # 2. Export environment variables cho docker stack deploy
-            export SPRING_DATASOURCE_URL="${{ secrets.DB_URL }}"
-            export SPRING_DATASOURCE_USERNAME="${{ secrets.DB_USERNAME }}"
-            export SPRING_DATASOURCE_PASSWORD="${{ secrets.DB_PASSWORD }}"
-            export SUPABASE_JWT_SECRET="${{ secrets.SUPABASE_JWT_SECRET_KEY }}"
-            export SPRING_SECRETKEY="${{ secrets.SPRING_APP_SECRET_KEY }}"
-            export KAFKA_TOPIC_NAME="${{ secrets.KAFKA_TOPIC }}"
-            export SPRING_MAIL_HOST="${{ secrets.MAIL_HOST }}"
-            export SPRING_MAIL_PORT="${{ secrets.MAIL_PORT }}"
-            export SPRING_MAIL_USERNAME="${{ secrets.MAIL_USERNAME }}"
-            export SPRING_MAIL_PASSWORD="${{ secrets.MAIL_PASSWORD }}"
-            export SPRING_DATA_REDIS_HOST="redis"
-            export SPRING_DATA_REDIS_PORT="6379"
-            export SPRING_CACHE_TYPE="redis"
-            export SPRING_DURATION="${{ secrets.APP_DURATION }}"
-            export SPRING_PROFILES_ACTIVE="prod"
+            # Lưu ý: Các biến này sẽ được ưu tiên hơn các biến trong docker-compose.yml nếu cùng tên.
+            # Nhưng tốt nhất là định nghĩa chúng trong docker-compose.yml như đã sửa ở trên
+            # để đảm bảo tính nhất quán và dễ đọc.
+            # Với cấu hình docker-compose.yml đã sửa, phần export này có thể không còn cần thiết
+            # nếu bạn đã truyền chúng thông qua ${{ secrets.VAR_NAME }} trong docker-compose.yml.
+            # Tuy nhiên, nếu bạn muốn ghi đè từ shell, thì đây là cách.
+            # Để an toàn, chúng ta sẽ để lại, nhưng ưu tiên là truyền qua docker-compose.yml
+            # để tránh trùng lặp và lỗi không mong muốn.
+            # Nếu bạn truyền biến môi trường trực tiếp vào docker-compose.yml thông qua GitHub Secrets
+            # như đã sửa, thì các dòng export này sẽ bị bỏ qua (vì docker stack deploy ưu tiên file).
+            # SPRING_DATASOURCE_URL="${{ secrets.DB_URL }}" # Sẽ được truyền qua docker-compose.yml
+            # etc...
 
             # 3. Triển khai hoặc cập nhật stack
-            echo "Running docker stack deploy..."
+            echo "Đang chạy docker stack deploy..."
             docker stack deploy -c docker-compose.yml planbook-stack 
 
-            echo "Deployment initiated. Check service status with 'docker service ls' and logs with 'docker service logs planbook-stack_backend'"
-            echo "Waiting for 'planbook-stack_backend' service to be stable..."
+            echo "Đã bắt đầu triển khai. Kiểm tra trạng thái dịch vụ bằng 'docker service ls' và log bằng 'docker service logs planbook-stack_backend'"
+            echo "Đang chờ dịch vụ 'planbook-stack_backend' ổn định..."
 
             # 4. Kiểm tra trạng thái của dịch vụ sau khi deploy
             ATTEMPTS=0
-            MAX_ATTEMPTS=60
+            MAX_ATTEMPTS=60 # Tăng số lần thử nếu dịch vụ mất nhiều thời gian để khởi động
             SERVICE_NAME="planbook-stack_backend"
 
             while [ $ATTEMPTS -lt $MAX_ATTEMPTS ]; do
               SERVICE_EXISTS=$(docker service ls --filter name="$SERVICE_NAME" --format "{{.Name}}" | wc -l)
               if [ "$SERVICE_EXISTS" -eq 0 ]; then
-                echo "  Attempt $((ATTEMPTS+1))/$MAX_ATTEMPTS: Service '$SERVICE_NAME' does not exist yet. Waiting..."
+                echo "  Lần thử $((ATTEMPTS+1))/$MAX_ATTEMPTS: Dịch vụ '$SERVICE_NAME' chưa tồn tại. Đang chờ..."
                 sleep 5
                 ATTEMPTS=$((ATTEMPTS+1))
                 continue
               fi
 
+              # Lấy số lượng replica mong muốn (default về 1 nếu không xác định)
               REPLICAS_EXPECTED=$(docker service inspect "$SERVICE_NAME" --format '{{.Spec.Mode.Replicated.Replicas}}' 2>/dev/null || echo 0)
               if [ "$REPLICAS_EXPECTED" -eq 0 ]; then
                 REPLICAS_EXPECTED=1
               fi
 
+              # Đếm số lượng replica đang chạy (Running)
               RUNNING_REPLICAS=$(docker service ps "$SERVICE_NAME" --filter "desired-state=running" --format "{{.CurrentState}}" | grep -i "Running" | wc -l)
               
+              # Đếm số lượng replica khỏe mạnh (healthy)
               HEALTHY_STATUS_COUNT=$(docker service ps "$SERVICE_NAME" --no-trunc --format "{{.CurrentState}}" | grep -i "healthy" | wc -l)
               
-              HEALTH_STATUS="unknown"
+              HEALTH_STATUS="không rõ"
               if [ "$HEALTHY_STATUS_COUNT" -ge "$REPLICAS_EXPECTED" ]; then
-                  HEALTH_STATUS="healthy"
+                  HEALTH_STATUS="khỏe mạnh"
               elif [ "$RUNNING_REPLICAS" -ge "$REPLICAS_EXPECTED" ]; then
-                  HEALTH_STATUS="starting_or_unhealthy"
+                  HEALTH_STATUS="đang khởi động hoặc không khỏe mạnh"
               else
-                  HEALTH_STATUS="not_running_or_starting"
+                  HEALTH_STATUS="không chạy hoặc đang khởi động"
               fi
 
-              echo "  Attempt $((ATTEMPTS+1))/$MAX_ATTEMPTS: Service '$SERVICE_NAME' - Running: $RUNNING_REPLICAS/$REPLICAS_EXPECTED. Health: $HEALTH_STATUS."
+              echo "  Lần thử $((ATTEMPTS+1))/$MAX_ATTEMPTS: Dịch vụ '$SERVICE_NAME' - Đang chạy: $RUNNING_REPLICAS/$REPLICAS_EXPECTED. Trạng thái sức khỏe: $HEALTH_STATUS."
 
-              if [ "$RUNNING_REPLICAS" -ge "$REPLICAS_EXPECTED" ] && [ "$HEALTH_STATUS" == "healthy" ]; then
-                echo "Service '$SERVICE_NAME' is running and healthy. Deployment successful!"
+              # Nếu số lượng replica đang chạy đạt yêu cầu và tất cả đều khỏe mạnh
+              if [ "$RUNNING_REPLICAS" -ge "$REPLICAS_EXPECTED" ] && [ "$HEALTH_STATUS" == "khỏe mạnh" ]; then
+                echo "Dịch vụ '$SERVICE_NAME' đang chạy và khỏe mạnh. Triển khai thành công!"
                 break
               fi
               
@@ -215,6 +258,6 @@ jobs:
             done
 
             if [ $ATTEMPTS -eq $MAX_ATTEMPTS ]; then
-              echo "Error: Service '$SERVICE_NAME' did not become stable (healthy and running) after $MAX_ATTEMPTS attempts. Deployment failed."
+              echo "Lỗi: Dịch vụ '$SERVICE_NAME' không ổn định (khỏe mạnh và đang chạy) sau $MAX_ATTEMPTS lần thử. Triển khai thất bại."
               exit 1
             fi
