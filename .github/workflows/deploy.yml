@@ -84,19 +84,23 @@ jobs:
                 context: .
                 dockerfile: Dockerfile
               image: planbook-be:latest
-              # Đã xóa 'container_name' ở đây vì Docker Swarm tự quản lý.
               restart: always
               ports:
                 - "8080:8080"
-              # =========================================================
-              # ĐÃ XÓA TẤT CẢ CÁC BIẾN MÔI TRƯỜNG KHỎI docker-compose.yml.
-              # Thay vào đó, chúng sẽ được 'export' trong script SSH
-              # trước khi chạy 'docker stack deploy'.
-              # =========================================================
               depends_on:
                 - zookeeper
                 - kafka
                 - redis
+              # =========================================================
+              # Đã di chuyển HEALTHCHECK ra ngoài khối DEPLOY
+              # để phù hợp với cú pháp Docker Compose/Swarm
+              # =========================================================
+              healthcheck: # <-- Đặt ở cấp độ service, ngang hàng với `build`, `ports`, `depends_on`, `deploy`
+                test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
+                interval: 30s
+                timeout: 10s
+                retries: 3
+                start_period: 60s
               deploy:
                 replicas: 1 # Chỉ chạy 1 instance của backend
                 update_config:
@@ -110,13 +114,6 @@ jobs:
                   order: stop-first # Dừng container lỗi trước khi quay lại cái cũ
                 restart_policy:
                   condition: on-failure # Khởi động lại nếu container thất bại
-                healthcheck: # Định nghĩa healthcheck cho Docker Swarm
-                  test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
-                  interval: 30s # Kiểm tra mỗi 30 giây
-                  timeout: 10s  # Timeout nếu không phản hồi trong 10 giây
-                  retries: 3    # Thử lại 3 lần trước khi đánh dấu là thất bại
-                  start_period: 60s # Thời gian chờ cho ứng dụng khởi động lần đầu (ví dụ 60s)
-                                    # Trong thời gian này, health check không tính vào retries
           EOF
         shell: bash
 
@@ -130,7 +127,7 @@ jobs:
           source: "."
           target: /var/www/be/
 
-      # BƯỚC MỚI: TRIỂN KHAI VỚI DOCKER STACK (THAY THẾ 2 BƯỚC CŨ Stop/Start)
+      # BƯỚC TRIỂN KHAI THỰC TẾ VỚI DOCKER STACK (Swarm Mode)
       - name: Deploy Application with Docker Stack on VPS (Swarm Mode)
         uses: appleboy/ssh-action@v1.0.3
         with:
