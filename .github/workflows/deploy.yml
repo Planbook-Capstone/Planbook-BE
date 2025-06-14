@@ -23,6 +23,7 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
+      # Bước này vẫn cần để tạo file JAR mà Dockerfile sẽ COPY vào image
       - name: Maven Clean and Package
         run: mvn clean package -DskipTests
 
@@ -78,10 +79,11 @@ jobs:
                 - "6379:6379"
 
             backend:
+              # SỬ DỤNG 'build' ĐỂ BUILD IMAGE TRÊN VPS
               build:
-                context: .
+                context: . # context là thư mục hiện tại (khi docker compose chạy trên VPS)
                 dockerfile: Dockerfile
-              image: planbook-be:latest
+              image: planbook-be:latest # Đặt tên tag cho image cục bộ trên VPS
               container_name: backend-app
               restart: always
               ports:
@@ -122,19 +124,14 @@ jobs:
         shell: bash
 
       - name: Copy Project Files to VPS
-        uses: appleboy/scp-action@v0.1.8 # <-- ĐÃ THAY ĐỔI PHIÊN BẢN ACTION TẠI ĐÂY
+        uses: appleboy/scp-action@v0.1.7 # <--- GIỮ NGUYÊN PHIÊN BẢN BAN ĐẦU
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          # Chỉ định rõ ràng các file và thư mục cần copy.
-          # Bật rsync để cải thiện hiệu suất và độ tin cậy.
-          source: |
-            Dockerfile
-            docker-compose.yml
-            target/ # <-- THAY ĐỔI: COPY CẢ THƯ MỤC 'target'
+          source: "." # <--- THAY ĐỔI DUY NHẤT Ở ĐÂY: COPY TOÀN BỘ THƯ MỤC HIỆN TẠI
           target: /var/www/be/
-          rsync: true # Rất quan trọng để tránh lỗi 'empty archive' và cải thiện hiệu suất
+          # Không có rsync: true ở đây vì v0.1.7 không hỗ trợ
 
       - name: Stop and Remove Old Containers on VPS
         uses: appleboy/ssh-action@v1.0.3
@@ -167,7 +164,7 @@ jobs:
             export KAFKA_TOPIC_NAME="${{ secrets.KAFKA_TOPIC }}"
             export SPRING_MAIL_HOST="${{ secrets.MAIL_HOST }}"
             export SPRING_MAIL_PORT="${{ secrets.MAIL_PORT }}"
-            export SPRING_MAIL_USERNAME="${{ secrets.MAIL_USERNAME }}"
+            export SPRING_MAIL_USERNAME: "${{ secrets.MAIL_USERNAME }}" # Có thể bị lỗi ở đây nếu dấu ":" không hợp lệ
             export SPRING_MAIL_PASSWORD="${{ secrets.MAIL_PASSWORD }}"
             export SPRING_DATA_REDIS_HOST="${{ secrets.REDIS_HOST }}"
             export SPRING_DATA_REDIS_PORT="${{ secrets.REDIS_PORT }}"
