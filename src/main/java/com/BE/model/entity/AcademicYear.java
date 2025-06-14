@@ -3,9 +3,11 @@ package com.BE.model.entity;
 import com.BE.enums.AcademicYearStatusEnum;
 import jakarta.persistence.*;
 import org.hibernate.annotations.UuidGenerator;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+
 import lombok.Getter;
 import lombok.Setter;
 
