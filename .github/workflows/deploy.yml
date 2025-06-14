@@ -144,7 +144,27 @@ jobs:
           script: |
             cd /var/www/be || { echo "Error: /var/www/be directory not found on VPS."; exit 1; }
             echo "Stopping and removing old Docker Compose services..."
-            
+
+            # NEW: Kill bất kỳ tiến trình nào đang sử dụng cổng 8080 để đảm bảo nó trống
+            echo "Checking and freeing up port 8080..."
+            PORT_TO_FREE=8080
+            # Lấy PID của tiến trình đang sử dụng cổng
+            PID_ON_PORT=$(sudo lsof -t -i :$PORT_TO_FREE)
+            if [ -n "$PID_ON_PORT" ]; then
+              echo "Found process on port $PORT_TO_FREE with PID: $PID_ON_PORT. Attempting to kill it..."
+              # Giết tiến trình một cách cưỡng bức. 2>/dev/null để ẩn lỗi nếu tiến trình đã chết.
+              sudo kill -9 $PID_ON_PORT 2>/dev/null || true
+              # Đợi một chút để cổng được giải phóng hoàn toàn
+              sleep 1
+              if sudo lsof -i :$PORT_TO_FREE > /dev/null; then
+                echo "Warning: Port $PORT_TO_FREE is still in use after killing process $PID_ON_PORT. Manual intervention may be needed."
+              else
+                echo "Port $PORT_TO_FREE is now free."
+              fi
+            else
+              echo "Port $PORT_TO_FREE is already free."
+            fi
+
             # 1. Thử down docker compose project nếu có. Thêm --timeout 0 để đảm bảo xóa bất chấp.
             # 2>/dev/null để ẩn các thông báo "No active containers" hoặc các cảnh báo khác nếu không có gì để down
             docker compose -f docker-compose.yml down -v --remove-orphans --timeout 0 2>/dev/null || true
@@ -182,7 +202,7 @@ jobs:
             export KAFKA_TOPIC_NAME="${{ secrets.KAFKA_TOPIC }}"
             export SPRING_MAIL_HOST="${{ secrets.MAIL_HOST }}"
             export SPRING_MAIL_PORT="${{ secrets.MAIL_PORT }}"
-            export SPRING_MAIL_USERNAME="${{ secrets.MAIL_USERNAME }}" # Đã sửa
+            export SPRING_MAIL_USERNAME="${{ secrets.MAIL_USERNAME }}"
             export SPRING_MAIL_PASSWORD="${{ secrets.MAIL_PASSWORD }}"
             export SPRING_DATA_REDIS_HOST="${{ secrets.REDIS_HOST }}"
             export SPRING_DATA_REDIS_PORT="${{ secrets.REDIS_PORT }}"
