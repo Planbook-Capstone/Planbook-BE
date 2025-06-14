@@ -5,6 +5,7 @@ import com.BE.model.entity.User;
 import com.BE.model.request.*;
 import com.BE.model.response.AuthenticationResponse;
 import com.BE.service.interfaceServices.IAuthenticationService;
+import com.BE.utils.KafkaMessageProducer;
 import com.BE.utils.ResponseHandler;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -30,7 +31,14 @@ public class AuthenticationController {
     @Autowired
     ResponseHandler responseHandler;
 
+    @Autowired
+    KafkaMessageProducer kafkaMessageProducer;
 
+    @GetMapping("/sendMessage")
+    public String sendMessageToKafka(@RequestParam("message") String message) {
+        kafkaMessageProducer.sendMessage(message);
+        return "Message '" + message + "' sent to Kafka!";
+    }
 
     @PostMapping("/refresh")
     public ResponseEntity refresh( @RequestBody RefreshRequest refreshRequest){
