@@ -192,27 +192,29 @@ jobs:
                 continue # Tiếp tục vòng lặp
               fi
 
-              # Lấy số lượng replica mong muốn. Thêm .Service để đảm bảo nó ở đúng cấp độ.
-              # Sử dụng 2>/dev/null để ẩn lỗi nếu trường không tồn tại (ví dụ: dịch vụ chưa fully initialized)
+              # Lấy số lượng replica mong muốn
               REPLICAS_EXPECTED=$(docker service inspect "$SERVICE_NAME" --format '{{.Spec.Mode.Replicated.Replicas}}' 2>/dev/null || echo 0)
               if [ "$REPLICAS_EXPECTED" -eq 0 ]; then
-                # Nếu dịch vụ không phải replicated mode (ví dụ global) hoặc chưa sẵn sàng, giả định là 1 replica
-                REPLICAS_EXPECTED=1
+                REPLICAS_EXPECTED=1 # Giả định 1 replica nếu không tìm thấy số lượng cụ thể
               fi
 
-              # Lấy số lượng replica đang chạy và health status
+              # Lấy số lượng replica đang chạy
               RUNNING_REPLICAS=$(docker service ps "$SERVICE_NAME" --filter "desired-state=running" --format "{{.CurrentState}}" | grep -i "Running" | wc -l)
               
-              # Lấy trạng thái health của service (từ một replica bất kỳ, nếu có nhiều)
-              HEALTH_STATUS_OUTPUT=$(docker service ps "$SERVICE_NAME" --format "{{.Health}}" | grep -v '---' | head -n 1) # Chỉ lấy trạng thái health, bỏ qua dòng header
+              # KIỂM TRA TRẠNG THÁI HEALTH MỚI (chính xác hơn)
+              # Lấy trạng thái của các task/container của dịch vụ, sau đó tìm kiếm từ khóa "healthy"
+              # Sử dụng --no-trunc để đảm bảo thấy đầy đủ trạng thái (running (healthy), running (starting), v.v.)
+              HEALTHY_STATUS_COUNT=$(docker service ps "$SERVICE_NAME" --no-trunc --format "{{.CurrentState}}" | grep -i "healthy" | wc -l)
+              
               HEALTH_STATUS="unknown"
-              if [ -z "$HEALTH_STATUS_OUTPUT" ]; then
-                HEALTH_STATUS="not_reported" # Có thể chưa có healthcheck data
-              elif echo "$HEALTH_STATUS_OUTPUT" | grep -q -i "healthy"; then
+              if [ "$HEALTHY_STATUS_COUNT" -ge "$REPLICAS_EXPECTED" ]; then # Đã có đủ số lượng replica healthy
                   HEALTH_STATUS="healthy"
-              elif echo "$HEALTH_STATUS_OUTPUT" | grep -q -i "unhealthy"; then
-                  HEALTH_STATUS="unhealthy"
+              elif [ "$RUNNING_REPLICAS" -ge "$REPLICAS_EXPECTED" ]; then # Đủ replica đang chạy nhưng chưa healthy
+                  HEALTH_STATUS="starting_or_unhealthy"
+              else
+                  HEALTH_STATUS="not_running_or_starting" # Chưa đủ replica hoặc chưa chạy
               fi
+
 
               echo "  Attempt $((ATTEMPTS+1))/$MAX_ATTEMPTS: Service '$SERVICE_NAME' - Running: $RUNNING_REPLICAS/$REPLICAS_EXPECTED. Health: $HEALTH_STATUS."
 
