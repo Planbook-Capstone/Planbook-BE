@@ -53,18 +53,12 @@ jobs:
             # Di chuyển vào thư mục ứng dụng trên VPS
             cd /var/www/be || { echo "Error: /var/www/be directory not found on VPS."; exit 1; }
 
-            # Kiểm tra xem file be.jar có tồn tại không. Nếu không, đổi tên file JAR mới copy thành be.jar
-            NEW_JAR_NAME=$(basename ${{ steps.get_jar_name.outputs.JAR_NAME }})
-            if [ "$NEW_JAR_NAME" != "be.jar" ]; then
-              mv "$NEW_JAR_NAME" be.jar
-              echo "Renamed $NEW_JAR_NAME to be.jar"
-            else
-              echo "JAR file is already named be.jar"
-            fi
+            # BẮT ĐẦU PHẦN CHỈNH SỬA TẠI ĐÂY: LÀM SẠCH TRIỆT ĐỂ TRÊN VPS
+            echo "Performing deep cleanup on VPS..."
+            sudo rm -rf *.jar target/ application.log # Xóa tất cả JARs, thư mục target và log cũ
+            echo "Cleanup complete."
 
             # Kiểm tra và kill tiến trình Java cũ đang chạy trên cổng 8080 (hoặc cổng cấu hình)
-            # Nếu bạn có server.port trong application.properties và export SERVER_PORT
-            # thì bạn nên dùng cổng đó ở đây. Mặc định Spring Boot là 8080.
             PID=$(sudo lsof -t -i :8080)
             if [ -n "$PID" ]; then
               echo "Killing existing process on port 8080 (PID: $PID)"
@@ -74,9 +68,19 @@ jobs:
               echo "No existing process found on port 8080. Starting fresh."
             fi
 
+            # Đổi tên file JAR mới copy thành be.jar và di chuyển nó về đúng vị trí
+            # File JAR được scp-action copy sẽ có tên đầy đủ của Maven (ví dụ: Planbook-BE-0.0.1-SNAPSHOT.jar)
+            # Nó sẽ nằm trực tiếp trong /var/www/be/ sau khi cleanup triệt để và copy lại
+            NEW_JAR_FULL_NAME=$(ls *.jar | head -1) # Lấy tên đầy đủ của JAR vừa được copy
+            if [ -z "$NEW_JAR_FULL_NAME" ]; then
+              echo "Error: No JAR file found after SCP. Deployment failed."
+              exit 1
+            fi
+            mv "$NEW_JAR_FULL_NAME" be.jar
+            echo "Renamed $NEW_JAR_FULL_NAME to be.jar"
+            # KẾT THÚC PHẦN CHỈNH SỬA
+
             # Export các biến môi trường từ GitHub Secrets cho ứng dụng Spring Boot
-            # Tên biến môi trường được viết HOA và sử dụng dấu gạch dưới thay cho dấu chấm.
-            # Spring Boot sẽ tự động map chúng tới các thuộc tính tương ứng.
             echo "Exporting environment variables..."
 
             # DATABASE CONFIG
