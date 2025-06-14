@@ -1,0 +1,147 @@
+name: Deploy Spring Boot Backend
+
+on:
+  push:
+    branches:
+      - master # Đã xác nhận nhánh chính của bạn là 'master'
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21' # Đã CẬP NHẬT JDK VERSION dựa trên thông tin VPS của bạn
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Build with Maven
+        run: mvn clean install -DskipTests
+
+      - name: Get JAR file name
+        id: get_jar_name
+        run: |
+          JAR_NAME=$(ls target/*.jar | head -1)
+          echo "JAR_NAME=$JAR_NAME" >> $GITHUB_OUTPUT
+          echo "Detected JAR: $JAR_NAME"
+
+      - name: Copy JAR to VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: ${{ steps.get_jar_name.outputs.JAR_NAME }}
+          target: /var/www/be/
+
+      - name: Deploy and Restart Application
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            # Di chuyển vào thư mục ứng dụng trên VPS
+            cd /var/www/be || { echo "Error: /var/www/be directory not found on VPS."; exit 1; }
+
+            # Các biến môi trường cho cấu hình Spring Boot
+            # Tên biến môi trường được viết HOA và sử dụng dấu gạch dưới thay cho dấu chấm.
+            # Spring Boot sẽ tự động map chúng tới các thuộc tính tương ứng.
+            # RẤT QUAN TRỌNG: Những giá trị này nên được lấy từ GitHub Secrets HOẶC được định nghĩa trực tiếp trên VPS
+            # (ví dụ: trong file .bashrc của user chạy app, hoặc trong Systemd service file).
+            # Để đơn giản hóa cho ví dụ này, tôi sẽ định nghĩa chúng trực tiếp ở đây.
+            # Tối ưu hơn là dùng GitHub Secrets cho mỗi giá trị nhạy cảm này.
+            # Ví dụ, tạo thêm secrets như DB_URL, DB_USERNAME, DB_PASSWORD, v.v.
+
+            # DATABASE CONFIG
+            export SPRING_DATASOURCE_URL="jdbc:mysql://db-mysql-nyc1-06141-do-user-16121453-0.k.db.ondigitalocean.com:25060/PlanBookAI"
+            export SPRING_DATASOURCE_USERNAME="doadmin"
+            export SPRING_DATASOURCE_PASSWORD="AVNS_q6fuqNkb_Lh3I7QglWr"
+
+            # JPA CONFIG
+            export SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT="org.hibernate.dialect.MySQL8Dialect"
+            export SPRING_JPA_HIBERNATE_DDL_AUTO="update"
+            export SPRING_MAIN_ALLOW_CIRCULAR_REFERENCES="true"
+
+            # MVC CONFIG
+            export SPRING_MVC_PATHMATCH_MATCHING_STRATEGY="ANT_PATH_MATCHER"
+
+            # SERVER PORT (Nếu bạn muốn đặt lại 8888, hãy bỏ comment dòng dưới)
+            # export SERVER_PORT="8888" # Spring Boot mặc định là 8080 nếu không có server.port
+
+            # CUSTOM SECRETS
+            export SUPABASE_JWT_SECRET="X71//sL4YPoXUOHmhyWAA9+KMqEzaITwJ7q9ptLiCtoDTQ5GuZvWfT7ArcaKBXuH7rQEI4GsSswLd3ET4oG0eA=="
+            export SPRING_SECRETKEY="HT4bb6d1dfbafb64a681139d1586b6f1160d18159afd57c8c79136d7490630407c" # Đã sửa tên biến
+
+            # KAFKA CONFIG
+            export SPRING_KAFKA_BOOTSTRAP_SERVERS="157.245.135.92:9092"
+            export KAFKA_TOPIC_NAME="planbook" # Đây là biến custom, cần đảm bảo bạn đọc nó trong code
+
+            # THYMELEAF CONFIG (Thường không cần là biến môi trường, có thể để trong code)
+            # export SPRING_THYMELEAF_PREFIX="classpath:/templates/"
+            # export SPRING_THYMELEAF_SUFFIX=".html"
+            # export SPRING_THYMELEAF_MODE="HTML"
+
+            # EMAIL CONFIG
+            export SPRING_MAIL_HOST="smtp.gmail.com"
+            export SPRING_MAIL_PORT="587"
+            export SPRING_MAIL_USERNAME="minhlola28@gmail.com"
+            export SPRING_MAIL_PASSWORD="nusfpougsykpemtb"
+            export SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH="true"
+            export SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE="true"
+            export SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_REQUIRED="true"
+            export SPRING_MAIL_PROPERTIES_MAIL_SMTP_CONNECTIONTIMEOUT="5000"
+            export SPRING_MAIL_PROPERTIES_MAIL_SMTP_TIMEOUT="5000"
+            export SPRING_MAIL_PROPERTIES_MAIL_SMTP_WRITETIMEOUT="5000"
+            export SPRING_MAIL_DEFAULT_ENCODING="UTF-8" # Đã thêm
+
+            # REDIS CONFIG
+            export SPRING_DATA_REDIS_HOST="157.245.135.92"
+            export SPRING_DATA_REDIS_PORT="6379"
+            export SPRING_CACHE_TYPE="redis"
+
+            # DURATION (Nếu nó là 'spring.duration' thì hơi lạ, thường là 'spring.mvc.duration' hoặc tương tự)
+            # Giả định đây là một biến custom, tên sẽ khớp với cách bạn @Value trong code
+            export SPRING_DURATION="3600" # Đã đổi tên biến để khớp với Spring Convention
+
+            # Firebase/FCM (Cần xử lý file, không thể đơn giản là biến môi trường)
+            # fcm.credentials.file.path=./firebase-admin.json
+            # LƯU Ý QUAN TRỌNG VỀ fcm.credentials.file.path:
+            # Bạn không thể truyền nội dung file JSON qua biến môi trường trực tiếp.
+            # Cần một cách khác để file này có mặt trên VPS.
+            # CÁCH LÀM (Chọn 1):
+            # 1. Copy thủ công file firebase-admin.json lên VPS và đặt vào thư mục /var/www/be/
+            #    Sau đó, đảm bảo ứng dụng có quyền đọc file đó.
+            # 2. Hoặc, nếu file không chứa thông tin quá nhạy cảm và bạn OK với nó trên GitHub,
+            #    bạn có thể thêm một bước vào GitHub Actions để copy file này cùng với JAR.
+            #    (Tuy nhiên, credentials file thường là nhạy cảm, nên phương án 1 an toàn hơn).
+            # Vì không thể thêm trực tiếp vào đây, bạn sẽ phải xử lý file này thủ công trên VPS.
+            # Nếu bạn vẫn muốn có biến môi trường cho đường dẫn:
+            # export FCM_CREDENTIALS_FILE_PATH="./firebase-admin.json"
+
+
+            # Tìm và kill tiến trình Java cũ đang chạy trên cổng 8080 (giả sử là cổng mặc định)
+            PID=$(sudo lsof -t -i :8080) # Giữ nguyên cổng mặc định của Spring Boot
+            if [ -n "$PID" ]; then
+              echo "Killing existing process on port 8080 (PID: $PID)"
+              sudo kill -9 $PID
+              sleep 5
+            else
+              echo "No existing process found on port 8080. Starting fresh."
+            fi
+
+            # Đổi tên file JAR mới copy thành be.jar
+            NEW_JAR_NAME=$(basename ${{ steps.get_jar_name.outputs.JAR_NAME }})
+            mv "$NEW_JAR_NAME" be.jar
+            echo "Renamed $NEW_JAR_NAME to be.jar"
+
+            # Chạy ứng dụng Spring Boot với các biến môi trường đã export
+            echo "Starting new application instance..."
+            nohup java -jar be.jar > application.log 2>&1 &
+            echo "Application started. Check logs on VPS with 'tail -f /var/www/be/application.log'"
+            
