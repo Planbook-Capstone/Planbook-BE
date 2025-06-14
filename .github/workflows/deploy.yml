@@ -41,8 +41,11 @@ jobs:
               ports:
                 - "2181:2181"
               environment:
-                ZOO_MY_ID: 1
-                ZOO_SERVERS: server.1=zookeeper:2888:3888
+                # Xóa ZOO_MY_ID và ZOO_SERVERS khi chỉ chạy 1 node Zookeeper độc lập
+                # ZOO_SERVERS gây nhầm lẫn và có thể khiến Zookeeper không lắng nghe đúng cổng client.
+                ZOO_CLIENT_PORT: 2181 # Chỉ định rõ cổng client cho Zookeeper
+                # Nếu bạn thực sự cần ZOO_MY_ID cho mục đích logging hoặc giám sát, có thể giữ lại,
+                # nhưng ZOO_SERVERS cần phải loại bỏ khi ở chế độ standalone.
 
             kafka:
               image: confluentinc/cp-kafka:7.5.0
