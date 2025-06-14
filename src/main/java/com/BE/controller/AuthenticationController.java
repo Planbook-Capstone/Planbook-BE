@@ -116,9 +116,9 @@ public class AuthenticationController {
     }
 
 
-    @GetMapping("/hihi")
+    @GetMapping("/action")
     public ResponseEntity hihi(){
-        return ResponseEntity.ok("hihi User Successfully");
+        return ResponseEntity.ok("action User Successfully");
     }
 
     @PreAuthorize("hasRole('ADMIN')")
