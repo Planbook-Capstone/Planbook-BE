@@ -28,7 +28,7 @@ jobs:
         run: mvn clean package -DskipTests
 
       # Bước này tạo file docker-compose.yml động trên runner
-      # File này sẽ không chứa các biến môi trường nhạy cảm nữa.
+      # Sẽ loại bỏ 'build' và chỉ định image cục bộ
       - name: Create docker-compose.yml on runner
         run: |
           cat <<EOF > docker-compose.yml
@@ -80,10 +80,8 @@ jobs:
                 - "6379:6379"
 
             backend:
-              build:
-                context: .
-                dockerfile: Dockerfile
-              image: planbook-be:latest
+              # KHÔNG CÓ KHỐI 'build' ở đây
+              image: planbook-be:latest # <-- Giữ nguyên tên image cục bộ
               restart: always
               ports:
                 - "8080:8080"
@@ -91,25 +89,24 @@ jobs:
                 - zookeeper
                 - kafka
                 - redis
-              healthcheck: # <-- Đặt ở cấp độ service, ngang hàng với `build`, `ports`, `depends_on`, `deploy`
+              healthcheck:
                 test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
                 interval: 30s
                 timeout: 10s
                 retries: 3
                 start_period: 60s
               deploy:
-                replicas: 1 # Chỉ chạy 1 instance của backend
+                replicas: 1
                 update_config:
-                  parallelism: 1 # Cập nhật từng container một
-                  delay: 10s     # Chờ 10 giây giữa các bước cập nhật
-                  order: start-first # Khởi động container mới trước khi dừng container cũ
-                                     # -> Đảm bảo không có downtime trong quá trình cập nhật
+                  parallelism: 1
+                  delay: 10s
+                  order: start-first
                 rollback_config:
                   parallelism: 1
                   delay: 10s
-                  order: stop-first # Dừng container lỗi trước khi quay lại cái cũ
+                  order: stop-first
                 restart_policy:
-                  condition: on-failure # Khởi động lại nếu container thất bại
+                  condition: on-failure
           EOF
         shell: bash
 
@@ -137,20 +134,20 @@ jobs:
             echo "Deploying application using Docker Stack (Swarm Mode)..."
 
             # 1. Dọn dẹp ban đầu các container Docker Compose cũ (không phải Swarm-managed)
-            # Điều này quan trọng cho lần chuyển đổi đầu tiên từ docker-compose up sang docker stack deploy.
             echo "Attempting to clean up old standalone Docker Compose containers (if any)..."
-            # Thử dừng và xóa các container Docker Compose cũ (nếu có, không thuộc Swarm)
             docker compose -f docker-compose.yml down -v --remove-orphans --timeout 0 2>/dev/null || true
-            # Thử dừng và xóa các container backend cũ riêng lẻ (ví dụ: tên `container_name` cũ)
             docker stop planbook-be zookeeper kafka kafdrop redis 2>/dev/null || true
             docker rm -f planbook-be zookeeper kafka kafdrop redis 2>/dev/null || true
-            # Xóa image backend cũ để đảm bảo Docker Swarm build lại phiên bản mới
-            docker rmi planbook-be:latest 2>/dev/null || true 
-            echo "Old containers and images cleaned up (if any)."
+            # KHÔNG XÓA IMAGE CŨ Ở ĐÂY NỮA, VÌ CHÚNG TA SẼ BUILD LẠI NÓ.
+            # docker rmi planbook-be:latest 2>/dev/null || true 
+            echo "Old containers cleaned up (if any)."
+
+            # THÊM BƯỚC BUILD IMAGE TRỰC TIẾP TRÊN VPS TẠI ĐÂY
+            echo "Building Docker image 'planbook-be:latest' directly on VPS..."
+            docker build -t planbook-be:latest . || { echo "Error: Docker image build failed on VPS."; exit 1; }
+            echo "Docker image built successfully on VPS."
 
             # 2. Export environment variables cho docker stack deploy
-            # Việc export biến môi trường TRƯỚC lệnh `docker stack deploy` là cách an toàn
-            # để truyền secrets mà không bị lỗi YAML parsing.
             export SPRING_DATASOURCE_URL="${{ secrets.DB_URL }}"
             export SPRING_DATASOURCE_USERNAME="${{ secrets.DB_USERNAME }}"
             export SPRING_DATASOURCE_PASSWORD="${{ secrets.DB_PASSWORD }}"
@@ -161,60 +158,50 @@ jobs:
             export SPRING_MAIL_PORT="${{ secrets.MAIL_PORT }}"
             export SPRING_MAIL_USERNAME="${{ secrets.MAIL_USERNAME }}"
             export SPRING_MAIL_PASSWORD="${{ secrets.MAIL_PASSWORD }}"
-            export SPRING_DATA_REDIS_HOST="redis" # Tên service trong docker-compose
-            export SPRING_DATA_REDIS_PORT="6379"  # Port mặc định của Redis
-            export SPRING_CACHE_TYPE="redis"      # Giá trị cố định
+            export SPRING_DATA_REDIS_HOST="redis"
+            export SPRING_DATA_REDIS_PORT="6379"
+            export SPRING_CACHE_TYPE="redis"
             export SPRING_DURATION="${{ secrets.APP_DURATION }}"
-            export SPRING_PROFILES_ACTIVE="prod"  # Giá trị cố định
+            export SPRING_PROFILES_ACTIVE="prod"
 
             # 3. Triển khai hoặc cập nhật stack
-            # Docker stack deploy sẽ tự động build image nếu cần (do có 'build' trong compose file)
-            # và sau đó triển khai/cập nhật các dịch vụ theo cấu hình 'deploy'.
             echo "Running docker stack deploy..."
-            docker stack deploy -c docker-compose.yml planbook-stack # 'planbook-stack' là tên stack của bạn
+            docker stack deploy -c docker-compose.yml planbook-stack 
 
             echo "Deployment initiated. Check service status with 'docker service ls' and logs with 'docker service logs planbook-stack_backend'"
             echo "Waiting for 'planbook-stack_backend' service to be stable..."
 
             # 4. Kiểm tra trạng thái của dịch vụ sau khi deploy
-            # Điều này giúp workflow chờ đợi deploy hoàn tất và healthcheck thành công.
             ATTEMPTS=0
-            MAX_ATTEMPTS=60 # Tối đa 60*5 = 300 giây (5 phút) để chờ
-            SERVICE_NAME="planbook-stack_backend" # Tên dịch vụ backend trong Swarm (tên stack_tên service)
+            MAX_ATTEMPTS=60
+            SERVICE_NAME="planbook-stack_backend"
 
             while [ $ATTEMPTS -lt $MAX_ATTEMPTS ]; do
-              # Đầu tiên, kiểm tra xem dịch vụ có tồn tại không
               SERVICE_EXISTS=$(docker service ls --filter name="$SERVICE_NAME" --format "{{.Name}}" | wc -l)
               if [ "$SERVICE_EXISTS" -eq 0 ]; then
                 echo "  Attempt $((ATTEMPTS+1))/$MAX_ATTEMPTS: Service '$SERVICE_NAME' does not exist yet. Waiting..."
                 sleep 5
                 ATTEMPTS=$((ATTEMPTS+1))
-                continue # Tiếp tục vòng lặp
+                continue
               fi
 
-              # Lấy số lượng replica mong muốn
               REPLICAS_EXPECTED=$(docker service inspect "$SERVICE_NAME" --format '{{.Spec.Mode.Replicated.Replicas}}' 2>/dev/null || echo 0)
               if [ "$REPLICAS_EXPECTED" -eq 0 ]; then
-                REPLICAS_EXPECTED=1 # Giả định 1 replica nếu không tìm thấy số lượng cụ thể
+                REPLICAS_EXPECTED=1
               fi
 
-              # Lấy số lượng replica đang chạy
               RUNNING_REPLICAS=$(docker service ps "$SERVICE_NAME" --filter "desired-state=running" --format "{{.CurrentState}}" | grep -i "Running" | wc -l)
               
-              # KIỂM TRA TRẠNG THÁI HEALTH MỚI (chính xác hơn)
-              # Lấy trạng thái của các task/container của dịch vụ, sau đó tìm kiếm từ khóa "healthy"
-              # Sử dụng --no-trunc để đảm bảo thấy đầy đủ trạng thái (running (healthy), running (starting), v.v.)
               HEALTHY_STATUS_COUNT=$(docker service ps "$SERVICE_NAME" --no-trunc --format "{{.CurrentState}}" | grep -i "healthy" | wc -l)
               
               HEALTH_STATUS="unknown"
-              if [ "$HEALTHY_STATUS_COUNT" -ge "$REPLICAS_EXPECTED" ]; then # Đã có đủ số lượng replica healthy
+              if [ "$HEALTHY_STATUS_COUNT" -ge "$REPLICAS_EXPECTED" ]; then
                   HEALTH_STATUS="healthy"
-              elif [ "$RUNNING_REPLICAS" -ge "$REPLICAS_EXPECTED" ]; then # Đủ replica đang chạy nhưng chưa healthy
+              elif [ "$RUNNING_REPLICAS" -ge "$REPLICAS_EXPECTED" ]; then
                   HEALTH_STATUS="starting_or_unhealthy"
               else
-                  HEALTH_STATUS="not_running_or_starting" # Chưa đủ replica hoặc chưa chạy
+                  HEALTH_STATUS="not_running_or_starting"
               fi
-
 
               echo "  Attempt $((ATTEMPTS+1))/$MAX_ATTEMPTS: Service '$SERVICE_NAME' - Running: $RUNNING_REPLICAS/$REPLICAS_EXPECTED. Health: $HEALTH_STATUS."
 
