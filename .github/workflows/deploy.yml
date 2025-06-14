@@ -13,7 +13,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # KHÔNG CẦN SET UP DOCKER BUILDX NẾU CHỈ BUILD TRÊN VPS (NHƯNG CỨ ĐỂ ĐÓ CŨNG KHÔNG HẠI)
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -24,17 +23,11 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      # Bước này vẫn cần để tạo file JAR mà Dockerfile sẽ COPY vào image
       - name: Maven Clean and Package
         run: mvn clean package -DskipTests
 
-      # --- KHÔNG CÒN BƯỚC ĐĂNG NHẬP DOCKER HUB ---
-      # --- KHÔNG CÒN BƯỚC BUILD VÀ PUSH IMAGE LÊN DOCKER HUB ---
-
       - name: Create docker-compose.yml on runner
         run: |
-          # Tạo nội dung của docker-compose.yml với các biến môi trường từ GitHub Secrets
-          # (backend service SẼ DÙNG 'build:' thay vì 'image:')
           cat <<EOF > docker-compose.yml
           version: '3.8'
 
@@ -85,11 +78,10 @@ jobs:
                 - "6379:6379"
 
             backend:
-              # SỬ DỤNG 'build' ĐỂ BUILD IMAGE TRÊN VPS
               build:
-                context: . # context là thư mục hiện tại (khi docker compose chạy trên VPS)
+                context: .
                 dockerfile: Dockerfile
-              image: planbook-be:latest # Đặt tên tag cho image cục bộ trên VPS
+              image: planbook-be:latest
               container_name: backend-app
               restart: always
               ports:
@@ -130,7 +122,7 @@ jobs:
         shell: bash
 
       - name: Copy Project Files to VPS
-        uses: appleboy/scp-action@v0.1.7
+        uses: appleboy/scp-action@v0.1.9 # <-- ĐÃ THAY ĐỔI PHIÊN BẢN ACTION TẠI ĐÂY
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
@@ -140,7 +132,7 @@ jobs:
           source: |
             Dockerfile
             docker-compose.yml
-            target/be.jar # Đảm bảo tên file JAR chính xác là be.jar
+            target/ # <-- THAY ĐỔI: COPY CẢ THƯ MỤC 'target'
           target: /var/www/be/
           rsync: true # Rất quan trọng để tránh lỗi 'empty archive' và cải thiện hiệu suất
 
@@ -154,8 +146,6 @@ jobs:
             cd /var/www/be || { echo "Error: /var/www/be directory not found on VPS."; exit 1; }
             echo "Stopping and removing old Docker Compose services..."
             docker compose down || true
-            # Xóa image cũ của ứng dụng backend để đảm bảo build image mới nhất
-            # Đảm bảo tên image cục bộ khớp với tên bạn đã chọn
             docker rmi planbook-be:latest || true
             echo "Old containers and images cleaned up."
 
@@ -169,11 +159,6 @@ jobs:
             cd /var/www/be || { echo "Error: /var/www/be directory not found on VPS."; exit 1; }
             echo "Building and starting new Docker Compose services..."
             
-            # Đảm bảo Docker Compose được cài đặt và có trong PATH
-            # (Bạn đã làm bước này rồi: sudo apt install docker-compose-plugin -y)
-
-            # Truyền các biến môi trường từ GitHub Secrets vào môi trường của SSH
-            # Điều này cho phép docker-compose.yml đọc chúng khi được 'up'
             export SPRING_DATASOURCE_URL="${{ secrets.DB_URL }}"
             export SPRING_DATASOURCE_USERNAME="${{ secrets.DB_USERNAME }}"
             export SPRING_DATASOURCE_PASSWORD="${{ secrets.DB_PASSWORD }}"
@@ -188,8 +173,5 @@ jobs:
             export SPRING_DATA_REDIS_PORT="${{ secrets.REDIS_PORT }}"
             export SPRING_DURATION="${{ secrets.APP_DURATION }}"
             
-            # Build lại image backend cục bộ trên VPS và khởi động tất cả dịch vụ
-            # --build sẽ đảm bảo Dockerfile được đọc và image mới được tạo từ source hiện tại
-            # -d để chạy ở chế độ nền
             docker compose up --build -d
             echo "Docker Compose services started. Check logs with 'docker compose logs -f backend-app'"
