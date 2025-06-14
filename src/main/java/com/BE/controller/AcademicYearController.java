@@ -39,7 +39,7 @@ public class AcademicYearController {
         return responseHandler.response(200, "Get all academic years success!", academicYearService.getAll());
     }
 
-    @Operation(summary = "Create new academic year", description = "Tạo mới năm học. Default status là UPCOMING; Sẽ tự động tạo workspace cho tất cả user chưa có workspace cho năm này.", requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Dữ liệu tạo năm học mới", required = true, content = @Content(schema = @Schema(implementation = AcademicYearRequest.class), examples = @ExampleObject(value = "{\"startDate\":\"2025-09-01T00:00:00\",\"endDate\":\"2026-05-31T00:00:00\",\"yearLabel\":\"2025-2026\"}"))))
+    @Operation(summary = "Create new academic year", description = "Tạo mới năm học. Default status là UPCOMING; Sẽ tự động tạo workspace cho tất cả user chưa có workspace cho năm này.", requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Dữ liệu tạo năm học mới", required = true, content = @Content(schema = @Schema(implementation = AcademicYearRequest.class), examples = @ExampleObject(value = "{\"startDate\":\"2025-09-01T00:00:00\",\"endDate\":\"2026-05-31T00:00:00\"}"))))
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Tạo thành công.", content = @Content(schema = @Schema(implementation = AcademicYearResponse.class), examples = @ExampleObject(value = "{\"id\":\"uuid\",\"startDate\":\"2025-06-05T00:00:00\",\"endDate\":\"2026-06-01T00:00:00\",\"yearLabel\":\"2025-2026\",\"status\":\"UPCOMING\",\"createdAt\":\"2024-06-01T10:00:00\",\"updatedAt\":\"2024-06-01T10:00:00\"}"))),
             @ApiResponse(responseCode = "400", description = "Dữ liệu không hợp lệ hoặc thiếu trường bắt buộc.")

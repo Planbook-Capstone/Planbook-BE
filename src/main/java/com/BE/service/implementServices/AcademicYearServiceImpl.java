@@ -25,6 +25,8 @@ import java.util.stream.Collectors;
 @Service
 public class AcademicYearServiceImpl implements IAcademicYearService {
     @Autowired
+    DateNowUtils dateNowUtils;
+    @Autowired
     private AcademicYearRepository academicYearRepository;
     @Autowired
     private UserRepository userRepository;
@@ -32,8 +34,6 @@ public class AcademicYearServiceImpl implements IAcademicYearService {
     private WorkSpaceRepository workSpaceRepository;
     @Autowired
     private AcademicYearMapper academicYearMapper;
-    @Autowired
-    DateNowUtils dateNowUtils;
 
     @Override
     public List<AcademicYearResponse> getAll() {
@@ -47,6 +47,9 @@ public class AcademicYearServiceImpl implements IAcademicYearService {
     public AcademicYearResponse create(AcademicYearRequest request) {
         dateNowUtils.validateAcademicYear(request);
         AcademicYear academicYear = academicYearMapper.toEntity(request);
+
+        String yearLabel = request.getStartDate().getYear() + "-" + request.getEndDate().getYear();
+        academicYear.setYearLabel(yearLabel);
         academicYear.setCreatedAt(dateNowUtils.getCurrentDateTimeHCM());
         academicYear.setUpdatedAt(dateNowUtils.getCurrentDateTimeHCM());
         // Set default status

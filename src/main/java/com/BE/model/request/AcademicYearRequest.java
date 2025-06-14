@@ -16,7 +16,5 @@ import java.time.LocalDateTime;
 public class AcademicYearRequest {
     private LocalDateTime startDate;
     private LocalDateTime endDate;
-    @NotBlank(message = "YearLabel cannot be blank")
-    private String yearLabel;
 
 }

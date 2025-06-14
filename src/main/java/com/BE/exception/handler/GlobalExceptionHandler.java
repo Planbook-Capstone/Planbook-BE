@@ -1,8 +1,6 @@
 package com.BE.exception.handler;
 
-import com.BE.exception.exceptions.EnumValidationException;
-import com.BE.exception.exceptions.InvalidRefreshTokenException;
-import com.BE.exception.exceptions.NotFoundException;
+import com.BE.exception.exceptions.*;
 import com.BE.utils.EnumUtils;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
@@ -19,7 +17,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
-import com.BE.exception.exceptions.BadRequestException;
 
 import java.util.HashMap;
 import java.util.List;
@@ -53,7 +50,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<Map<String, String>> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex,
-            WebRequest request) {
+                                                                                     WebRequest request) {
         Map<String, String> errors = new HashMap<>();
 
         Throwable mostSpecificCause = ex.getMostSpecificCause();
@@ -97,7 +94,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(EnumValidationException.class)
     public ResponseEntity<Map<String, String>> handleEnumValidationException(EnumValidationException ex,
-            WebRequest request) {
+                                                                             WebRequest request) {
         Map<String, String> errors = new HashMap<>();
         errors.put("message", ex.getMessage());
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
@@ -116,6 +113,13 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(BadRequestException.class)
     public ResponseEntity<Object> handleBadRequestException(BadRequestException ex) {
+        Map<String, String> errors = new HashMap<>();
+        errors.put("message", ex.getMessage());
+        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(DateException.class)
+    public ResponseEntity<Object> handleDateException(DateException ex) {
         Map<String, String> errors = new HashMap<>();
         errors.put("message", ex.getMessage());
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);

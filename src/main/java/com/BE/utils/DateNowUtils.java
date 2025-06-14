@@ -23,7 +23,6 @@ public class DateNowUtils {
     }
 
 
-
     public void validateAcademicYear(AcademicYearRequest request) {
         LocalDateTime now = getCurrentDateTimeHCM();
 
@@ -31,7 +30,7 @@ public class DateNowUtils {
             throw new DateException("Both Date From and Date To must be provided");
         }
 
-        if (request.getStartDate().isBefore(request.getEndDate())) {
+        if (request.getEndDate().isBefore(request.getStartDate())) {
             throw new DateException("Date To must be later than Date From");
         }
 
