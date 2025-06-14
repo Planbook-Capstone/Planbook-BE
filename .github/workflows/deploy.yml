@@ -20,8 +20,11 @@ jobs:
           distribution: 'temurin' # Một bản phân phối OpenJDK phổ biến
           cache: maven # Sử dụng cache cho Maven dependencies
 
-      - name: Build with Maven
-        run: mvn clean install -DskipTests # Build ứng dụng Spring Boot, bỏ qua các bài kiểm tra
+      - name: Maven Clean
+        run: mvn clean # Thực hiện giai đoạn 'clean' để xóa các artifacts build cũ
+
+      - name: Maven Package (Skip Tests)
+        run: mvn package -DskipTests # Thực hiện giai đoạn 'package' để đóng gói ứng dụng thành JAR, bỏ qua các bài kiểm thử
 
       - name: Get JAR file name
         id: get_jar_name # Đặt một ID để tham chiếu output của bước này sau này
