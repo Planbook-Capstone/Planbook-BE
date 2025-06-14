@@ -23,9 +23,11 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
+      # Bước này cần thiết để tạo ra file JAR
       - name: Maven Clean and Package
         run: mvn clean package -DskipTests
 
+      # Bước này tạo file docker-compose.yml động trên runner
       - name: Create docker-compose.yml on runner
         run: |
           cat <<EOF > docker-compose.yml
@@ -78,10 +80,11 @@ jobs:
                 - "6379:6379"
 
             backend:
+              # SỬ DỤNG 'build' ĐỂ BUILD IMAGE TRÊN VPS
               build:
-                context: .
+                context: . # context là thư mục hiện tại (khi docker compose chạy trên VPS)
                 dockerfile: Dockerfile
-              image: planbook-be:latest
+              image: planbook-be:latest # Đặt tên tag cho image cục bộ trên VPS
               container_name: backend-app
               restart: always
               ports:
@@ -121,15 +124,17 @@ jobs:
           EOF
         shell: bash
 
+      # Bước này copy tất cả file cần thiết lên VPS
       - name: Copy Project Files to VPS
-        uses: appleboy/scp-action@v0.1.7
+        uses: appleboy/scp-action@v0.1.7 # Vẫn sử dụng phiên bản cũ
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "."
+          source: "." # Copy toàn bộ thư mục hiện tại lên VPS
           target: /var/www/be/
 
+      # Bước này dừng và xóa các container cũ
       - name: Stop and Remove Old Containers on VPS
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -139,13 +144,25 @@ jobs:
           script: |
             cd /var/www/be || { echo "Error: /var/www/be directory not found on VPS."; exit 1; }
             echo "Stopping and removing old Docker Compose services..."
-            # Dừng và xóa tất cả các service. -v để xóa cả volumes (nếu có). --remove-orphans để xóa các container không còn trong config.
-            # -f để buộc xóa các container đang chạy
-            docker compose down -v --remove-orphans || true
-            # Xóa image của ứng dụng backend để đảm bảo build image mới nhất
-            docker rmi planbook-be:latest || true
-            echo "Old containers and images cleaned up."
+            
+            # 1. Thử down docker compose project nếu có. Thêm --timeout 0 để đảm bảo xóa bất chấp.
+            # 2>/dev/null để ẩn các thông báo "No active containers" hoặc các cảnh báo khác nếu không có gì để down
+            docker compose -f docker-compose.yml down -v --remove-orphans --timeout 0 2>/dev/null || true
+            
+            # 2. Xóa từng container CƯỠNG BỨC bằng tên của chúng, để đảm bảo không còn xung đột
+            # CHỈ XÓA CÁC CONTAINER LIÊN QUAN ĐẾN BACKEND VÀ CÁC THÀNH PHẦN HỖ TRỢ
+            # 2>/dev/null để ẩn các lỗi "No such container" nếu chúng không tồn tại
+            echo "Attempting to forcefully stop and remove individual backend-related containers..."
+            docker stop backend-app zookeeper kafka kafdrop redis 2>/dev/null || true
+            docker rm -f backend-app zookeeper kafka kafdrop redis 2>/dev/null || true
+            
+            # 3. Xóa image của ứng dụng backend để đảm bảo build image mới nhất
+            # 2>/dev/null để ẩn các lỗi "No such image" nếu image không tồn tại
+            docker rmi planbook-be:latest 2>/dev/null || true
+            
+            echo "Old backend-related containers and images cleaned up."
 
+      # Bước này khởi chạy ứng dụng mới
       - name: Start Application with Docker Compose on VPS
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -156,7 +173,7 @@ jobs:
             cd /var/www/be || { echo "Error: /var/www/be directory not found on VPS."; exit 1; }
             echo "Building and starting new Docker Compose services..."
             
-            # Sửa lỗi cú pháp: Dùng dấu = thay vì :
+            # Đảm bảo các biến môi trường được export đúng cú pháp (dùng =)
             export SPRING_DATASOURCE_URL="${{ secrets.DB_URL }}"
             export SPRING_DATASOURCE_USERNAME="${{ secrets.DB_USERNAME }}"
             export SPRING_DATASOURCE_PASSWORD="${{ secrets.DB_PASSWORD }}"
@@ -165,11 +182,12 @@ jobs:
             export KAFKA_TOPIC_NAME="${{ secrets.KAFKA_TOPIC }}"
             export SPRING_MAIL_HOST="${{ secrets.MAIL_HOST }}"
             export SPRING_MAIL_PORT="${{ secrets.MAIL_PORT }}"
-            export SPRING_MAIL_USERNAME="${{ secrets.MAIL_USERNAME }}" # <--- ĐÃ SỬA TẠI ĐÂY
+            export SPRING_MAIL_USERNAME="${{ secrets.MAIL_USERNAME }}" # Đã sửa
             export SPRING_MAIL_PASSWORD="${{ secrets.MAIL_PASSWORD }}"
             export SPRING_DATA_REDIS_HOST="${{ secrets.REDIS_HOST }}"
             export SPRING_DATA_REDIS_PORT="${{ secrets.REDIS_PORT }}"
             export SPRING_DURATION="${{ secrets.APP_DURATION }}"
             
-            docker compose up --build -d
+            # Chạy Docker Compose up, chỉ định rõ file cấu hình
+            docker compose -f docker-compose.yml up --build -d
             echo "Docker Compose services started. Check logs with 'docker compose logs -f backend-app'"
