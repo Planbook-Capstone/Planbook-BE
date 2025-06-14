@@ -23,11 +23,9 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      # Bước này cần thiết để tạo ra file JAR
       - name: Maven Clean and Package
         run: mvn clean package -DskipTests
 
-      # Bước này tạo file docker-compose.yml động trên runner
       - name: Create docker-compose.yml on runner
         run: |
           cat <<EOF > docker-compose.yml
@@ -42,7 +40,6 @@ jobs:
                 - "2181:2181"
               environment:
                 ZOO_CLIENT_PORT: 2181 
-              # THÊM VOLUME CHO ZOOKEEPER
               volumes:
                 - zookeeper_data:/data
                 - zookeeper_datalog:/datalog
@@ -60,10 +57,6 @@ jobs:
                 KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
                 KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
                 KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-              # Lưu ý: KAFKA_ADVERTISED_LISTENERS có 'localhost' ở đây, 
-              # trong môi trường Docker Compose thì các service gọi nhau qua tên service
-              # Nếu bạn chạy nhiều replica của kafka trên swarm thì có thể cần chỉnh lại để kafka biết IP của chính nó.
-              # Nhưng với 1 replica trong Docker Compose thì không sao.
               volumes:
                 - kafka_data:/var/lib/kafka/data
               depends_on:
@@ -87,7 +80,6 @@ jobs:
               restart: always
               ports:
                 - "6379:6379"
-              # THÊM VOLUME CHO REDIS
               volumes:
                 - redis_data:/data
 
@@ -132,7 +124,6 @@ jobs:
                 - zookeeper
                 - kafka
                 - redis
-          # ĐỊNH NGHĨA CÁC NAMED VOLUMES Ở ĐÂY
           volumes:
             zookeeper_data:
             zookeeper_datalog:
@@ -141,7 +132,6 @@ jobs:
           EOF
         shell: bash
 
-      # Bước này copy tất cả file cần thiết lên VPS
       - name: Copy Project Files to VPS
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -151,7 +141,6 @@ jobs:
           source: "."
           target: /var/www/be/
 
-      # Bước này dừng và xóa CHỈ CONTAINER BACKEND CŨ
       - name: Stop and Remove Old Backend Container on VPS
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -177,14 +166,12 @@ jobs:
             fi
 
             echo "Stopping and removing old backend container if it exists..."
-            # Chỉ dừng và xóa container backend
             docker stop planbook-be 2>/dev/null || true
             docker rm -f planbook-be 2>/dev/null || true
             docker rmi planbook-be:latest 2>/dev/null || true
             
             echo "Old backend container and image cleaned up. Dependent services will be managed by 'docker compose up'."
 
-      # Bước này khởi chạy ứng dụng mới và các service phụ nếu chưa có/đã dừng
       - name: Start Application with Docker Compose on VPS
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -194,13 +181,6 @@ jobs:
           script: |
             cd /var/www/be || { echo "Error: /var/www/be directory not found on VPS."; exit 1; }
             echo "Building and starting Docker Compose services..."
-            
-            # Docker Compose sẽ tự động:
-            # - Tải image mới và tạo container nếu service chưa tồn tại.
-            # - Nếu service đã tồn tại:
-            #   - Với backend: Rebuild image và khởi động lại container.
-            #   - Với Zookeeper, Kafka, Redis, Kafdrop: Nếu chúng đã chạy, Docker Compose sẽ không làm gì. 
-            #     Nếu chúng đã dừng, nó sẽ khởi động lại chúng và sử dụng lại các volumes đã tồn tại.
             docker compose -f docker-compose.yml up --build backend -d --remove-orphans
             
             echo "Docker Compose services started. Check logs with 'docker compose logs -f planbook-be'"
