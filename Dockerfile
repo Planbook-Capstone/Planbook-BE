@@ -9,8 +9,11 @@ WORKDIR /app
 
 # Cài đặt curl trong image LẦN NÀY LÀ CỰC KỲ QUAN TRỌNG
 # curl là cần thiết để thực hiện HTTP request cho HEALTHCHECK
-RUN apt-get update && apt-get install -y curl --no-install-recommends && rm -rf /var/lib/apt/lists/*
+# curl là cần thiết để thực hiện HTTP request cho HEALTHCHECK
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 
+# BƯỚC MỚI: Xác minh curl đã được cài đặt
+RUN which curl || (echo "ERROR: curl command was not found after installation. Aborting build." && exit 1)
 # Copy file JAR đã được build vào thư mục /app trong container và đổi tên thành be.jar
 COPY target/*.jar be.jar
 
