@@ -85,10 +85,11 @@ jobs:
                 - "6379:6379"
 
             backend:
+              # SỬ DỤNG 'build' ĐỂ BUILD IMAGE TRÊN VPS
               build:
-                context: . 
+                context: . # context là thư mục hiện tại (khi docker compose chạy trên VPS)
                 dockerfile: Dockerfile
-              image: planbook-be:latest 
+              image: planbook-be:latest # Đặt tên tag cho image cục bộ trên VPS
               container_name: backend-app
               restart: always
               ports:
@@ -134,13 +135,14 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          # Copy toàn bộ thư mục dự án (trừ .git, target/* không phải .jar)
-          # Bao gồm: Dockerfile, docker-compose.yml và file JAR đã build
-          source: ". Dockerfile target/*.jar docker-compose.yml" # copy cả dự án
+          # Chỉ định rõ ràng các file và thư mục cần copy.
+          # Bật rsync để cải thiện hiệu suất và độ tin cậy.
+          source: |
+            Dockerfile
+            docker-compose.yml
+            target/be.jar # Đảm bảo tên file JAR chính xác là be.jar
           target: /var/www/be/
-          # Đảm bảo rsync là true để chỉ copy những thay đổi
-          # Nếu không dùng rsync, có thể cần `rsync: true` hoặc chỉ định cụ thể các files/folders
-          # Ví dụ: source: "Dockerfile docker-compose.yml target/*.jar"
+          rsync: true # Rất quan trọng để tránh lỗi 'empty archive' và cải thiện hiệu suất
 
       - name: Stop and Remove Old Containers on VPS
         uses: appleboy/ssh-action@v1.0.3
@@ -154,7 +156,7 @@ jobs:
             docker compose down || true
             # Xóa image cũ của ứng dụng backend để đảm bảo build image mới nhất
             # Đảm bảo tên image cục bộ khớp với tên bạn đã chọn
-            docker rmi planbook-be:latest || true # <-- ĐÃ THAY ĐỔI Ở ĐÂY
+            docker rmi planbook-be:latest || true
             echo "Old containers and images cleaned up."
 
       - name: Start Application with Docker Compose on VPS
@@ -176,15 +178,15 @@ jobs:
             export SPRING_DATASOURCE_USERNAME="${{ secrets.DB_USERNAME }}"
             export SPRING_DATASOURCE_PASSWORD="${{ secrets.DB_PASSWORD }}"
             export SUPABASE_JWT_SECRET="${{ secrets.SUPABASE_JWT_SECRET_KEY }}"
-            export SPRING_SECRETKEY: "${{ secrets.SPRING_APP_SECRET_KEY }}"
-            export KAFKA_TOPIC_NAME: "${{ secrets.KAFKA_TOPIC }}"
-            export SPRING_MAIL_HOST: "${{ secrets.MAIL_HOST }}"
-            export SPRING_MAIL_PORT: "${{ secrets.MAIL_PORT }}"
-            export SPRING_MAIL_USERNAME: "${{ secrets.MAIL_USERNAME }}"
-            export SPRING_MAIL_PASSWORD: "${{ secrets.MAIL_PASSWORD }}"
-            export SPRING_DATA_REDIS_HOST: "${{ secrets.REDIS_HOST }}"
-            export SPRING_DATA_REDIS_PORT: "${{ secrets.REDIS_PORT }}"
-            export SPRING_DURATION: "${{ secrets.APP_DURATION }}"
+            export SPRING_SECRETKEY="${{ secrets.SPRING_APP_SECRET_KEY }}"
+            export KAFKA_TOPIC_NAME="${{ secrets.KAFKA_TOPIC }}"
+            export SPRING_MAIL_HOST="${{ secrets.MAIL_HOST }}"
+            export SPRING_MAIL_PORT="${{ secrets.MAIL_PORT }}"
+            export SPRING_MAIL_USERNAME="${{ secrets.MAIL_USERNAME }}"
+            export SPRING_MAIL_PASSWORD="${{ secrets.MAIL_PASSWORD }}"
+            export SPRING_DATA_REDIS_HOST="${{ secrets.REDIS_HOST }}"
+            export SPRING_DATA_REDIS_PORT="${{ secrets.REDIS_PORT }}"
+            export SPRING_DURATION="${{ secrets.APP_DURATION }}"
             
             # Build lại image backend cục bộ trên VPS và khởi động tất cả dịch vụ
             # --build sẽ đảm bảo Dockerfile được đọc và image mới được tạo từ source hiện tại
