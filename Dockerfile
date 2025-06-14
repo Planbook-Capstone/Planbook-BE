@@ -26,8 +26,8 @@ RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 #    Nó sẽ gọi endpoint '/actuator/health' của Spring Boot.
 #    Nếu curl trả về mã lỗi (do kết nối thất bại hoặc HTTP status code >= 400), thì lệnh 'exit 1' sẽ được chạy,
 #    đánh dấu health check thất bại.
-HEALTHCHECK --interval=30s --timeout=10s --retries=5 \
+# Giảm interval và retries để phát hiện trạng thái khỏe mạnh nhanh hơn
+HEALTHCHECK --interval=10s --timeout=5s --retries=3 \
   CMD curl --fail http://localhost:8080/actuator/health || exit 1
-
 # Lệnh để chạy ứng dụng khi container được khởi động
 ENTRYPOINT ["java", "-jar", "be.jar"]
