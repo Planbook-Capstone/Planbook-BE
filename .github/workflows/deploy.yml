@@ -190,8 +190,8 @@ jobs:
               if sudo lsof -i :$PORT_TO_FREE > /dev/null; then
                 echo "Warning: Port $PORT_TO_FREE is still in use after killing process $PID_ON_PORT. Manual intervention may be needed."
               else
-                echo "Port $PORT_TO_FREE is now free."
-              F I
+                echo "Port $PORT_TO_FREE is now free." # <--- ĐÃ SỬA LỖI Ở ĐÂY
+              fi # <--- ĐÃ SỬA LỖI Ở ĐÂY
             else
               echo "Port $PORT_TO_FREE is already free."
             fi
