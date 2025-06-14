@@ -64,7 +64,28 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: ${{ steps.get_jar_name.outputs.FULL_JAR_PATH }} # Sử dụng đường dẫn đầy đủ từ runner
-          target: /var/www/be/ # Copy thẳng vào thư mục này
+          target: /var/www/be/ # Copy thẳng vào thư mục này, scp-action sẽ tạo target/be.jar ở đây
+
+      # === BƯỚC MỚI ĐƯỢC THÊM VÀO: DI CHUYỂN FILE JAR RA NGOÀI THƯ MỤC 'target' ===
+      - name: Move JAR from target/ to root
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /var/www/be || { echo "Error: /var/www/be directory not found on VPS."; exit 1; }
+            echo "Moving JAR from target/ to /var/www/be/..."
+            # Kiểm tra xem file JAR có trong target/ không
+            if [ -f "target/${{ steps.get_jar_name.outputs.JAR_NAME }}" ]; then
+              mv "target/${{ steps.get_jar_name.outputs.JAR_NAME }}" "./${{ steps.get_jar_name.outputs.JAR_NAME }}"
+              echo "Successfully moved ${{ steps.get_jar_name.outputs.JAR_NAME }} to /var/www/be/."
+              # Xóa thư mục target rỗng sau khi di chuyển file (tùy chọn)
+              rmdir target || true # rmdir chỉ xóa thư mục rỗng
+            else
+              echo "Error: JAR file not found in target/ as expected. Aborting move."
+              exit 1
+            fi
 
       - name: Verify JAR copied to VPS
         uses: appleboy/ssh-action@v1.0.3
@@ -75,10 +96,11 @@ jobs:
           script: |
             echo "Verifying JAR file on VPS..."
             ls -l /var/www/be/ # Liệt kê nội dung thư mục đích
-            if [ -f "/var/www/be/${{ steps.get_jar_name.outputs.JAR_NAME }}" ]; then # Kiểm tra bằng TÊN FILE JAR
-              echo "JAR file successfully copied to /var/www/be/."
+            # Sau khi di chuyển, file JAR_NAME sẽ nằm trực tiếp trong /var/www/be/
+            if [ -f "/var/www/be/${{ steps.get_jar_name.outputs.JAR_NAME }}" ]; then
+              echo "JAR file successfully copied and moved to /var/www/be/."
             else
-              echo "Error: JAR file NOT found in /var/www/be/ after copy operation."
+              echo "Error: JAR file NOT found in /var/www/be/ after move operation."
               exit 1 # Thoát workflow nếu không tìm thấy file
             fi
             echo "Verification complete."
@@ -93,6 +115,7 @@ jobs:
             cd /var/www/be || { echo "Error: /var/www/be directory not found on VPS."; exit 1; }
 
             # Dòng này bây giờ sẽ dùng JAR_NAME đã được làm sạch từ step get_jar_name
+            # Nó đã được di chuyển ra ngoài thư mục target bởi bước 'Move JAR from target/ to root'
             NEW_JAR_FULL_NAME=${{ steps.get_jar_name.outputs.JAR_NAME }}
             if [ -z "$NEW_JAR_FULL_NAME" ]; then
               echo "Error: No JAR file name available from previous steps. Deployment failed."
