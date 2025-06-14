@@ -1,4 +1,4 @@
-name: Deploy Spring Boot Backend with Docker Compose (Local Build)
+name: Deploy Spring Boot Backend with Docker Swarm (CI/CD)
 
 on:
   push:
@@ -28,6 +28,7 @@ jobs:
         run: mvn clean package -DskipTests
 
       # Bước này tạo file docker-compose.yml động trên runner
+      # File này sẽ không chứa các biến môi trường nhạy cảm nữa.
       - name: Create docker-compose.yml on runner
         run: |
           cat <<EOF > docker-compose.yml
@@ -83,46 +84,19 @@ jobs:
                 context: .
                 dockerfile: Dockerfile
               image: planbook-be:latest
-              # ĐÃ XÓA: container_name: planbook-be
-              # Docker Swarm sẽ tự quản lý tên container khi bạn dùng `docker stack deploy`.
-              # Giữ dòng này sẽ bị bỏ qua và có thể gây nhầm lẫn nếu bạn vẫn chạy `docker compose` thủ công.
+              # Đã xóa 'container_name' ở đây vì Docker Swarm tự quản lý.
               restart: always
               ports:
                 - "8080:8080"
-              environment:
-                SPRING_DATASOURCE_URL: "${{ secrets.DB_URL }}"
-                SPRING_DATASOURCE_USERNAME: "${{ secrets.DB_USERNAME }}"
-                SPRING_DATASOURCE_PASSWORD: "${{ secrets.DB_PASSWORD }}"
-                SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: "org.hibernate.dialect.MySQL8Dialect"
-                SPRING_JPA_HIBERNATE_DDL_AUTO: "update"
-                SPRING_MAIN_ALLOW_CIRCULAR_REFERENCES: "true"
-                SPRING_MVC_PATHMATCH_MATCHING_STRATEGY: "ANT_PATH_MATCHER"
-                SUPABASE_JWT_SECRET: "${{ secrets.SUPABASE_JWT_SECRET_KEY }}"
-                SPRING_SECRETKEY: "${{ secrets.SPRING_APP_SECRET_KEY }}"
-                SPRING_KAFKA_BOOTSTRAP_SERVERS: "kafka:29092"
-                KAFKA_TOPIC_NAME: "${{ secrets.KAFKA_TOPIC }}"
-                SPRING_MAIL_HOST: "${{ secrets.MAIL_HOST }}"
-                SPRING_MAIL_PORT: "${{ secrets.MAIL_PORT }}"
-                SPRING_MAIL_USERNAME: "${{ secrets.MAIL_USERNAME }}"
-                SPRING_MAIL_PASSWORD: "${{ secrets.MAIL_PASSWORD }}"
-                SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: "true"
-                SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: "true"
-                SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_REQUIRED: "true"
-                SPRING_MAIL_PROPERTIES_MAIL_SMTP_CONNECTIONTIMEOUT: "5000"
-                SPRING_MAIL_PROPERTIES_MAIL_SMTP_TIMEOUT: "5000"
-                SPRING_MAIL_PROPERTIES_MAIL_SMTP_WRITETIMEOUT: "5000"
-                SPRING_MAIL_DEFAULT_ENCODING: "UTF-8"
-                SPRING_DATA_REDIS_HOST: "redis"
-                SPRING_DATA_REDIS_PORT: "6379"
-                SPRING_CACHE_TYPE: "redis"
-                SPRING_DURATION: "${{ secrets.APP_DURATION }}"
-                SPRING_PROFILES_ACTIVE: "prod"
+              # =========================================================
+              # ĐÃ XÓA TẤT CẢ CÁC BIẾN MÔI TRƯỜNG KHỎI docker-compose.yml.
+              # Thay vào đó, chúng sẽ được 'export' trong script SSH
+              # trước khi chạy 'docker stack deploy'.
+              # =========================================================
               depends_on:
                 - zookeeper
                 - kafka
                 - redis
-              # =========================================================
-              # THÊM PHẦN DEPLOY NÀY CHO DOCKER SWARM
               deploy:
                 replicas: 1 # Chỉ chạy 1 instance của backend
                 update_config:
@@ -143,7 +117,6 @@ jobs:
                   retries: 3    # Thử lại 3 lần trước khi đánh dấu là thất bại
                   start_period: 60s # Thời gian chờ cho ứng dụng khởi động lần đầu (ví dụ 60s)
                                     # Trong thời gian này, health check không tính vào retries
-              # =========================================================
           EOF
         shell: bash
 
@@ -173,14 +146,18 @@ jobs:
             # 1. Dọn dẹp ban đầu các container Docker Compose cũ (không phải Swarm-managed)
             # Điều này quan trọng cho lần chuyển đổi đầu tiên từ docker-compose up sang docker stack deploy.
             echo "Attempting to clean up old standalone Docker Compose containers (if any)..."
+            # Thử dừng và xóa các container Docker Compose cũ (nếu có, không thuộc Swarm)
             docker compose -f docker-compose.yml down -v --remove-orphans --timeout 0 2>/dev/null || true
+            # Thử dừng và xóa các container backend cũ riêng lẻ (nếu có)
             docker stop planbook-be zookeeper kafka kafdrop redis 2>/dev/null || true
             docker rm -f planbook-be zookeeper kafka kafdrop redis 2>/dev/null || true
-            docker rmi planbook-be:latest 2>/dev/null || true # Xóa image `latest` cũ để đảm bảo build lại
+            # Xóa image backend cũ để đảm bảo Docker Swarm build lại phiên bản mới
+            docker rmi planbook-be:latest 2>/dev/null || true 
             echo "Old containers and images cleaned up (if any)."
 
             # 2. Export environment variables cho docker stack deploy
-            # Docker Swarm có cơ chế secrets và configs riêng, nhưng giữ cách này để tương thích.
+            # Việc export biến môi trường TRƯỚC lệnh `docker stack deploy` là cách an toàn
+            # để truyền secrets mà không bị lỗi YAML parsing.
             export SPRING_DATASOURCE_URL="${{ secrets.DB_URL }}"
             export SPRING_DATASOURCE_USERNAME="${{ secrets.DB_USERNAME }}"
             export SPRING_DATASOURCE_PASSWORD="${{ secrets.DB_PASSWORD }}"
@@ -191,10 +168,12 @@ jobs:
             export SPRING_MAIL_PORT="${{ secrets.MAIL_PORT }}"
             export SPRING_MAIL_USERNAME="${{ secrets.MAIL_USERNAME }}"
             export SPRING_MAIL_PASSWORD="${{ secrets.MAIL_PASSWORD }}"
-            export SPRING_DATA_REDIS_HOST="redis" # Giữ nguyên tên dịch vụ trong compose
-            export SPRING_DATA_REDIS_PORT="6379"
+            export SPRING_DATA_REDIS_HOST="redis" # Tên service trong docker-compose
+            export SPRING_DATA_REDIS_PORT="6379"  # Port mặc định của Redis
+            export SPRING_CACHE_TYPE="redis"      # Giá trị cố định
             export SPRING_DURATION="${{ secrets.APP_DURATION }}"
-            
+            export SPRING_PROFILES_ACTIVE="prod"  # Giá trị cố định
+
             # 3. Triển khai hoặc cập nhật stack
             # Docker stack deploy sẽ tự động build image nếu cần (do có 'build' trong compose file)
             # và sau đó triển khai/cập nhật các dịch vụ theo cấu hình 'deploy'.
@@ -208,7 +187,7 @@ jobs:
             # Điều này giúp workflow chờ đợi deploy hoàn tất và healthcheck thành công.
             ATTEMPTS=0
             MAX_ATTEMPTS=60 # Tối đa 60*5 = 300 giây (5 phút) để chờ
-            SERVICE_NAME="planbook-stack_backend" # Tên dịch vụ backend trong Swarm
+            SERVICE_NAME="planbook-stack_backend" # Tên dịch vụ backend trong Swarm (tên stack_tên service)
 
             while [ $ATTEMPTS -lt $MAX_ATTEMPTS ]; do
               # Lấy số lượng replica đang chạy
@@ -217,7 +196,6 @@ jobs:
               REPLICAS_EXPECTED=$(docker service inspect --format '{{.Spec.Replicas}}' "$SERVICE_NAME")
               
               # Lấy trạng thái health của service (từ một replica bất kỳ, nếu có nhiều)
-              # Dùng `docker inspect` để có thông tin health đầy đủ hơn
               HEALTH_STATUS_OUTPUT=$(docker service ps "$SERVICE_NAME" --format "{{.ID}}\t{{.Name}}\t{{.CurrentState}}\t{{.Health}}" | grep "$SERVICE_NAME" | head -n 1)
               HEALTH_STATUS="unknown"
               if echo "$HEALTH_STATUS_OUTPUT" | grep -q "healthy"; then
@@ -239,8 +217,5 @@ jobs:
 
             if [ $ATTEMPTS -eq $MAX_ATTEMPTS ]; then
               echo "Error: Service '$SERVICE_NAME' did not become stable (healthy and running) after $MAX_ATTEMPTS attempts. Deployment failed."
-              # Khi triển khai bằng stack deploy, nếu deploy thất bại, Swarm sẽ tự động rollback
-              # hoặc giữ phiên bản cũ nếu `order: start-first` được tuân thủ.
-              # Tuy nhiên, chúng ta vẫn báo lỗi cho CI/CD để biết.
               exit 1
             fi
