@@ -29,9 +29,13 @@ jobs:
       - name: Get JAR file name
         id: get_jar_name
         run: |
-          JAR_NAME=$(ls target/*.jar | head -1)
-          echo "JAR_NAME=$JAR_NAME" >> $GITHUB_OUTPUT
-          echo "Detected JAR: $JAR_NAME"
+          # Tìm tên file JAR đã build trong thư mục 'target'
+          FULL_JAR_PATH=$(ls target/*.jar | head -1) # Lấy đường dẫn đầy đủ từ runner
+          JAR_NAME=$(basename $FULL_JAR_PATH) # Lấy chỉ tên file (ví dụ: be.jar)
+          echo "JAR_NAME=$JAR_NAME" >> $GITHUB_OUTPUT # Lưu TÊN FILE JAR vào output
+          echo "FULL_JAR_PATH=$FULL_JAR_PATH" >> $GITHUB_OUTPUT # Lưu ĐƯỜNG DẪN ĐẦY ĐỦ vào output
+          echo "Detected JAR path: $FULL_JAR_PATH"
+          echo "Detected JAR name: $JAR_NAME"
 
       - name: Clean up old deployment on VPS
         uses: appleboy/ssh-action@v1.0.3
@@ -50,7 +54,7 @@ jobs:
             else
               echo "No existing process found on port 8080."
             fi
-            sudo rm -rf *.jar target/ application.log
+            sudo rm -rf *.jar target/ application.log # Xóa cả thư mục target cũ
             echo "Cleanup complete."
 
       - name: Copy JAR to VPS
@@ -59,10 +63,9 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: ${{ steps.get_jar_name.outputs.JAR_NAME }}
-          target: /var/www/be/
+          source: ${{ steps.get_jar_name.outputs.FULL_JAR_PATH }} # Sử dụng đường dẫn đầy đủ từ runner
+          target: /var/www/be/ # Copy thẳng vào thư mục này
 
-      # === BƯỚC MỚI: KIỂM TRA FILE SAU KHI COPY ===
       - name: Verify JAR copied to VPS
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -72,14 +75,13 @@ jobs:
           script: |
             echo "Verifying JAR file on VPS..."
             ls -l /var/www/be/ # Liệt kê nội dung thư mục đích
-            if [ -f "/var/www/be/$(basename ${{ steps.get_jar_name.outputs.JAR_NAME }})" ]; then
+            if [ -f "/var/www/be/${{ steps.get_jar_name.outputs.JAR_NAME }}" ]; then # Kiểm tra bằng TÊN FILE JAR
               echo "JAR file successfully copied to /var/www/be/."
             else
               echo "Error: JAR file NOT found in /var/www/be/ after copy operation."
               exit 1 # Thoát workflow nếu không tìm thấy file
             fi
             echo "Verification complete."
-      # ============================================
 
       - name: Start Application on VPS
         uses: appleboy/ssh-action@v1.0.3
@@ -90,9 +92,10 @@ jobs:
           script: |
             cd /var/www/be || { echo "Error: /var/www/be directory not found on VPS."; exit 1; }
 
-            NEW_JAR_FULL_NAME=$(ls *.jar | head -1)
+            # Dòng này bây giờ sẽ dùng JAR_NAME đã được làm sạch từ step get_jar_name
+            NEW_JAR_FULL_NAME=${{ steps.get_jar_name.outputs.JAR_NAME }}
             if [ -z "$NEW_JAR_FULL_NAME" ]; then
-              echo "Error: No JAR file found after SCP. This should not happen if previous steps succeeded."
+              echo "Error: No JAR file name available from previous steps. Deployment failed."
               exit 1
             fi
             mv "$NEW_JAR_FULL_NAME" be.jar
