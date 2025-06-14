@@ -122,7 +122,7 @@ jobs:
         shell: bash
 
       - name: Copy Project Files to VPS
-        uses: appleboy/scp-action@v0.1.9 # <-- ĐÃ THAY ĐỔI PHIÊN BẢN ACTION TẠI ĐÂY
+        uses: appleboy/scp-action@v0.1.8 # <-- ĐÃ THAY ĐỔI PHIÊN BẢN ACTION TẠI ĐÂY
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
