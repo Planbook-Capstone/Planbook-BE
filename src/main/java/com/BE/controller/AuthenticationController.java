@@ -115,6 +115,12 @@ public class AuthenticationController {
         return ResponseEntity.ok("Test Role User Successfully");
     }
 
+
+    @GetMapping("/hihi")
+    public ResponseEntity hihi(){
+        return ResponseEntity.ok("hihi User Successfully");
+    }
+
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/admin-only")
     public ResponseEntity admin(){
