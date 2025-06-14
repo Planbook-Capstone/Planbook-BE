@@ -83,7 +83,9 @@ jobs:
                 context: .
                 dockerfile: Dockerfile
               image: planbook-be:latest
-              container_name: planbook-be # ĐÃ THAY ĐỔI TÊN CONTAINER Ở ĐÂY
+              # ĐÃ XÓA: container_name: planbook-be
+              # Docker Swarm sẽ tự quản lý tên container khi bạn dùng `docker stack deploy`.
+              # Giữ dòng này sẽ bị bỏ qua và có thể gây nhầm lẫn nếu bạn vẫn chạy `docker compose` thủ công.
               restart: always
               ports:
                 - "8080:8080"
@@ -119,6 +121,29 @@ jobs:
                 - zookeeper
                 - kafka
                 - redis
+              # =========================================================
+              # THÊM PHẦN DEPLOY NÀY CHO DOCKER SWARM
+              deploy:
+                replicas: 1 # Chỉ chạy 1 instance của backend
+                update_config:
+                  parallelism: 1 # Cập nhật từng container một
+                  delay: 10s     # Chờ 10 giây giữa các bước cập nhật
+                  order: start-first # Khởi động container mới trước khi dừng container cũ
+                                     # -> Đảm bảo không có downtime trong quá trình cập nhật
+                rollback_config:
+                  parallelism: 1
+                  delay: 10s
+                  order: stop-first # Dừng container lỗi trước khi quay lại cái cũ
+                restart_policy:
+                  condition: on-failure # Khởi động lại nếu container thất bại
+                healthcheck: # Định nghĩa healthcheck cho Docker Swarm
+                  test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
+                  interval: 30s # Kiểm tra mỗi 30 giây
+                  timeout: 10s  # Timeout nếu không phản hồi trong 10 giây
+                  retries: 3    # Thử lại 3 lần trước khi đánh dấu là thất bại
+                  start_period: 60s # Thời gian chờ cho ứng dụng khởi động lần đầu (ví dụ 60s)
+                                    # Trong thời gian này, health check không tính vào retries
+              # =========================================================
           EOF
         shell: bash
 
@@ -132,55 +157,30 @@ jobs:
           source: "."
           target: /var/www/be/
 
-      # Bước này dừng và xóa các container cũ
-      - name: Stop and Remove Old Containers on VPS
+      # BƯỚC MỚI: TRIỂN KHAI VỚI DOCKER STACK (THAY THẾ 2 BƯỚC CŨ Stop/Start)
+      - name: Deploy Application with Docker Stack on VPS (Swarm Mode)
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
+            set -e # Exit immediately if a command exits with a non-zero status.
+
             cd /var/www/be || { echo "Error: /var/www/be directory not found on VPS."; exit 1; }
-            echo "Stopping and removing old Docker Compose services..."
+            echo "Deploying application using Docker Stack (Swarm Mode)..."
 
-            echo "Checking and freeing up port 8080..."
-            PORT_TO_FREE=8080
-            PID_ON_PORT=$(sudo lsof -t -i :$PORT_TO_FREE)
-            if [ -n "$PID_ON_PORT" ]; then
-              echo "Found process on port $PORT_TO_FREE with PID: $PID_ON_PORT. Attempting to kill it..."
-              sudo kill -9 $PID_ON_PORT 2>/dev/null || true
-              sleep 1
-              if sudo lsof -i :$PORT_TO_FREE > /dev/null; then
-                echo "Warning: Port $PORT_TO_FREE is still in use after killing process $PID_ON_PORT. Manual intervention may be needed."
-              else
-                echo "Port $PORT_TO_FREE is now free."
-              fi
-            else
-              echo "Port $PORT_TO_FREE is already free."
-            fi
-
+            # 1. Dọn dẹp ban đầu các container Docker Compose cũ (không phải Swarm-managed)
+            # Điều này quan trọng cho lần chuyển đổi đầu tiên từ docker-compose up sang docker stack deploy.
+            echo "Attempting to clean up old standalone Docker Compose containers (if any)..."
             docker compose -f docker-compose.yml down -v --remove-orphans --timeout 0 2>/dev/null || true
-            
-            echo "Attempting to forcefully stop and remove individual backend-related containers..."
-            # THAY ĐỔI TÊN CONTAINER TẠI ĐÂY
             docker stop planbook-be zookeeper kafka kafdrop redis 2>/dev/null || true
             docker rm -f planbook-be zookeeper kafka kafdrop redis 2>/dev/null || true
-            
-            docker rmi planbook-be:latest 2>/dev/null || true
-            
-            echo "Old backend-related containers and images cleaned up."
+            docker rmi planbook-be:latest 2>/dev/null || true # Xóa image `latest` cũ để đảm bảo build lại
+            echo "Old containers and images cleaned up (if any)."
 
-      # Bước này khởi chạy ứng dụng mới
-      - name: Start Application with Docker Compose on VPS
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            cd /var/www/be || { echo "Error: /var/www/be directory not found on VPS."; exit 1; }
-            echo "Building and starting new Docker Compose services..."
-            
+            # 2. Export environment variables cho docker stack deploy
+            # Docker Swarm có cơ chế secrets và configs riêng, nhưng giữ cách này để tương thích.
             export SPRING_DATASOURCE_URL="${{ secrets.DB_URL }}"
             export SPRING_DATASOURCE_USERNAME="${{ secrets.DB_USERNAME }}"
             export SPRING_DATASOURCE_PASSWORD="${{ secrets.DB_PASSWORD }}"
@@ -191,10 +191,56 @@ jobs:
             export SPRING_MAIL_PORT="${{ secrets.MAIL_PORT }}"
             export SPRING_MAIL_USERNAME="${{ secrets.MAIL_USERNAME }}"
             export SPRING_MAIL_PASSWORD="${{ secrets.MAIL_PASSWORD }}"
-            export SPRING_DATA_REDIS_HOST="${{ secrets.REDIS_HOST }}"
-            export SPRING_DATA_REDIS_PORT="${{ secrets.REDIS_PORT }}"
+            export SPRING_DATA_REDIS_HOST="redis" # Giữ nguyên tên dịch vụ trong compose
+            export SPRING_DATA_REDIS_PORT="6379"
             export SPRING_DURATION="${{ secrets.APP_DURATION }}"
             
-            docker compose -f docker-compose.yml up --build -d
-            # THAY ĐỔI TÊN CONTAINER TẠI ĐÂY KHI KIỂM TRA LOG
-            echo "Docker Compose services started. Check logs with 'docker compose logs -f planbook-be'"
+            # 3. Triển khai hoặc cập nhật stack
+            # Docker stack deploy sẽ tự động build image nếu cần (do có 'build' trong compose file)
+            # và sau đó triển khai/cập nhật các dịch vụ theo cấu hình 'deploy'.
+            echo "Running docker stack deploy..."
+            docker stack deploy -c docker-compose.yml planbook-stack # 'planbook-stack' là tên stack của bạn
+
+            echo "Deployment initiated. Check service status with 'docker service ls' and logs with 'docker service logs planbook-stack_backend'"
+            echo "Waiting for 'planbook-stack_backend' service to be stable..."
+
+            # 4. Kiểm tra trạng thái của dịch vụ sau khi deploy
+            # Điều này giúp workflow chờ đợi deploy hoàn tất và healthcheck thành công.
+            ATTEMPTS=0
+            MAX_ATTEMPTS=60 # Tối đa 60*5 = 300 giây (5 phút) để chờ
+            SERVICE_NAME="planbook-stack_backend" # Tên dịch vụ backend trong Swarm
+
+            while [ $ATTEMPTS -lt $MAX_ATTEMPTS ]; do
+              # Lấy số lượng replica đang chạy
+              RUNNING_REPLICAS=$(docker service ps "$SERVICE_NAME" --filter "desired-state=running" --format "{{.CurrentState}}" | grep -i "Running" | wc -l)
+              # Lấy số lượng replica mong muốn
+              REPLICAS_EXPECTED=$(docker service inspect --format '{{.Spec.Replicas}}' "$SERVICE_NAME")
+              
+              # Lấy trạng thái health của service (từ một replica bất kỳ, nếu có nhiều)
+              # Dùng `docker inspect` để có thông tin health đầy đủ hơn
+              HEALTH_STATUS_OUTPUT=$(docker service ps "$SERVICE_NAME" --format "{{.ID}}\t{{.Name}}\t{{.CurrentState}}\t{{.Health}}" | grep "$SERVICE_NAME" | head -n 1)
+              HEALTH_STATUS="unknown"
+              if echo "$HEALTH_STATUS_OUTPUT" | grep -q "healthy"; then
+                  HEALTH_STATUS="healthy"
+              elif echo "$HEALTH_STATUS_OUTPUT" | grep -q "unhealthy"; then
+                  HEALTH_STATUS="unhealthy"
+              fi
+
+              echo "  Attempt $((ATTEMPTS+1))/$MAX_ATTEMPTS: Service '$SERVICE_NAME' - Running: $RUNNING_REPLICAS/$REPLICAS_EXPECTED. Health: $HEALTH_STATUS."
+
+              if [ "$RUNNING_REPLICAS" -ge "$REPLICAS_EXPECTED" ] && [ "$HEALTH_STATUS" == "healthy" ]; then
+                echo "Service '$SERVICE_NAME' is running and healthy. Deployment successful!"
+                break
+              fi
+              
+              sleep 5
+              ATTEMPTS=$((ATTEMPTS+1))
+            done
+
+            if [ $ATTEMPTS -eq $MAX_ATTEMPTS ]; then
+              echo "Error: Service '$SERVICE_NAME' did not become stable (healthy and running) after $MAX_ATTEMPTS attempts. Deployment failed."
+              # Khi triển khai bằng stack deploy, nếu deploy thất bại, Swarm sẽ tự động rollback
+              # hoặc giữ phiên bản cũ nếu `order: start-first` được tuân thủ.
+              # Tuy nhiên, chúng ta vẫn báo lỗi cho CI/CD để biết.
+              exit 1
+            fi

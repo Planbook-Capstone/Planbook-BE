@@ -116,7 +116,7 @@ public class AuthenticationController {
     }
 
 
-    @GetMapping("/docker-compose")
+    @GetMapping("/git-action")
     public ResponseEntity hihi(){
         return ResponseEntity.ok("Git-action Successfully");
     }
