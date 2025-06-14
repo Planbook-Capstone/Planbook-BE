@@ -39,7 +39,7 @@ jobs:
               ports:
                 - "2181:2181"
               environment:
-                ZOO_CLIENT_PORT: 2181 
+                ZOO_CLIENT_PORT: 2181
               volumes:
                 - zookeeper_data:/data
                 - zookeeper_datalog:/datalog
@@ -157,7 +157,7 @@ jobs:
               sudo kill -9 $PID_ON_PORT 2>/dev/null || true
               sleep 1
               if sudo lsof -i :$PORT_TO_FREE > /dev/null; then
-                echo "Warning: Port $PORT_TO_FREE is still in use after killing process $PID_ON_PORT. Manual intervention may be needed."
+                echo "Warning: Port $PORT_TO_FREE is still in use after killing process $PID_TO_KILL. Manual intervention may be needed."
               else
                 echo "Port $PORT_TO_FREE is now free."
               fi
@@ -181,6 +181,6 @@ jobs:
           script: |
             cd /var/www/be || { echo "Error: /var/www/be directory not found on VPS."; exit 1; }
             echo "Building and starting Docker Compose services..."
-            docker compose -f docker-compose.yml up --build backend -d --remove-orphans
+            docker compose -f docker-compose.yml up --build -d --remove-orphans # Removed 'backend' from here to start all services
             
             echo "Docker Compose services started. Check logs with 'docker compose logs -f planbook-be'"
