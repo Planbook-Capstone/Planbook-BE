@@ -21,8 +21,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@Tag(name = "Lesson", description = "API for managing Lesson")
-@RequestMapping("/api/lesson")
+@Tag(name = "Lessons", description = "API quản lí bài học")
+@RequestMapping("/api/lessons")
 @SecurityRequirement(name = "api")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
