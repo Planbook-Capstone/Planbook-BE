@@ -21,7 +21,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.UUID;
 
 @RestController
-@Tag(name = "Năm học", description = "API quản lý năm học")
+@Tag(name = "AcademicYears", description = "API quản lý năm học")
 @RequestMapping("/api/academic-years")
 @SecurityRequirement(name = "api")
 @CrossOrigin("*")
