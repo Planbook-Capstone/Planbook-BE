@@ -25,8 +25,10 @@ public class FormServiceImpl implements IFormService {
     FormRepository formRepository;
     @Autowired
     ObjectMapper objectMapper;
+
     @Autowired
     DateNowUtils dateNowUtils;
+
     @Autowired
     FormMapper formMapper;
 
@@ -38,8 +40,8 @@ public class FormServiceImpl implements IFormService {
             form.setName(formRequest.getName());
             form.setDescription(formRequest.getDescription());
             form.setFormDefinition(jsonString);
-            form.setCreatedAt(dateNowUtils.getCurrentDateTimeHCM());
-            form.setUpdatedAt(dateNowUtils.getCurrentDateTimeHCM());
+            form.setCreatedAt(dateNowUtils.dateNow());
+            form.setUpdatedAt(dateNowUtils.dateNow());
             return formRepository.save(form);
         } catch (JsonProcessingException e) {
             throw new BadRequestException("Error converting form definition to JSON");

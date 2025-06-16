@@ -26,7 +26,7 @@ public class Form {
     @Column(name = "form_definition", columnDefinition = "json")
     String formDefinition;
 
-    LocalDateTime createdAt;
-    LocalDateTime updatedAt;
+    String createdAt;
+    String updatedAt;
 
 }

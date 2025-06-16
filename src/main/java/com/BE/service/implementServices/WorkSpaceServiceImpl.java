@@ -13,6 +13,7 @@ import com.BE.repository.WorkSpaceRepository;
 import com.BE.service.interfaceServices.IWorkSpaceService;
 import com.BE.utils.AccountUtils;
 import com.BE.service.interfaceServices.IAcademicYearService;
+import com.BE.utils.DateNowUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -37,6 +38,9 @@ public class WorkSpaceServiceImpl implements IWorkSpaceService {
         @Autowired
         private IAcademicYearService academicYearService;
 
+        @Autowired
+        private DateNowUtils dateNowUtils;
+
         @Override
         public List<WorkSpaceResponse> getAll() {
                 return workSpaceRepository.findAll().stream()
@@ -55,6 +59,8 @@ public class WorkSpaceServiceImpl implements IWorkSpaceService {
         public WorkSpaceResponse create(WorkSpaceRequest request) {
                 WorkSpace ws = new WorkSpace();
                 ws.setName(request.getName());
+                ws.setCreatedAt(dateNowUtils.dateNow());
+                ws.setUpdatedAt(dateNowUtils.dateNow());
                 AcademicYear ay = academicYearRepository.findById(request.getAcademicYearId())
                                 .orElseThrow(() -> new BadRequestException("AcademicYear not found"));
                 User user = userRepository.findById(request.getUserId())
@@ -69,6 +75,7 @@ public class WorkSpaceServiceImpl implements IWorkSpaceService {
                 WorkSpace ws = workSpaceRepository.findById(id)
                                 .orElseThrow(() -> new BadRequestException("WorkSpace not found"));
                 ws.setName(request.getName());
+                ws.setUpdatedAt(dateNowUtils.dateNow());
                 AcademicYear ay = academicYearRepository.findById(request.getAcademicYearId())
                                 .orElseThrow(() -> new BadRequestException("AcademicYear not found"));
                 User user = userRepository.findById(request.getUserId())
