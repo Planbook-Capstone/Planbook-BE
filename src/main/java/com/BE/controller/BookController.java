@@ -23,7 +23,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@Tag(name = "Books", description = "API for managing Books")
+@Tag(name = "Books", description = "API quản lí sách giáo khoa")
 @RequestMapping("/api/books")
 @SecurityRequirement(name = "api")
 @RequiredArgsConstructor

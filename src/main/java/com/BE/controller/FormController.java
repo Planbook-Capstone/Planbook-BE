@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@Tag(name = "Forms", description = "API for form Lesson Plan")
+@Tag(name = "Forms", description = "API quản lí khung giáo án mẫu")
 @RequestMapping("/api/forms")
 @RequiredArgsConstructor
 @SecurityRequirement(name = "api")

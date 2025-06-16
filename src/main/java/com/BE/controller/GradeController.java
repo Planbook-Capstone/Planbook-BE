@@ -24,7 +24,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@Tag(name = "Grades", description = "API for managing Grades")
+@Tag(name = "Grades", description = "API quản lí lớp học")
 @RequestMapping("/api/grades")
 @SecurityRequirement(name = "api")
 @RequiredArgsConstructor
