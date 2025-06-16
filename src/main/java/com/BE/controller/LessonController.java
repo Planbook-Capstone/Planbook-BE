@@ -78,7 +78,7 @@ public class LessonController {
     @ApiResponse(responseCode = "500", description = "Lỗi máy chủ nội bộ.")
     public ResponseEntity<Object> createLesson(@Valid @RequestBody LessonRequest request) {
         LessonResponse response = lessonService.createLesson(request);
-        return responseHandler.response(201, "Lesson created successfully!", response);
+        return responseHandler.response(201, "Tạo bài học thành công!", response);
     }
 
     // --- API: LẤY DANH SÁCH BÀI HỌC (GET All Lessons) ---
@@ -107,7 +107,7 @@ public class LessonController {
             @RequestParam(required = false, defaultValue = "asc") String sortDirection) {
         int pageForBackend = page > 0 ? page - 1 : 0;
         Page<LessonResponse> lessonPage = lessonService.getAllLessons(pageForBackend, size, search, status, sortBy, sortDirection);
-        return responseHandler.response(200, "Lessons retrieved successfully!", lessonPage);
+        return responseHandler.response(200, "Lấy thông tin bài học thành công !", lessonPage);
     }
 
     // --- API: LẤY BÀI HỌC BẰNG ID (GET By ID) ---
@@ -124,7 +124,7 @@ public class LessonController {
     @ApiResponse(responseCode = "500", description = "Lỗi máy chủ nội bộ.")
     public ResponseEntity<Object> getLessonById(@PathVariable long id) {
         LessonResponse response = lessonService.getLessonById(id);
-        return responseHandler.response(200, "Lesson retrieved successfully!", response);
+        return responseHandler.response(200, "Lấy thông tin tất cả bài học thành công!", response);
     }
 
     // --- API: CẬP NHẬT BÀI HỌC (PUT) ---
@@ -168,7 +168,7 @@ public class LessonController {
     @ApiResponse(responseCode = "500", description = "Lỗi máy chủ nội bộ.")
     public ResponseEntity<Object> updateLesson(@PathVariable long id, @Valid @RequestBody LessonRequest request) {
         LessonResponse response = lessonService.updateLesson(id, request);
-        return responseHandler.response(200, "Lesson updated successfully!", response);
+        return responseHandler.response(200, "Cập nhật bài học thành công!", response);
     }
 
     // --- API: CẬP NHẬT TRẠNG THÁI BÀI HỌC (PATCH Status) ---
@@ -200,7 +200,7 @@ public class LessonController {
             @PathVariable long id,
             @RequestParam String newStatus) {
         LessonResponse response = lessonService.changeLessonStatus(id, newStatus);
-        return responseHandler.response(200, "Lesson status updated successfully!", response);
+        return responseHandler.response(200, "Cập nhật trạng thái bài học thành công!", response);
     }
 
     // --- API MỚI: LẤY DANH SÁCH BÀI HỌC THEO CHAPTER ID (GET By Chapter ID) ---
@@ -233,7 +233,7 @@ public class LessonController {
             @RequestParam(required = false, defaultValue = "asc") String sortDirection) {
         int pageForBackend = page > 0 ? page - 1 : 0;
         Page<LessonResponse> lessonPage = lessonService.getLessonsByChapterId(chapterId, pageForBackend, size, search, status, sortBy, sortDirection);
-        return responseHandler.response(200, "Lessons retrieved successfully for Chapter ID: " + chapterId, lessonPage);
+        return responseHandler.response(200, "Lấy thông tin bài học theo Id của chương: " + chapterId, lessonPage);
     }
 
 

@@ -73,7 +73,6 @@ public class AuthenticationImpl implements IAuthenticationService {
     private String supabaseJwtSecret;
 
 
-
     public User register(AuthenticationRequest request) {
         User user = userMapper.toUser(request);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
@@ -89,7 +88,7 @@ public class AuthenticationImpl implements IAuthenticationService {
             return user;
         } catch (DataIntegrityViolationException e) {
             System.out.println(e.getMessage());
-            throw new DataIntegrityViolationException("Duplicate UserName");
+            throw new DataIntegrityViolationException("Đã có username này!");
         }
     }
 
@@ -102,7 +101,7 @@ public class AuthenticationImpl implements IAuthenticationService {
                             request.getUsername().trim(),
                             request.getPassword().trim()));
         } catch (Exception e) {
-            throw new NullPointerException("Wrong Id Or Password");
+            throw new NullPointerException("Sai ID hoặc mật khẩu!");
         }
 
         User user = (User) authentication.getPrincipal();
@@ -181,11 +180,11 @@ public class AuthenticationImpl implements IAuthenticationService {
     }
 
     public void forgotPasswordRequest(String email) {
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new BadRequestException("Email Not Found"));
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new BadRequestException("Không tìm thấy email này!"));
 
         EmailDetail emailDetail = new EmailDetail();
         emailDetail.setRecipient(user.getEmail());
-        emailDetail.setSubject("Reset password for account " + user.getEmail() + "!");
+        emailDetail.setSubject("Khôi phục mật khẩu cho: " + user.getEmail() + "!");
         emailDetail.setMsgBody("aaa");
         emailDetail.setButtonValue("Reset Password");
         emailDetail.setFullName(user.getFullName());
@@ -221,7 +220,7 @@ public class AuthenticationImpl implements IAuthenticationService {
             System.out.println(refreshTokenService.getIdFromRefreshToken(refreshRequest.getRefreshToken()));
             User user = userRepository
                     .findById(refreshTokenService.getIdFromRefreshToken(refreshRequest.getRefreshToken()))
-                    .orElseThrow(() -> new BadRequestException("User Not Found"));
+                    .orElseThrow(() -> new BadRequestException("Không tìm thấy người dùng!"));
             authenResponse.setToken(jwtService.generateToken(user, refreshRequest.getRefreshToken(), true));
         } else {
             throw new InvalidRefreshTokenException("Invalid refresh token");

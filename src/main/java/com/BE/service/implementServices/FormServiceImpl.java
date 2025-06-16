@@ -45,14 +45,14 @@ public class FormServiceImpl implements IFormService {
             form.setUpdatedAt(dateNowUtils.dateNow());
             return formRepository.save(form);
         } catch (JsonProcessingException e) {
-            throw new BadRequestException("Error converting form definition to JSON");
+            throw new BadRequestException("Lỗi khi chuyển đổi định nghĩa biểu mẫu thành JSON");
         }
     }
 
     @Override
     public FormResponse getForm(Long id) {
         Form form = formRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Form not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy biểu mẫu"));
 
         return formMapper.toFormResponse(form);
     }
@@ -66,7 +66,7 @@ public class FormServiceImpl implements IFormService {
     @Override
     public FormResponse updateForm(Long id, FormRequest formRequest) {
         Form existingForm = formRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Form not found with id: " + id));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy biểu mẫu có id: " + id));
 
         try {
             // Convert formData to JSON string
@@ -83,7 +83,7 @@ public class FormServiceImpl implements IFormService {
             Form updatedForm = formRepository.save(existingForm);
             return formMapper.toFormResponse(updatedForm);
         } catch (JsonProcessingException e) {
-            throw new BadRequestException("Error converting form definition to JSON");
+            throw new BadRequestException("Lỗi khi chuyển đổi định nghĩa biểu mẫu thành JSON");
         }
     }
 }

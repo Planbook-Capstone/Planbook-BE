@@ -13,12 +13,12 @@ import org.springframework.cache.annotation.EnableCaching;
 @EnableCaching
 //@OpenAPIDefinition(info = @Info(title = "Planbook API", version = "2.0", description = "Information"))
 @OpenAPIDefinition(
-		servers = @Server(url = "https://planbook.vn"),
-		info = @Info(
-				title = "Planbook API",
-				version = "2.0",
-				description = "Information"
-		)
+        servers = @Server(url = "https://planbook.vn"),
+        info = @Info(
+                title = "Planbook API",
+                version = "2.0",
+                description = "Information"
+        )
 )
 
 @SecurityScheme(name = "api", scheme = "bearer", type = SecuritySchemeType.HTTP, in = SecuritySchemeIn.HEADER)

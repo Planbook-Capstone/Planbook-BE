@@ -38,12 +38,11 @@ public class BookTypeServiceImpl implements IBookTypeService {
     BookTypeRepository bookTypeRepository;
 
 
-
     @Override
     public BookTypeResponse createBookType(BookTypeRequest request) {
         // Kiểm tra tên loại sách đã tồn tại chưa
         if (bookTypeRepository.findByNameIgnoreCase(request.getName().trim()).isPresent()) {
-            throw new DataIntegrityViolationException("BookType with name '" + request.getName() + "' already exists.");
+            throw new DataIntegrityViolationException("Loại sách với tên '" + request.getName() + "' đã tồn tại.");
         }
 
         BookType bookType = bookTypeMapper.toBookType(request);
@@ -56,7 +55,7 @@ public class BookTypeServiceImpl implements IBookTypeService {
             return bookTypeMapper.toBookTypeResponse(savedBookType);
         } catch (DataIntegrityViolationException e) {
             // Trường hợp hiếm gặp nếu có race condition, tên vẫn trùng
-            throw new DataIntegrityViolationException("Failed to create BookType: BookType with name '" + request.getName() + "' already exists (possible race condition).");
+            throw new DataIntegrityViolationException("Tạo loại sách thất bại: Loại sách với tên '" + request.getName() + "' đã tồn tại (có thể do đồng thời).");
         }
     }
 
@@ -70,7 +69,7 @@ public class BookTypeServiceImpl implements IBookTypeService {
             try {
                 statusEnum = StatusEnum.valueOf(status.toUpperCase());
             } catch (IllegalArgumentException e) {
-                throw new IllegalArgumentException("Invalid status value: " + status + ". Must be ACTIVE or INACTIVE.");
+                throw new IllegalArgumentException("Trạng thái không hợp lệ: " + status + ". Giá trị hợp lệ là ACTIVE hoặc INACTIVE.");
             }
         }
 
@@ -82,20 +81,20 @@ public class BookTypeServiceImpl implements IBookTypeService {
     @Override
     public BookTypeResponse getBookTypeById(UUID id) { // Quan trọng: Tham số là UUID
         BookType bookType = bookTypeRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("BookType not found with ID: " + id));
+                .orElseThrow(() -> new NotFoundException("Không tìm thấy loại sách với ID: " + id));
         return bookTypeMapper.toBookTypeResponse(bookType);
     }
 
     @Override
     public BookTypeResponse updateBookType(UUID id, BookTypeRequest request) { // Quan trọng: Tham số là UUID
         BookType existingBookType = bookTypeRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("BookType not found with ID: " + id));
+                .orElseThrow(() -> new NotFoundException("Không tìm thấy loại sách với ID: " + id));
 
         // Kiểm tra tên có trùng với loại sách khác (không phải chính nó) không
         if (!existingBookType.getName().equalsIgnoreCase(request.getName())) { // Chỉ kiểm tra nếu tên thay đổi
             Optional<BookType> duplicateBookType = bookTypeRepository.findByNameIgnoreCaseAndIdNot(request.getName(), id);
             if (duplicateBookType.isPresent()) {
-                throw new DataIntegrityViolationException("BookType with name '" + request.getName() + "' already exists.");
+                throw new DataIntegrityViolationException("Loại sách với tên '" + request.getName() + "' đã tồn tại.");
             }
         }
 
@@ -110,20 +109,20 @@ public class BookTypeServiceImpl implements IBookTypeService {
             return bookTypeMapper.toBookTypeResponse(updatedBookType);
         } catch (DataIntegrityViolationException e) {
             // Trường hợp hiếm gặp nếu có race condition, tên vẫn trùng
-            throw new DataIntegrityViolationException("Failed to update BookType: BookType with name '" + request.getName() + "' already exists (possible race condition).");
+            throw new DataIntegrityViolationException("Cập nhật loại sách thất bại: Loại sách với tên '" + request.getName() + "' đã tồn tại (có thể do đồng thời).");
         }
     }
 
     @Override
     public BookTypeResponse changeBookTypeStatus(UUID id, String newStatus) { // Quan trọng: Tham số là UUID
         BookType existingBookType = bookTypeRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("BookType not found with ID: " + id));
+                .orElseThrow(() -> new NotFoundException("Không tìm thấy loại sách với ID: " + id));
 
         StatusEnum statusEnum = null;
         try {
             statusEnum = StatusEnum.valueOf(newStatus.toUpperCase());
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Invalid status value: " + newStatus + ". Must be ACTIVE or INACTIVE.");
+            throw new IllegalArgumentException("Trạng thái không hợp lệ: " + newStatus + ". Giá trị hợp lệ là ACTIVE hoặc INACTIVE.");
         }
 
         existingBookType.setStatus(statusEnum);

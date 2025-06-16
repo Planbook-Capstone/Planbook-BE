@@ -46,11 +46,11 @@ public class BookServiceImpl implements IBookService {
     public BookResponse createBook(BookRequest request) {
         // Kiểm tra tên sách đã tồn tại trong cùng một Subject chưa
         if (bookRepository.findByNameAndSubjectId(request.getName().trim(), request.getSubjectId()).isPresent()) {
-            throw new DataIntegrityViolationException("Book with name '" + request.getName() + "' already exists for Subject ID: " + request.getSubjectId());
+            throw new DataIntegrityViolationException("Sách với tên '" + request.getName() + "' đã tồn tại cho môn học có ID: " + request.getSubjectId());
         }
 
         Subject subject = subjectRepository.findById(request.getSubjectId())
-                .orElseThrow(() -> new NotFoundException("Subject not found with ID: " + request.getSubjectId()));
+                .orElseThrow(() -> new NotFoundException("Không tìm thấy môn học với ID: " + request.getSubjectId()));
 
         Book book = bookMapper.toBook(request);
         book.setSubject(subject); // Set Subject entity
@@ -72,7 +72,7 @@ public class BookServiceImpl implements IBookService {
             try {
                 statusEnum = StatusEnum.valueOf(status.toUpperCase());
             } catch (IllegalArgumentException e) {
-                throw new IllegalArgumentException("Invalid status value: " + status + ". Must be ACTIVE or INACTIVE.");
+                throw new IllegalArgumentException("Trạng thái không hợp lệ: " + status + ". Giá trị hợp lệ là ACTIVE hoặc INACTIVE.");
             }
         }
 
@@ -87,19 +87,19 @@ public class BookServiceImpl implements IBookService {
     @Override
     public BookResponse getBookById(long id) {
         Book book = bookRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Book not found with ID: " + id));
+                .orElseThrow(() -> new NotFoundException("Không tìm thấy sách với ID: " + id));
         return bookMapper.toBookResponse(book);
     }
 
     @Override
     public BookResponse updateBook(long id, BookRequest request) {
         Book existingBook = bookRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Book not found with ID: " + id));
+                .orElseThrow(() -> new NotFoundException("Không tìm thấy sách với ID: " + id));
 
         // Kiểm tra xem Subject ID có thay đổi không
         if (existingBook.getSubject().getId() != request.getSubjectId()) {
             Subject newSubject = subjectRepository.findById(request.getSubjectId())
-                    .orElseThrow(() -> new NotFoundException("New Subject not found with ID: " + request.getSubjectId()));
+                    .orElseThrow(() -> new NotFoundException("Không tìm thấy môn học mới với ID: " + request.getSubjectId()));
             existingBook.setSubject(newSubject);
         }
 
@@ -110,7 +110,7 @@ public class BookServiceImpl implements IBookService {
         if (nameChanged || subjectChanged) {
             Optional<Book> duplicateBook = bookRepository.findByNameAndSubjectIdAndIdNot(request.getName(), request.getSubjectId(), id);
             if (duplicateBook.isPresent()) {
-                throw new DataIntegrityViolationException("Book with name '" + request.getName() + "' already exists for Subject ID: " + request.getSubjectId());
+                throw new DataIntegrityViolationException("Sách với tên '" + request.getName() + "' đã tồn tại cho môn học có ID: " + request.getSubjectId());
             }
         }
 
@@ -121,20 +121,20 @@ public class BookServiceImpl implements IBookService {
             Book updatedBook = bookRepository.save(existingBook);
             return bookMapper.toBookResponse(updatedBook);
         } catch (DataIntegrityViolationException e) {
-            throw new DataIntegrityViolationException("Failed to update book: Book with name '" + request.getName() + "' already exists for Subject ID: " + request.getSubjectId() + " (Possible race condition).");
+            throw new DataIntegrityViolationException("Cập nhật sách thất bại: Sách với tên '" + request.getName() + "' đã tồn tại cho môn học có ID: " + request.getSubjectId() + " (Có thể do xung đột dữ liệu).");
         }
     }
 
     @Override
     public BookResponse changeBookStatus(long id, String newStatus) {
         Book existingBook = bookRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Book not found with ID: " + id));
+                .orElseThrow(() -> new NotFoundException("Không tìm thấy sách với ID: " + id));
 
         StatusEnum statusEnum = null;
         try {
             statusEnum = StatusEnum.valueOf(newStatus.toUpperCase());
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Invalid status value: " + newStatus + ". Must be ACTIVE or INACTIVE.");
+            throw new IllegalArgumentException("Trạng thái không hợp lệ: " + newStatus + ". Giá trị hợp lệ là ACTIVE hoặc INACTIVE.");
         }
 
         existingBook.setStatus(statusEnum);
@@ -151,7 +151,7 @@ public class BookServiceImpl implements IBookService {
 
         // Kiểm tra sự tồn tại của Subject
         if (!subjectRepository.existsById(subjectId)) {
-            throw new NotFoundException("Subject not found with ID: " + subjectId);
+            throw new NotFoundException("Không tìm thấy môn học với ID: " + subjectId);
         }
 
         StatusEnum statusEnum = null;
@@ -159,7 +159,7 @@ public class BookServiceImpl implements IBookService {
             try {
                 statusEnum = StatusEnum.valueOf(status.toUpperCase());
             } catch (IllegalArgumentException e) {
-                throw new IllegalArgumentException("Invalid status value: " + status + ". Must be ACTIVE or INACTIVE.");
+                throw new IllegalArgumentException("Trạng thái không hợp lệ: " + status + ". Giá trị hợp lệ là ACTIVE hoặc INACTIVE.");
             }
         }
 

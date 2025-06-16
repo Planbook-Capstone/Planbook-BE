@@ -21,20 +21,14 @@ import java.util.UUID;
 @Service
 public class JWTService {
 
-    @Value("${spring.secretkey}")
-    private String SECRET_KEY;
-
-    @Value("${spring.duration}")
-    private long DURATION;
-    
-
     @Autowired
     UserRepository userRepository;
-
     @Autowired
     RefreshTokenService refreshTokenService;
-
-
+    @Value("${spring.secretkey}")
+    private String SECRET_KEY;
+    @Value("${spring.duration}")
+    private long DURATION;
 
     public String generateToken(User user, String refresh, boolean isRefresh) {
         JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
@@ -47,8 +41,8 @@ public class JWTService {
                 .claim("refresh", refresh)
                 .build();
 
-        if(!isRefresh){
-            refreshTokenService.saveRefreshToken(refresh,user.getId());
+        if (!isRefresh) {
+            refreshTokenService.saveRefreshToken(refresh, user.getId());
         }
 
         Payload payload = new Payload(jwtClaimsSet.toJSONObject());
@@ -86,13 +80,14 @@ public class JWTService {
             throw new RuntimeException(e);
         }
     }
+
     public User getUserByToken(String token) {
         try {
             JWSObject jwsObject = JWSObject.parse(token);
 
             MACVerifier verifier = new MACVerifier(SECRET_KEY.getBytes());
             if (!jwsObject.verify(verifier)) {
-                throw new RuntimeException("Invalid token signature");
+                throw new RuntimeException("Chữ ký token không hợp lệ");
             }
 
             JWTClaimsSet claimsSet = JWTClaimsSet.parse(jwsObject.getPayload().toJSONObject());
@@ -100,7 +95,7 @@ public class JWTService {
 
             return userRepository.findByUsername(username).orElse(null);
         } catch (ParseException | JOSEException e) {
-            throw new RuntimeException("Error parsing token", e);
+            throw new RuntimeException("Lỗi khi phân tích token", e);
         }
     }
 
@@ -110,22 +105,15 @@ public class JWTService {
 
             MACVerifier verifier = new MACVerifier(SECRET_KEY.getBytes());
             if (!jwsObject.verify(verifier)) {
-                throw new RuntimeException("Invalid token signature");
+                throw new RuntimeException("Chữ ký token không hợp lệ");
             }
             JWTClaimsSet claimsSet = JWTClaimsSet.parse(jwsObject.getPayload().toJSONObject());
 
             return claimsSet.getStringClaim("refresh");
         } catch (ParseException | JOSEException e) {
-            throw new RuntimeException("Error parsing token", e);
+            throw new RuntimeException("Lỗi khi phân tích token", e);
         }
     }
 
 
-
 }
-
-
-
-
-
-
