@@ -7,6 +7,7 @@ import com.BE.service.interfaceServices.IFormService;
 import com.BE.utils.ResponseHandler;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -32,9 +33,8 @@ import java.util.Map;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class FormController {
 
-    IFormService formService;
-
-    ResponseHandler responseHandler;
+    private final IFormService formService;
+    private final ResponseHandler responseHandler;
 
     @PostMapping
     @Operation(
@@ -51,7 +51,7 @@ public class FormController {
                                     @ExampleObject(
                                             name = "createBasicFormExample",
                                             summary = "Ví dụ tạo khung mẫu cơ bản",
-                                            value = "{\"name\": \"Mẫu khung giáo án chuẩn\", \"description\": \"khung mẫu chuẩn cho giáo án\", \"formData\": [{\"group_name\": \"Thông tin chung\", \"fields\": [{\"field_name\": \"Tên bài học\", \"data_type\": \"string\", \"is_required\": true, \"fields\": []}]}, {\"group_name\": \"Nội dung\", \"fields\": []}]}"
+                                            value = "{\"name\": \"Mẫu khung giáo án chuẩn\", \"description\": \"khung mẫu chuẩn cho giáo án\", \"status\": \"DRAFT\", \"formData\": [{\"group_name\": \"Thông tin chung\", \"fields\": [{\"field_name\": \"Tên bài học\", \"data_type\": \"string\", \"is_required\": true, \"fields\": []}]}, {\"group_name\": \"Nội dung\", \"fields\": []}]}"
                                     )
 
                             }
@@ -106,5 +106,36 @@ public class FormController {
     @ApiResponse(responseCode = "500", description = "Lỗi máy chủ nội bộ.")
     public ResponseEntity<List<FormResponse>> getAllForms() {
         return responseHandler.response(200, "Forms retrieved successfully!", formService.getAllForms());
+    }
+
+    @PutMapping("/{id}")
+    @Operation(
+            summary = "Cập nhật khung mẫu giáo án",
+            description = "API này cập nhật thông tin của một khung mẫu giáo án dựa trên ID. " +
+                    "Kết quả bao gồm thông tin đã được cập nhật như tên, mô tả, dữ liệu khung mẫu.",
+            parameters = @Parameter(name = "id", description = "ID của khung mẫu cần cập nhật", required = true)
+    )
+    @ApiResponse(responseCode = "200", description = "Cập nhật khung mẫu thành công.",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = FormResponse.class),
+                    examples = {
+                            @ExampleObject(
+                                    name = "formUpdateResponseExample",
+                                    summary = "Ví dụ phản hồi cập nhật thành công",
+                                    value = "{\n  \"statusCode\": 200,\n  \"message\": \"Form updated successfully!\",\n  \"data\": {\n    \"id\": 1,\n    \"name\": \"Mẫu giáo án chuẩn (đã cập nhật)\",\n    \"description\": \"Biểu mẫu chuẩn cho giáo án đã được điều chỉnh\",\n    \"formData\": [{\"group_name\": \"Thông tin chung\", \"fields\": [{\"field_name\": \"Tên bài học\", \"data_type\": \"string\", \"is_required\": true, \"fields\": []}]}, {\"group_name\": \"Nội dung\", \"fields\": []}],\n    \"createdAt\": \"2025-06-14T10:30:00\",\n    \"updatedAt\": \"2025-06-16T15:45:00\"\n  }\n}"
+                            )
+                    }))
+    @ApiResponse(responseCode = "400", description = "Dữ liệu yêu cầu không hợp lệ.",
+            content = @Content(mediaType = "application/json", examples = {
+                    @ExampleObject(name = "invalidUpdateInput", summary = "Lỗi dữ liệu đầu vào không hợp lệ",
+                            value = "{\n  \"statusCode\": 400,\n  \"message\": \"Name cannot be blank\",\n  \"details\": \"uri=/api/form/1\"\n}"),
+                    @ExampleObject(name = "invalidUpdateFormData", summary = "Lỗi dữ liệu biểu mẫu không hợp lệ",
+                            value = "{\n  \"statusCode\": 400,\n  \"message\": \"FormData cannot be blank\",\n  \"details\": \"uri=/api/form/1\"\n}")
+            }))
+    @ApiResponse(responseCode = "404", description = "Không tìm thấy khung mẫu với ID đã cung cấp.",
+            content = @Content(mediaType = "application/json", examples = @ExampleObject(name = "updateFormNotFound", summary = "Lỗi không tìm thấy khung mẫu để cập nhật",
+                    value = "{\n  \"statusCode\": 404,\n  \"message\": \"Form not found with ID: 999\",\n  \"details\": \"uri=/api/form/999\"\n}")))
+    @ApiResponse(responseCode = "500", description = "Lỗi máy chủ nội bộ.")
+    public ResponseEntity<FormResponse> updateForm(@PathVariable Long id, @Valid @RequestBody FormRequest request) {
+        return responseHandler.response(200, "Form updated successfully!", formService.updateForm(id, request));
     }
 }
