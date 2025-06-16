@@ -22,8 +22,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@Tag(name = "Subject", description = "API for managing Subject")
-@RequestMapping("/api/subject")
+@Tag(name = "Subjects", description = "API for managing Subjects")
+@RequestMapping("/api/subjects")
 @SecurityRequirement(name = "api")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)

@@ -23,8 +23,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 @RestController
-@Tag(name = "BookType", description = "API để quản lý các loại sách (ví dụ: Sách giáo khoa, Sách bài tập)")
-@RequestMapping("/api/book-type")
+@Tag(name = "BookTypes", description = "API để quản lý các loại sách (ví dụ: Sách giáo khoa, Sách bài tập)")
+@RequestMapping("/api/book-types")
 @SecurityRequirement(name = "api")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)

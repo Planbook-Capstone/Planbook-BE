@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 @RestController
-@Tag(name = "Work Space", description = "API for managing work spaces")
+@Tag(name = "WorkSpaces", description = "API for managing work spaces")
 @RequestMapping("/api/workspaces")
 @SecurityRequirement(name = "api")
 @CrossOrigin("*")
