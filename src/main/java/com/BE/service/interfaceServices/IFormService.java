@@ -15,4 +15,6 @@ public interface IFormService {
     FormResponse getForm(Long id);
 
     List<FormResponse> getAllForms();
+
+    FormResponse updateForm(Long id, FormRequest formRequest);
 }
