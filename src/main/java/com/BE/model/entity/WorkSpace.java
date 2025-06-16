@@ -32,5 +32,9 @@ public class WorkSpace {
     @JoinColumn(name = "account_id")
     private User user;
 
+
+    String createdAt;
+    String updatedAt;
+
     // Getters and setters
 }

@@ -30,6 +30,7 @@ public class BookType {
     Integer tokenCostPerQuery;
 
     @Lob
+    @Column(columnDefinition = "LONGTEXT")
     String icon;
 
     @Enumerated(EnumType.STRING)
