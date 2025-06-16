@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("api")
-@SecurityRequirement(name ="api")
+@SecurityRequirement(name = "api")
 public class AuthenticationController {
 
     @Autowired
@@ -37,32 +37,32 @@ public class AuthenticationController {
     @GetMapping("/sendMessage")
     public String sendMessageToKafka(@RequestParam("message") String message) {
         kafkaMessageProducer.sendMessage(message);
-        return "Message '" + message + "' sent to Kafka!";
+        return "Đã gửi tin nhắn '" + message + "' tới Kafka!";
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity refresh( @RequestBody RefreshRequest refreshRequest){
-        return responseHandler.response(200, "Refresh Token success!", iAuthenticationService.refresh(refreshRequest));
+    public ResponseEntity refresh(@RequestBody RefreshRequest refreshRequest) {
+        return responseHandler.response(200, "Làm mới Token thành công!", iAuthenticationService.refresh(refreshRequest));
     }
 
     @PostMapping("/logout")
-    public ResponseEntity logout(@RequestBody RefreshRequest refreshRequest){
+    public ResponseEntity logout(@RequestBody RefreshRequest refreshRequest) {
         iAuthenticationService.logout(refreshRequest);
-        return ResponseEntity.ok( "Logout success!");
+        return ResponseEntity.ok("Đăng xuất thành công!");
     }
 
     @PostMapping("/register")
-    public ResponseEntity<User> register(@Valid @RequestBody AuthenticationRequest user){
-        return responseHandler.response(200, "Register success!", iAuthenticationService.register(user));
+    public ResponseEntity<User> register(@Valid @RequestBody AuthenticationRequest user) {
+        return responseHandler.response(200, "Đăng ký thành công!", iAuthenticationService.register(user));
     }
 
     @PostMapping("/login")
-    @Operation(summary = "User login", description = "Authenticates a user and returns authentication tokens.")
+    @Operation(summary = "Đăng nhập người dùng", description = "Xác thực người dùng và trả về token xác thực.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Login successful",
+            @ApiResponse(responseCode = "200", description = "Đăng nhập thành công",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthenticationResponse.class))),
-            @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid credentials"),
-            @ApiResponse(responseCode = "400", description = "Bad Request - Missing or invalid fields")
+            @ApiResponse(responseCode = "401", description = "Không được phép - Sai thông tin đăng nhập"),
+            @ApiResponse(responseCode = "400", description = "Yêu cầu không hợp lệ - Thiếu hoặc sai trường dữ liệu")
     })
     @io.swagger.v3.oas.annotations.parameters.RequestBody(
             description = "Thông tin đăng nhập của người dùng (username và password).",
@@ -72,58 +72,58 @@ public class AuthenticationController {
                     schema = @Schema(implementation = LoginRequestDTO.class),
                     examples = {
                             @ExampleObject(
-                                    name = "Admin Login Example",
+                                    name = "Ví dụ đăng nhập Admin",
                                     summary = "Đăng nhập với tài khoản Admin",
                                     value = "{\"username\": \"admin\", \"password\": \"admin\"}"
                             ),
                             @ExampleObject(
-                                    name = "Teacher Login Example",
-                                    summary = "Đăng nhập với tài khoản Teacher",
+                                    name = "Ví dụ đăng nhập Giáo viên",
+                                    summary = "Đăng nhập với tài khoản Giáo viên",
                                     value = "{\"username\": \"teacher\", \"password\": \"teacher\"}"
                             ),
                             @ExampleObject(
-                                    name = "Staff Login Example",
-                                    summary = "Đăng nhập với tài khoản Staff",
+                                    name = "Ví dụ đăng nhập Nhân viên",
+                                    summary = "Đăng nhập với tài khoản Nhân viên",
                                     value = "{\"username\": \"staff\", \"password\": \"staff\"}"
                             )
                     }
             )
     )
-    public  ResponseEntity<AuthenticationResponse> login(@RequestBody LoginRequestDTO loginRequestDTO){
-        return responseHandler.response(200, "Login success!", iAuthenticationService.authenticate(loginRequestDTO));
+    public ResponseEntity<AuthenticationResponse> login(@RequestBody LoginRequestDTO loginRequestDTO) {
+        return responseHandler.response(200, "Đăng nhập thành công!", iAuthenticationService.authenticate(loginRequestDTO));
     }
 
     @PostMapping("/login-google")
-    public ResponseEntity checkLoginGoogle(@RequestBody LoginGoogleRequest loginGGRequest){
-        return responseHandler.response(200, "Login Google success!", iAuthenticationService.loginGoogle(loginGGRequest));
+    public ResponseEntity checkLoginGoogle(@RequestBody LoginGoogleRequest loginGGRequest) {
+        return responseHandler.response(200, "Đăng nhập Google thành công!", iAuthenticationService.loginGoogle(loginGGRequest));
     }
 
     @PostMapping("forgot-password")
     public ResponseEntity forgotPassword(@RequestBody ForgotPasswordRequest forgotPasswordRequest) {
         iAuthenticationService.forgotPasswordRequest(forgotPasswordRequest.getEmail());
-        return ResponseEntity.ok( "Forgot Password successfully");
+        return ResponseEntity.ok("Yêu cầu quên mật khẩu thành công");
     }
 
     @PatchMapping("reset-password")
     public ResponseEntity resetPassword(@Valid @RequestBody ResetPasswordRequest resetPasswordRequest) {
         iAuthenticationService.resetPassword(resetPasswordRequest);
-        return ResponseEntity.ok( "Reset Password successfully");
+        return ResponseEntity.ok("Đặt lại mật khẩu thành công");
     }
 
     @GetMapping("/testRole")
-    public ResponseEntity testRole(){
-        return ResponseEntity.ok("Test Role User Successfully");
+    public ResponseEntity testRole() {
+        return ResponseEntity.ok("Kiểm tra vai trò người dùng thành công");
     }
 
 
     @GetMapping("/git-hi")
-    public ResponseEntity hihi(){
-        return ResponseEntity.ok("git-acction Successfully");
+    public ResponseEntity hihi() {
+        return ResponseEntity.ok("git-action thành công");
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/admin-only")
-    public ResponseEntity admin(){
+    public ResponseEntity admin() {
         return ResponseEntity.ok(iAuthenticationService.admin());
     }
 
@@ -131,8 +131,6 @@ public class AuthenticationController {
     public ResponseEntity status(@Valid @RequestBody StatusRequest statusRequest) {
         return ResponseEntity.ok(statusRequest.getStatus());
     }
-
-
 
 
 }

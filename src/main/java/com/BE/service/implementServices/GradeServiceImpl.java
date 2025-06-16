@@ -52,8 +52,8 @@ public class GradeServiceImpl implements IGradeService {
         // Lưu DB
         try {
             grade = gradeRepository.save(grade);
-        }catch (DataIntegrityViolationException e) {
-            throw new DataIntegrityViolationException("Duplicate GradeName");
+        } catch (DataIntegrityViolationException e) {
+            throw new DataIntegrityViolationException("Tên lớp đã bị trùng");
         }
 
         // Map entity -> response
@@ -74,7 +74,7 @@ public class GradeServiceImpl implements IGradeService {
             try {
                 statusEnum = StatusEnum.valueOf(status.toUpperCase());
             } catch (IllegalArgumentException e) {
-                throw new IllegalArgumentException("Invalid status value: " + status + ". Must be ACTIVE or INACTIVE.");
+                throw new IllegalArgumentException("Giá trị trạng thái không hợp lệ: " + status + ". Phải là ACTIVE hoặc INACTIVE.");
             }
             gradesPage = gradeRepository.findByNameContainingIgnoreCaseAndStatus(search.trim(), statusEnum, pageable);
         } else if (hasSearch) {
@@ -84,7 +84,7 @@ public class GradeServiceImpl implements IGradeService {
             try {
                 statusEnum = StatusEnum.valueOf(status.toUpperCase());
             } catch (IllegalArgumentException e) {
-                throw new IllegalArgumentException("Invalid status value: " + status + ". Must be ACTIVE or INACTIVE.");
+                throw new IllegalArgumentException("Giá trị trạng thái không hợp lệ: " + status + ". Phải là ACTIVE hoặc INACTIVE.");
             }
             gradesPage = gradeRepository.findByStatus(statusEnum, pageable);
         } else {
@@ -97,14 +97,14 @@ public class GradeServiceImpl implements IGradeService {
     @Override
     public GradeResponse getGradeById(long id) {
         Grade grade = gradeRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Grade not found with ID: " + id));
+                .orElseThrow(() -> new NotFoundException("Không tìm thấy lớp có ID: " + id));
         return gradeMapper.toGradeResponse(grade);
     }
 
     @Override
     public GradeResponse updateGrade(long id, GradeRequest request) {
         Grade existingGrade = gradeRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Grade not found with ID: " + id));
+                .orElseThrow(() -> new NotFoundException("Không tìm thấy lớp có ID: " + id));
 
         // CHỈ CẬP NHẬT TÊN NẾU THAY ĐỔI
         if (!existingGrade.getName().equalsIgnoreCase(request.getName())) {
@@ -119,20 +119,20 @@ public class GradeServiceImpl implements IGradeService {
             // Kiểm tra xem lỗi có phải do unique constraint trên cột 'name' không
             // (Điều này có thể phức tạp tùy thuộc vào loại DB và thông báo lỗi cụ thể)
             // Một cách đơn giản hơn là giả định nếu có lỗi ở đây thì là trùng tên.
-            throw new DataIntegrityViolationException("Grade with name '" + request.getName() + "' already exists.");
+            throw new DataIntegrityViolationException("Lớp có tên '" + request.getName() + "' đã tồn tại.");
         }
     }
 
     @Override
     public GradeResponse changeGradeStatus(long id, String newStatus) { // THAY ĐỔI Ở ĐÂY: Nhận String newStatus
         Grade existingGrade = gradeRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Grade not found with ID: " + id));
+                .orElseThrow(() -> new NotFoundException("Không tìm thấy lớp có ID: " + id));
 
         StatusEnum statusEnum = null;
         try {
             statusEnum = StatusEnum.valueOf(newStatus.toUpperCase()); // Chuyển đổi String sang StatusEnum
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Invalid status value: " + newStatus + ". Must be ACTIVE or INACTIVE.");
+            throw new IllegalArgumentException("Giá trị trạng thái không hợp lệ: " + newStatus + ". Phải là ACTIVE hoặc INACTIVE.");
         }
 
         existingGrade.setStatus(statusEnum);
@@ -141,7 +141,6 @@ public class GradeServiceImpl implements IGradeService {
         Grade updatedGrade = gradeRepository.save(existingGrade);
         return gradeMapper.toGradeResponse(updatedGrade);
     }
-
 
 
 }

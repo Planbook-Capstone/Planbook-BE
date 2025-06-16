@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 @RestController
-@Tag(name = "BookTypes", description = "API để quản lý các loại sách (ví dụ: Sách giáo khoa, Sách bài tập)")
+@Tag(name = "BookTypes", description = "API để quản lý loại công cụ hỗ trợ (ví dụ: Tạo giáo án, Chấm điểm, ...)")
 @RequestMapping("/api/book-types")
 @SecurityRequirement(name = "api")
 @RequiredArgsConstructor
@@ -83,7 +83,7 @@ public class BookTypeController {
     @ApiResponse(responseCode = "500", description = "Lỗi máy chủ nội bộ.")
     public ResponseEntity<Object> createBookType(@Valid @RequestBody BookTypeRequest request) {
         BookTypeResponse response = bookTypeService.createBookType(request);
-        return responseHandler.response(201, "BookType created successfully!", response);
+        return responseHandler.response(201, "Tạo loại công cụ thành công!", response);
     }
 
     // --- API: LẤY DANH SÁCH LOẠI CÔNG CỤ (GET All BookTypes) ---
@@ -115,7 +115,7 @@ public class BookTypeController {
             @RequestParam(required = false, defaultValue = "asc") String sortDirection) {
         int pageForBackend = page > 0 ? page - 1 : 0;
         Page<BookTypeResponse> bookTypePage = bookTypeService.getAllBookTypes(pageForBackend, size, search, status, sortBy, sortDirection);
-        return responseHandler.response(200, "BookTypes retrieved successfully!", bookTypePage);
+        return responseHandler.response(200, "Lấy thông tin tất cả các loại công cụ hỗ trợ thành công!", bookTypePage);
     }
 
     // --- API: LẤY LOẠI CÔNG CỤ BẰNG ID (GET By ID) ---
@@ -141,7 +141,7 @@ public class BookTypeController {
     @ApiResponse(responseCode = "500", description = "Lỗi máy chủ nội bộ.")
     public ResponseEntity<Object> getBookTypeById(@PathVariable UUID id) {
         BookTypeResponse response = bookTypeService.getBookTypeById(id);
-        return responseHandler.response(200, "BookType retrieved successfully!", response);
+        return responseHandler.response(200, "Lấy thông tin loại công cụ thành công!", response);
     }
 
     // --- API: CẬP NHẬT LOẠI CÔNG CỤ (PUT) ---
@@ -191,7 +191,7 @@ public class BookTypeController {
     @ApiResponse(responseCode = "500", description = "Lỗi máy chủ nội bộ.")
     public ResponseEntity<Object> updateBookType(@PathVariable UUID id, @Valid @RequestBody BookTypeRequest request) {
         BookTypeResponse response = bookTypeService.updateBookType(id, request);
-        return responseHandler.response(200, "BookType updated successfully!", response);
+        return responseHandler.response(200, "Cập nhật loại công cụ thành công!", response);
     }
 
     // --- API: CẬP NHẬT TRẠNG THÁI LOẠI CÔNG CỤ (PATCH Status) ---
@@ -233,6 +233,6 @@ public class BookTypeController {
             @PathVariable UUID id,
             @RequestParam String newStatus) {
         BookTypeResponse response = bookTypeService.changeBookTypeStatus(id, newStatus);
-        return responseHandler.response(200, "BookType status updated successfully!", response);
+        return responseHandler.response(200, "Trạng thái công cụ cập nhật thành công !", response);
     }
 }

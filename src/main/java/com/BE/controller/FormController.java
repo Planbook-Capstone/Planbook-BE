@@ -69,7 +69,7 @@ public class FormController {
             }))
     @ApiResponse(responseCode = "500", description = "Lỗi máy chủ nội bộ.")
     public ResponseEntity<Form> saveForm(@Valid @RequestBody FormRequest request) {
-        return responseHandler.response(200, "Form save successfully!", formService.saveForm(request));
+        return responseHandler.response(200, "Tạo khung giáo án mẫu thành công!", formService.saveForm(request));
     }
 
     @GetMapping("/{id}")
@@ -92,7 +92,7 @@ public class FormController {
                     value = "{\n  \"statusCode\": 404,\n  \"message\": \"Form not found with ID: 999\",\n  \"details\": \"uri=/api/form/999\"\n}")))
     @ApiResponse(responseCode = "500", description = "Lỗi máy chủ nội bộ.")
     public ResponseEntity<FormResponse> getForm(@PathVariable Long id) {
-        return responseHandler.response(200, "Form retrieved successfully!", formService.getForm(id));
+        return responseHandler.response(200, "Lấy thông tin khung giáo án thành công!", formService.getForm(id));
     }
 
     @GetMapping
@@ -105,7 +105,7 @@ public class FormController {
             content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "500", description = "Lỗi máy chủ nội bộ.")
     public ResponseEntity<List<FormResponse>> getAllForms() {
-        return responseHandler.response(200, "Forms retrieved successfully!", formService.getAllForms());
+        return responseHandler.response(200, "Lấy thông tin tất cả khung giáo án thành công!", formService.getAllForms());
     }
 
     @PutMapping("/{id}")
@@ -136,6 +136,6 @@ public class FormController {
                     value = "{\n  \"statusCode\": 404,\n  \"message\": \"Form not found with ID: 999\",\n  \"details\": \"uri=/api/form/999\"\n}")))
     @ApiResponse(responseCode = "500", description = "Lỗi máy chủ nội bộ.")
     public ResponseEntity<FormResponse> updateForm(@PathVariable Long id, @Valid @RequestBody FormRequest request) {
-        return responseHandler.response(200, "Form updated successfully!", formService.updateForm(id, request));
+        return responseHandler.response(200, "Cập nhật khung giáo án thành công!", formService.updateForm(id, request));
     }
 }
