@@ -26,6 +26,12 @@ jobs:
       - name: Maven Clean and Package
         run: mvn clean package -DskipTests
 
+      - name: Write RSA Private/Public Keys to file
+        run: |
+          mkdir -p src/main/resources/keys
+          echo "${{ secrets.PRIVATE_KEY_PEM }}" > src/main/resources/keys/private.pem
+          echo "${{ secrets.PUBLIC_KEY_PEM }}" > src/main/resources/keys/public.pem
+
       - name: Create docker-compose.yml on runner
         run: |
           cat <<EOF > docker-compose.yml
@@ -157,7 +163,7 @@ jobs:
               sudo kill -9 $PID_ON_PORT 2>/dev/null || true
               sleep 1
               if sudo lsof -i :$PORT_TO_FREE > /dev/null; then
-                echo "Warning: Port $PORT_TO_FREE is still in use after killing process $PID_TO_KILL. Manual intervention may be needed."
+                echo "Warning: Port $PORT_TO_FREE is still in use after killing process. Manual intervention may be needed."
               else
                 echo "Port $PORT_TO_FREE is now free."
               fi
@@ -170,7 +176,7 @@ jobs:
             docker rm -f planbook-be 2>/dev/null || true
             docker rmi planbook-be:latest 2>/dev/null || true
             
-            echo "Old backend container and image cleaned up. Dependent services will be managed by 'docker compose up'."
+            echo "Old backend container and image cleaned up."
 
       - name: Start Application with Docker Compose on VPS
         uses: appleboy/ssh-action@v1.0.3
@@ -181,6 +187,5 @@ jobs:
           script: |
             cd /var/www/be || { echo "Error: /var/www/be directory not found on VPS."; exit 1; }
             echo "Building and starting Docker Compose services..."
-            docker compose -f docker-compose.yml up --build -d --remove-orphans # Removed 'backend' from here to start all services
-            
-            echo "Docker Compose services started. Check logs with 'docker compose logs -f planbook-be'"
+            docker compose -f docker-compose.yml up --build -d --remove-orphans
+            echo "Docker Compose services started. Use 'docker compose logs -f planbook-be' to monitor logs."
