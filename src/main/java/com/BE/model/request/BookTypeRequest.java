@@ -38,6 +38,16 @@ public class BookTypeRequest {
     String description;
 
     @Schema(
+            description = "Mức độ ưu tiên", // ĐÃ THAY ĐỔI MÔ TẢ
+            example = "1", // ĐÃ THAY ĐỔI VÍ DỤ
+            required = true,
+            type = "int"
+    )
+    @NotNull(message = "Priority cannot be null")
+    @Min(value = 1, message = "Priority must be greater than or equal to 1") // Đảm bảo giá trị ưu tiên là số nguyên dương
+    int priority;
+
+    @Schema(
             description = "Icon đại diện cho công cụ hỗ trợ, có thể là base64 encoded string", // ĐÃ THAY ĐỔI MÔ TẢ
             example = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==",
             type = "string",
