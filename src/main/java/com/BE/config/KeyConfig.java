@@ -1,6 +1,7 @@
 package com.BE.config;
 
 import com.nimbusds.jose.jwk.RSAKey;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -16,6 +17,13 @@ import java.util.UUID;
 @Configuration
 public class KeyConfig {
 
+
+    @Value("${spring.JWT.PRIVATE.KEY.PATH}")
+    String PRIVATE_KEY_PATH;
+
+    @Value("${spring.JWT.PUBLIC.KEY.PATH}")
+    String PUBLIC_KEY_PATH;
+
     @Bean
     public RSAKey rsaKey() throws Exception {
         RSAPublicKey publicKey = loadPublicKey();
@@ -28,7 +36,7 @@ public class KeyConfig {
     }
 
     private RSAPublicKey loadPublicKey() throws Exception {
-        InputStream is = getClass().getClassLoader().getResourceAsStream("keys/public.pem");
+        InputStream is = getClass().getClassLoader().getResourceAsStream(PUBLIC_KEY_PATH);
         String key = new String(is.readAllBytes())
                 .replace("-----BEGIN PUBLIC KEY-----", "")
                 .replace("-----END PUBLIC KEY-----", "")
@@ -39,7 +47,7 @@ public class KeyConfig {
     }
 
     private RSAPrivateKey loadPrivateKey() throws Exception {
-        InputStream is = getClass().getClassLoader().getResourceAsStream("keys/private.pem");
+        InputStream is = getClass().getClassLoader().getResourceAsStream(PRIVATE_KEY_PATH);
         String key = new String(is.readAllBytes())
                 .replace("-----BEGIN PRIVATE KEY-----", "")
                 .replace("-----END PRIVATE KEY-----", "")

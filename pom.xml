@@ -189,6 +189,15 @@
 
 
 	<build>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<includes>
+					<include>**/*.pem</include>
+					<include>**/*.*</include>
+				</includes>
+			</resource>
+		</resources>
 		<finalName>be</finalName>
 		<plugins>
 			<plugin>
