@@ -43,6 +43,9 @@ public class BookTypeRequest {
             required = true,
             type = "int"
     )
+
+    String href;
+
     @NotNull(message = "Priority cannot be null")
     @Min(value = 1, message = "Priority must be greater than or equal to 1") // Đảm bảo giá trị ưu tiên là số nguyên dương
     int priority;

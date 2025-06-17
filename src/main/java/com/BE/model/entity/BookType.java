@@ -26,8 +26,10 @@ public class BookType {
 
     String description;
 
+    String href;
+
     int priority;
-    
+
     @Column(nullable = false) // Đảm bảo không null và có giá trị mặc định
     Integer tokenCostPerQuery;
 

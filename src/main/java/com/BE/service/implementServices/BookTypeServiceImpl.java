@@ -46,6 +46,9 @@ public class BookTypeServiceImpl implements IBookTypeService {
         }
 
         BookType bookType = bookTypeMapper.toBookType(request);
+        if (request.getHref() == null || request.getHref().trim().isEmpty()) {
+            bookType.setHref("/");
+        }
         bookType.setStatus(StatusEnum.ACTIVE); // Mặc định là ACTIVE khi tạo
         bookType.setCreatedAt(dateNowUtils.dateNow());
         bookType.setUpdatedAt(dateNowUtils.dateNow());
@@ -101,6 +104,8 @@ public class BookTypeServiceImpl implements IBookTypeService {
         // Cập nhật thông tin
         existingBookType.setName(request.getName());
         existingBookType.setDescription(request.getDescription());
+        existingBookType.setPriority(request.getPriority());
+        existingBookType.setHref(request.getHref());
         existingBookType.setIcon(request.getIcon());
         existingBookType.setUpdatedAt(dateNowUtils.dateNow());
 

@@ -39,6 +39,8 @@ public class BookTypeResponse {
     )
     String description;
 
+    String href;
+    
     @Schema(
             description = "Độ ưu tiên của công cụ hỗ trợ trong danh sách các công cụ. ",
             type = "integer",

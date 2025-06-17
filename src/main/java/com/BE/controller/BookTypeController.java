@@ -50,7 +50,7 @@ public class BookTypeController {
                                     @ExampleObject(
                                             name = "createGradingToolExample",
                                             summary = "Ví dụ tạo Loại Công cụ: Chấm điểm",
-                                            value = "{\n  \"name\": \"Chấm điểm\",\n  \"description\": \"Công cụ giúp giảng viên quản lý và chấm điểm bài tập, bài kiểm tra của sinh viên.\",\n \"priority\": 1,\n  \"icon\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==\",\n  \"tokenCostPerQuery\": 5\n}" // ĐÃ THÊM tokenCostPerQuery
+                                            value = "{\n  \"name\": \"Chấm điểm\",\n  \"description\": \"Công cụ giúp giảng viên quản lý và chấm điểm bài tập, bài kiểm tra của sinh viên.\",\n \"priority\": 1,\n \"href\": \"example\",\n  \"icon\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==\",\n  \"tokenCostPerQuery\": 5\n}" // ĐÃ THÊM tokenCostPerQuery
                                     ),
                                     @ExampleObject(
                                             name = "createLessonPlanToolExample",
