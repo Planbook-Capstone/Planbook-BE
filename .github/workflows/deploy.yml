@@ -23,15 +23,27 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Maven Clean and Package
-        run: mvn clean package -DskipTests
-
+      # ==========================================================
+      # BƯỚC QUAN TRỌNG: TẠO FILE KEY TRƯỚC KHI MAVEN PACKAGE
+      # ==========================================================
       - name: Write RSA Private/Public Keys to file
         run: |
+          # Đảm bảo thư mục này được tạo trong src/main/resources
+          # để Maven có thể đóng gói chúng vào JAR.
           mkdir -p src/main/resources/keys
           echo "${{ secrets.PRIVATE_KEY_PEM }}" > src/main/resources/keys/private.pem
           echo "${{ secrets.PUBLIC_KEY_PEM }}" > src/main/resources/keys/public.pem
+        # Ensure this step runs before 'Maven Clean and Package'
 
+      - name: Maven Clean and Package
+        run: mvn clean package -DskipTests
+        # Sau bước này, file JAR (target/your-app-name.jar) sẽ chứa
+        # các file private.pem và public.pem trong thư mục /keys/
+        # bên trong JAR.
+
+      # ==========================================================
+      # CÁC BƯỚC CÒN LẠI KHÔNG CẦN TRUYỀN THÊM BIẾN MÔI TRƯỜNG CHO KEY
+      # ==========================================================
       - name: Create docker-compose.yml on runner
         run: |
           cat <<EOF > docker-compose.yml
@@ -99,6 +111,9 @@ jobs:
               ports:
                 - "8080:8080"
               environment:
+                # BỎ CÁC DÒNG SAU, VÌ KEY PATH SẼ ĐƯỢC ĐỌC TỪ application.properties TRONG JAR
+                SPRING_JWT_PRIVATE_KEY_PATH: "${{ secrets.PRIVATE_KEY_PATH }}"
+                SPRING_JWT_PUBLIC_KEY_PATH: "${{ secrets.PUBLIC_KEY_PATH }}"
                 SPRING_DATASOURCE_URL: "${{ secrets.DB_URL }}"
                 SPRING_DATASOURCE_USERNAME: "${{ secrets.DB_USERNAME }}"
                 SPRING_DATASOURCE_PASSWORD: "${{ secrets.DB_PASSWORD }}"
@@ -119,7 +134,7 @@ jobs:
                 SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_REQUIRED: "true"
                 SPRING_MAIL_PROPERTIES_MAIL_SMTP_CONNECTIONTIMEOUT: "5000"
                 SPRING_MAIL_PROPERTIES_MAIL_SMTP_TIMEOUT: "5000"
-                SPRING_MAIL_PROPERTIES_MAIL_SMTP_WRITETIMEOUT: "5000"
+                SPRING_MAIL_PROPERTIES_MAIL_SMTP_WRITETIMEOT: "5000"
                 SPRING_MAIL_DEFAULT_ENCODING: "UTF-8"
                 SPRING_DATA_REDIS_HOST: "redis"
                 SPRING_DATA_REDIS_PORT: "6379"
@@ -175,7 +190,7 @@ jobs:
             docker stop planbook-be 2>/dev/null || true
             docker rm -f planbook-be 2>/dev/null || true
             docker rmi planbook-be:latest 2>/dev/null || true
-            
+
             echo "Old backend container and image cleaned up."
 
       - name: Start Application with Docker Compose on VPS
