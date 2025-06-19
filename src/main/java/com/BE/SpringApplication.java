@@ -20,7 +20,6 @@ import org.springframework.cache.annotation.EnableCaching;
                 description = "Information"
         )
 )
-
 @SecurityScheme(name = "api", scheme = "bearer", type = SecuritySchemeType.HTTP, in = SecuritySchemeIn.HEADER)
 public class SpringApplication {
 
