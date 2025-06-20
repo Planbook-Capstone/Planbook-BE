@@ -23,9 +23,27 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
+      # ==========================================================
+      # BƯỚC QUAN TRỌNG: TẠO FILE KEY TRƯỚC KHI MAVEN PACKAGE
+      # ==========================================================
+      - name: Write RSA Private/Public Keys to file
+        run: |
+          # Đảm bảo thư mục này được tạo trong src/main/resources
+          # để Maven có thể đóng gói chúng vào JAR.
+          mkdir -p src/main/resources/keys
+          echo "${{ secrets.PRIVATE_KEY_PEM }}" > src/main/resources/keys/private.pem
+          echo "${{ secrets.PUBLIC_KEY_PEM }}" > src/main/resources/keys/public.pem
+        # Ensure this step runs before 'Maven Clean and Package'
+
       - name: Maven Clean and Package
         run: mvn clean package -DskipTests
+        # Sau bước này, file JAR (target/your-app-name.jar) sẽ chứa
+        # các file private.pem và public.pem trong thư mục /keys/
+        # bên trong JAR.
 
+      # ==========================================================
+      # CÁC BƯỚC CÒN LẠI KHÔNG CẦN TRUYỀN THÊM BIẾN MÔI TRƯỜNG CHO KEY
+      # ==========================================================
       - name: Create docker-compose.yml on runner
         run: |
           cat <<EOF > docker-compose.yml
@@ -53,7 +71,7 @@ jobs:
               environment:
                 KAFKA_BROKER_ID: 1
                 KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-                KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+                KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://157.245.135.92:9092
                 KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
                 KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
                 KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
@@ -93,6 +111,9 @@ jobs:
               ports:
                 - "8081:8080"
               environment:
+                # BỎ CÁC DÒNG SAU, VÌ KEY PATH SẼ ĐƯỢC ĐỌC TỪ application.properties TRONG JAR
+                SPRING_JWT_PRIVATE_KEY_PATH: "${{ secrets.PRIVATE_KEY_PATH }}"
+                SPRING_JWT_PUBLIC_KEY_PATH: "${{ secrets.PUBLIC_KEY_PATH }}"
                 SPRING_DATASOURCE_URL: "${{ secrets.DB_URL }}"
                 SPRING_DATASOURCE_USERNAME: "${{ secrets.DB_USERNAME }}"
                 SPRING_DATASOURCE_PASSWORD: "${{ secrets.DB_PASSWORD }}"
@@ -113,7 +134,7 @@ jobs:
                 SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_REQUIRED: "true"
                 SPRING_MAIL_PROPERTIES_MAIL_SMTP_CONNECTIONTIMEOUT: "5000"
                 SPRING_MAIL_PROPERTIES_MAIL_SMTP_TIMEOUT: "5000"
-                SPRING_MAIL_PROPERTIES_MAIL_SMTP_WRITETIMEOUT: "5000"
+                SPRING_MAIL_PROPERTIES_MAIL_SMTP_WRITETIMEOT: "5000"
                 SPRING_MAIL_DEFAULT_ENCODING: "UTF-8"
                 SPRING_DATA_REDIS_HOST: "redis"
                 SPRING_DATA_REDIS_PORT: "6379"
@@ -157,7 +178,7 @@ jobs:
               sudo kill -9 $PID_ON_PORT 2>/dev/null || true
               sleep 1
               if sudo lsof -i :$PORT_TO_FREE > /dev/null; then
-                echo "Warning: Port $PORT_TO_FREE is still in use after killing process $PID_TO_KILL. Manual intervention may be needed."
+                echo "Warning: Port $PORT_TO_FREE is still in use after killing process. Manual intervention may be needed."
               else
                 echo "Port $PORT_TO_FREE is now free."
               fi
@@ -169,8 +190,8 @@ jobs:
             docker stop planbook-be 2>/dev/null || true
             docker rm -f planbook-be 2>/dev/null || true
             docker rmi planbook-be:latest 2>/dev/null || true
-            
-            echo "Old backend container and image cleaned up. Dependent services will be managed by 'docker compose up'."
+
+            echo "Old backend container and image cleaned up."
 
       - name: Start Application with Docker Compose on VPS
         uses: appleboy/ssh-action@v1.0.3
@@ -181,6 +202,5 @@ jobs:
           script: |
             cd /var/www/be || { echo "Error: /var/www/be directory not found on VPS."; exit 1; }
             echo "Building and starting Docker Compose services..."
-            docker compose -f docker-compose.yml up --build -d --remove-orphans # Removed 'backend' from here to start all services
-            
-            echo "Docker Compose services started. Check logs with 'docker compose logs -f planbook-be'"
+            docker compose -f docker-compose.yml up --build -d --remove-orphans
+            echo "Docker Compose services started. Use 'docker compose logs -f planbook-be' to monitor logs."
