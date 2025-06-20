@@ -1,4 +1,3 @@
-# Planbook-BE/.github/workflows/deploy-all-services.yml
 name: Deploy All Planbook Services (Monorepo)
 
 on:
@@ -55,8 +54,8 @@ jobs:
       - name: Create unified docker-compose.yml on runner
         run: |
           cat <<EOF > docker-compose.yml
-          name: planbook-monorepo-stack # Tên stack chung cho tất cả các services
           # Bỏ dòng 'version: '3.8'' vì Docker Compose CLI hiện đại không cần nó và gây cảnh báo.
+          name: planbook-monorepo-stack # Tên stack chung cho tất cả các services
 
           services:
             zookeeper:
@@ -230,6 +229,7 @@ jobs:
 
             echo "Stopping and removing old application containers (auth-service, api-gateway) if they exist..."
             # Chỉ dừng và xóa các service ứng dụng tùy chỉnh
+            # Sử dụng --project-name để đảm bảo dừng đúng stack
             docker compose -f docker-compose.yml --project-name planbook-monorepo-stack stop auth-service api-gateway 2>/dev/null || true
             docker compose -f docker-compose.yml --project-name planbook-monorepo-stack rm -f auth-service api-gateway 2>/dev/null || true
             
@@ -249,11 +249,15 @@ jobs:
           script: |
             cd /var/www/planbook-monorepo || { echo "Error: /var/www/planbook-monorepo directory not found on VPS."; exit 1; }
             echo "Starting/Ensuring Infrastructure Services are Up..."
-            # Khởi động các service hạ tầng trước. Lệnh này sẽ chỉ tạo/khởi động nếu chưa có.
+            # Lệnh này sẽ chỉ tạo/khởi động nếu chưa có.
+            # Docker Compose sẽ tự động pull image nếu nó chưa tồn tại trên VPS.
+            # Không dùng --force-recreate ở đây để bảo toàn container và dữ liệu.
             docker compose -f docker-compose.yml --project-name planbook-monorepo-stack up -d zookeeper kafka redis kafdrop
             
             echo "Starting/Updating Application Services (auth-service, api-gateway)..."
-            # Khởi động và cập nhật các service ứng dụng tùy chỉnh, buộc build lại image
+            # Khởi động và cập nhật các service ứng dụng tùy chỉnh.
+            # --build: Đảm bảo image được build lại từ Dockerfile cục bộ.
+            # --force-recreate: Buộc tạo lại container, ngay cả khi cấu hình không thay đổi (cần thiết khi code Java thay đổi).
             docker compose -f docker-compose.yml --project-name planbook-monorepo-stack up --build --force-recreate -d auth-service api-gateway
             
             echo "All Planbook Docker Compose services (infrastructure and application) are now up and running."
