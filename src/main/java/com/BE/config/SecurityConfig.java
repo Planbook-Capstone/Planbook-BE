@@ -39,9 +39,15 @@ public class SecurityConfig  {
     private String SECRET_KEY;
 
     private final String[] PUBLIC_ENDPOINTS = {
+            "/error",
+            "/swagger-ui.html",
+            "/v3/api-docs/swagger-config",
+            "/webjars/**",
             "/swagger-ui/**",
             "/v3/api-docs/**",
+            "/*/v3/api-docs/**",
             "/swagger-resources/**",
+            "/api/oauth2/jwks",
             "/api/register",
             "/api/login",
             "/api/login-google",
@@ -62,9 +68,6 @@ public class SecurityConfig  {
             "/api/book-type",
             "/api/book-type/**",
             "/api/sendMessage",
-            "/actuator/**"
-
-
     };
 
     private final String[] PUBLIC_ENDPOINTS_METHOD = {

@@ -149,12 +149,20 @@
 		</dependency>
 
 
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-zookeeper-discovery</artifactId>
+			<version>4.1.2</version>
+		</dependency>
+
+
+
 	</dependencies>
 
 
 
 	<build>
-		<finalName>be</finalName>
+		<finalName>auth-service</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
