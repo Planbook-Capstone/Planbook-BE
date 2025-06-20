@@ -55,8 +55,8 @@ jobs:
       - name: Create unified docker-compose.yml on runner
         run: |
           cat <<EOF > docker-compose.yml
-          version: '3.8'
           name: planbook-monorepo-stack # Tên stack chung cho tất cả các services
+          # Bỏ dòng 'version: '3.8'' vì Docker Compose CLI hiện đại không cần nó và gây cảnh báo.
 
           services:
             zookeeper:
@@ -201,7 +201,7 @@ jobs:
           source: "."
           target: /var/www/planbook-monorepo/
 
-      - name: Stop and Remove Old Services Stack on VPS
+      - name: Stop and Remove Application Services on VPS
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -228,18 +228,17 @@ jobs:
               fi
             done
 
-            echo "Stopping and removing old Docker Compose stack if it exists..."
-            # Sử dụng --project-name để đảm bảo dừng đúng stack
-            docker compose -f docker-compose.yml --project-name planbook-monorepo-stack down 2>/dev/null || true
-
-            echo "Cleaning up old service images if they exist..."
+            echo "Stopping and removing old application containers (auth-service, api-gateway) if they exist..."
+            # Chỉ dừng và xóa các service ứng dụng tùy chỉnh
+            docker compose -f docker-compose.yml --project-name planbook-monorepo-stack stop auth-service api-gateway 2>/dev/null || true
+            docker compose -f docker-compose.yml --project-name planbook-monorepo-stack rm -f auth-service api-gateway 2>/dev/null || true
+            
+            echo "Cleaning up old application service images..."
             docker rmi planbook-auth-service:latest 2>/dev/null || true
             docker rmi planbook-api-gateway:latest 2>/dev/null || true
-            # Các image infra như zookeeper, kafka, redis thường được Docker quản lý hiệu quả hơn,
-            # nhưng nếu muốn xóa sạch có thể thêm ở đây:
-            # docker rmi zookeeper:latest confluentinc/cp-kafka:7.5.0 obsidiandynamics/kafdrop:latest redis:latest 2>/dev/null || true
-
-            echo "Old containers and images cleaned up."
+            
+            echo "Old application containers and images cleaned up."
+            echo "Infrastructure services (zookeeper, kafka, redis, kafdrop) will be kept running if they exist."
 
       - name: Start All Services with Docker Compose on VPS
         uses: appleboy/ssh-action@v1.0.3
@@ -249,6 +248,13 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd /var/www/planbook-monorepo || { echo "Error: /var/www/planbook-monorepo directory not found on VPS."; exit 1; }
-            echo "Building and starting Docker Compose services for monorepo..."
-            docker compose -f docker-compose.yml --project-name planbook-monorepo-stack up --build -d --remove-orphans
-            echo "All Planbook Docker Compose services started. Use 'docker compose logs -f' to monitor logs."
+            echo "Starting/Ensuring Infrastructure Services are Up..."
+            # Khởi động các service hạ tầng trước. Lệnh này sẽ chỉ tạo/khởi động nếu chưa có.
+            docker compose -f docker-compose.yml --project-name planbook-monorepo-stack up -d zookeeper kafka redis kafdrop
+            
+            echo "Starting/Updating Application Services (auth-service, api-gateway)..."
+            # Khởi động và cập nhật các service ứng dụng tùy chỉnh, buộc build lại image
+            docker compose -f docker-compose.yml --project-name planbook-monorepo-stack up --build --force-recreate -d auth-service api-gateway
+            
+            echo "All Planbook Docker Compose services (infrastructure and application) are now up and running."
+            echo "Use 'docker compose logs -f' to monitor logs from /var/www/planbook-monorepo."
