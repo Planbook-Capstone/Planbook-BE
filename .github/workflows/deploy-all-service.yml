@@ -1,9 +1,9 @@
-name: Deploy All Planbook Services (Monorepo)
+name: Build and Deploy Directly to VPS
 
 on:
   push:
     branches:
-      - master # Hoặc nhánh chính của monorepo của bạn
+      - master # Hoặc nhánh chính của bạn
 
 jobs:
   build-and-deploy:
@@ -13,9 +13,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
@@ -23,150 +20,112 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      # ==========================================================
-      # BƯỚC 1: TẠO FILE KEY CHO AUTH SERVICE
-      # ==========================================================
       - name: Write RSA Private/Public Keys for Auth Service
         run: |
-          # Tạo thư mục keys trong src/main/resources của auth-service
           mkdir -p auth-service/src/main/resources/keys
           echo "${{ secrets.PRIVATE_KEY_PEM }}" > auth-service/src/main/resources/keys/private.pem
           echo "${{ secrets.PUBLIC_KEY_PEM }}" > auth-service/src/main/resources/keys/public.pem
-        # Đảm bảo bước này chạy trước khi Maven build auth-service
 
-      # ==========================================================
-      # BƯỚC 2: BUILD AUTH SERVICE
-      # ==========================================================
-      - name: Maven Clean and Package Auth Service
+      - name: Build Auth Service JAR
         run: mvn clean package -DskipTests
-        working-directory: auth-service # Quan trọng: Chạy trong thư mục con auth-service
+        working-directory: ./auth-service
 
-      # ==========================================================
-      # BƯỚC 3: BUILD API GATEWAY
-      # ==========================================================
-      - name: Maven Clean and Package API Gateway
+      - name: Build API Gateway JAR
         run: mvn clean package -DskipTests
-        working-directory: api-gateway # Quan trọng: Chạy trong thư mục con api-gateway
+        working-directory: ./api-gateway
 
-      # ==========================================================
-      # BƯỚC 4: TẠO docker-compose.yml CHUNG TRÊN RUNNER
-      # ==========================================================
-      - name: Create unified docker-compose.yml on runner
+      - name: Prepare Deployment Package
         run: |
-          cat <<EOF > docker-compose.yml
-          # Bỏ dòng 'version: '3.8'' vì Docker Compose CLI hiện đại không cần nó và gây cảnh báo.
-          name: planbook-monorepo-stack # Tên stack chung cho tất cả các services
+          mkdir -p deploy_package
+          mkdir -p deploy_package/auth-service
+          cp auth-service/target/*.jar deploy_package/auth-service/app.jar
+          cp auth-service/Dockerfile deploy_package/auth-service/Dockerfile
+
+          mkdir -p deploy_package/api-gateway
+          cp api-gateway/target/*.jar deploy_package/api-gateway/app.jar
+          cp api-gateway/Dockerfile deploy_package/api-gateway/Dockerfile
+
+          cat <<EOF > deploy_package/docker-compose.yml
+          name: planbook-monorepo-stack
 
           services:
             zookeeper:
               image: zookeeper:latest
               container_name: zookeeper
               restart: always
-              ports:
-                - "2181:2181" # Expose Zookeeper ra ngoài nếu cần cho debug hoặc công cụ bên ngoài
-              environment:
-                ZOO_CLIENT_PORT: 2181
-              volumes:
-                - zookeeper_data:/data
-                - zookeeper_datalog:/datalog
+              ports: ["2181:2181"]
+              volumes: [zookeeper_data:/data, zookeeper_datalog:/datalog]
 
             kafka:
               image: confluentinc/cp-kafka:7.5.0
               container_name: kafka
               restart: always
-              ports:
-                - "9092:9092"
+              ports: ["9092:9092"]
               environment:
                 KAFKA_BROKER_ID: 1
                 KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-                KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST:${{ secrets.VPS_HOST }}:9092 # Sử dụng IP của VPS
+                KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://${{ secrets.VPS_HOST }}:9092
                 KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
                 KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
                 KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-              volumes:
-                - kafka_data:/var/lib/kafka/data
-              depends_on:
-                - zookeeper
+              volumes: [kafka_data:/var/lib/kafka/data]
+              depends_on: [zookeeper]
 
             kafdrop:
               image: obsidiandynamics/kafdrop:latest
               container_name: kafdrop
               restart: always
-              ports:
-                - "9000:9000"
-              environment:
-                KAFKA_BROKERCONNECT: kafka:29092
-                JVM_OPTS: "-Xms16M -Xmx48M"
-              depends_on:
-                - kafka
+              ports: ["9000:9000"]
+              environment: { KAFKA_BROKERCONNECT: "kafka:29092", JVM_OPTS: "-Xms16M -Xmx48M" }
+              depends_on: [kafka]
 
             redis:
               image: redis:latest
               container_name: redis
               restart: always
-              ports:
-                - "6379:6379"
-              volumes:
-                - redis_data:/data
+              ports: ["6379:6379"]
+              volumes: [redis_data:/data]
 
-            auth-service: # Tên service này phải khớp với spring.application.name của Auth Service
+            auth-service:
               build:
-                context: ./auth-service # Quan trọng: Context là thư mục auth-service
-                dockerfile: Dockerfile
-              image: planbook-auth-service:latest
+                context: ./auth-service
               container_name: planbook-auth-service
               restart: always
-              ports:
-                - "8081:8080" # External 8081 -> Internal 8080 cho Auth Service
+              ports: ["8081:8080"]
               environment:
-                SPRING_DATASOURCE_URL: "${{ secrets.DB_URL }}"
-                SPRING_DATASOURCE_USERNAME: "${{ secrets.DB_USERNAME }}"
-                SPRING_DATASOURCE_PASSWORD: "${{ secrets.DB_PASSWORD }}"
+                SPRING_DATASOURCE_URL: "\${{ secrets.DB_URL }}"
+                SPRING_DATASOURCE_USERNAME: "\${{ secrets.DB_USERNAME }}"
+                SPRING_DATASOURCE_PASSWORD: "\${{ secrets.DB_PASSWORD }}"
                 SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: "org.hibernate.dialect.MySQL8Dialect"
                 SPRING_JPA_HIBERNATE_DDL_AUTO: "update"
-                SPRING_MAIN_ALLOW_CIRCULAR_REFERENCES: "true"
                 SPRING_MVC_PATHMATCH_MATCHING_STRATEGY: "ANT_PATH_MATCHER"
-                SUPABASE_JWT_SECRET: "${{ secrets.SUPABASE_JWT_SECRET_KEY }}"
-                SPRING_SECRETKEY: "${{ secrets.SPRING_APP_SECRET_KEY }}"
+                SUPABASE_JWT_SECRET: "\${{ secrets.SUPABASE_JWT_SECRET_KEY }}"
+                SPRING_SECRETKEY: "\${{ secrets.SPRING_APP_SECRET_KEY }}"
                 SPRING_KAFKA_BOOTSTRAP_SERVERS: "kafka:29092"
-                KAFKA_TOPIC_NAME: "${{ secrets.KAFKA_TOPIC }}"
-                SPRING_MAIL_HOST: "${{ secrets.MAIL_HOST }}"
-                SPRING_MAIL_PORT: "${{ secrets.MAIL_PORT }}"
-                SPRING_MAIL_USERNAME: "${{ secrets.MAIL_USERNAME }}"
-                SPRING_MAIL_PASSWORD: "${{ secrets.MAIL_PASSWORD }}"
-                SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: "true"
-                SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: "true"
-                SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_REQUIRED: "true"
-                SPRING_MAIL_PROPERTIES_MAIL_SMTP_CONNECTIONTIMEOUT: "5000"
-                SPRING_MAIL_PROPERTIES_MAIL_SMTP_TIMEOUT: "5000"
-                SPRING_MAIL_PROPERTIES_MAIL_SMTP_WRITETIMEOT: "5000"
-                SPRING_MAIL_DEFAULT_ENCODING: "UTF-8"
+                KAFKA_TOPIC_NAME: "\${{ secrets.KAFKA_TOPIC }}"
+                SPRING_MAIL_HOST: "\${{ secrets.MAIL_HOST }}"
+                SPRING_MAIL_PORT: "\${{ secrets.MAIL_PORT }}"
+                SPRING_MAIL_USERNAME: "\${{ secrets.MAIL_USERNAME }}"
+                SPRING_MAIL_PASSWORD: "\${{ secrets.MAIL_PASSWORD }}"
                 SPRING_DATA_REDIS_HOST: "redis"
                 SPRING_DATA_REDIS_PORT: "6379"
                 SPRING_CACHE_TYPE: "redis"
-                SPRING_DURATION: "${{ secrets.APP_DURATION }}"
+                SPRING_DURATION: "\${{ secrets.APP_DURATION }}"
                 SPRING_PROFILES_ACTIVE: "prod"
-                SERVER_PORT: 8080 # Cổng nội bộ của Auth Service
-              depends_on:
-                - zookeeper
-                - kafka
-                - redis
+                SERVER_PORT: 8080
+              depends_on: [kafka, redis]
 
-            api-gateway: # Tên service này phải khớp với spring.application.name của API Gateway
+            api-gateway:
               build:
-                context: ./api-gateway # Quan trọng: Context là thư mục api-gateway
-                dockerfile: Dockerfile
-              image: planbook-api-gateway:latest
+                context: ./api-gateway
               container_name: planbook-api-gateway
               restart: always
-              ports:
-                - "8080:8080" # External 8080 -> Internal 8080 cho API Gateway
+              ports: ["8080:8080"]
               environment:
                 SPRING_PROFILES_ACTIVE: "prod"
-                SERVER_PORT: 8080 # Cổng nội bộ của API Gateway
+                SERVER_PORT: 8080
                 SPRING_APPLICATION_NAME: "api-gateway"
-              depends_on:
-                - zookeeper # API Gateway phụ thuộc Zookeeper để discovery
+              depends_on: [zookeeper]
 
           volumes:
             zookeeper_data:
@@ -174,91 +133,43 @@ jobs:
             kafka_data:
             redis_data:
           EOF
-        shell: bash
 
-      # =======================================================
-      # BƯỚC 5: TRIỂN KHAI LÊN VPS
-      # =======================================================
-      - name: Create target directory on VPS
+      - name: Create Directory on VPS
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            sudo mkdir -p /var/www/planbook-monorepo
-            sudo chown -R ${{ secrets.VPS_USER }}:${{ secrets.VPS_USER }} /var/www/planbook-monorepo
-            echo "Directory /var/www/planbook-monorepo ensured to exist with correct permissions."
+            # Tạo thư mục ứng dụng trên VPS nếu chưa có
+            APP_DIR="/var/www/planbook-be" # <<< ĐÃ THAY ĐỔI
+            sudo mkdir -p $APP_DIR
+            sudo chown -R $USER:$USER $APP_DIR
 
-      - name: Copy Project Files to VPS
+      - name: Copy Deployment Package to VPS
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          # Source là toàn bộ thư mục gốc của repo (Planbook-BE)
-          source: "."
-          target: /var/www/planbook-monorepo/
+          source: "./deploy_package/*"
+          target: "/var/www/planbook-be" # <<< ĐÃ THAY ĐỔI
+          strip_components: 1
 
-      - name: Stop and Remove Application Services on VPS
+      - name: Run Docker Compose on VPS
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd /var/www/planbook-monorepo || { echo "Error: /var/www/planbook-monorepo directory not found on VPS."; exit 1; }
-            echo "Checking and freeing up ports..."
-            # Kiểm tra và giải phóng cổng 8080 (API Gateway) và 8081 (Auth Service)
-            PORTS_TO_FREE="8080 8081"
-            for PORT_TO_FREE in $PORTS_TO_FREE; do
-              PID_ON_PORT=$(sudo lsof -t -i :$PORT_TO_FREE)
-              if [ -n "$PID_ON_PORT" ]; then
-                echo "Found process on port $PORT_TO_FREE with PID: $PID_ON_PORT. Attempting to kill it..."
-                sudo kill -9 $PID_ON_PORT 2>/dev/null || true
-                sleep 1
-                if sudo lsof -i :$PORT_TO_FREE > /dev/null; then
-                  echo "Warning: Port $PORT_TO_FREE is still in use after killing process. Manual intervention may be needed."
-                else
-                  echo "Port $PORT_TO_FREE is now free."
-                fi
-              else
-                echo "Port $PORT_TO_FREE is already free."
-              fi
-            done
+            cd /var/www/planbook-be # <<< ĐÃ THAY ĐỔI
 
-            echo "Stopping and removing old application containers (auth-service, api-gateway) if they exist..."
-            # Chỉ dừng và xóa các service ứng dụng tùy chỉnh
-            # Sử dụng --project-name để đảm bảo dừng đúng stack
-            docker compose -f docker-compose.yml --project-name planbook-monorepo-stack stop auth-service api-gateway 2>/dev/null || true
-            docker compose -f docker-compose.yml --project-name planbook-monorepo-stack rm -f auth-service api-gateway 2>/dev/null || true
+            echo "Starting deployment..."
             
-            echo "Cleaning up old application service images..."
-            docker rmi planbook-auth-service:latest 2>/dev/null || true
-            docker rmi planbook-api-gateway:latest 2>/dev/null || true
-            
-            echo "Old application containers and images cleaned up."
-            echo "Infrastructure services (zookeeper, kafka, redis, kafdrop) will be kept running if they exist."
+            docker compose up -d --build --force-recreate auth-service api-gateway
 
-      - name: Start All Services with Docker Compose on VPS
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            cd /var/www/planbook-monorepo || { echo "Error: /var/www/planbook-monorepo directory not found on VPS."; exit 1; }
-            echo "Starting/Ensuring Infrastructure Services are Up..."
-            # Lệnh này sẽ chỉ tạo/khởi động nếu chưa có.
-            # Docker Compose sẽ tự động pull image nếu nó chưa tồn tại trên VPS.
-            # Không dùng --force-recreate ở đây để bảo toàn container và dữ liệu.
-            docker compose -f docker-compose.yml --project-name planbook-monorepo-stack up -d zookeeper kafka redis kafdrop
-            
-            echo "Starting/Updating Application Services (auth-service, api-gateway)..."
-            # Khởi động và cập nhật các service ứng dụng tùy chỉnh.
-            # --build: Đảm bảo image được build lại từ Dockerfile cục bộ.
-            # --force-recreate: Buộc tạo lại container, ngay cả khi cấu hình không thay đổi (cần thiết khi code Java thay đổi).
-            docker compose -f docker-compose.yml --project-name planbook-monorepo-stack up --build --force-recreate -d auth-service api-gateway
-            
-            echo "All Planbook Docker Compose services (infrastructure and application) are now up and running."
-            echo "Use 'docker compose logs -f' to monitor logs from /var/www/planbook-monorepo."
+            echo "Cleaning up old Docker images..."
+            docker image prune -af
+
+            echo "Deployment completed successfully!"

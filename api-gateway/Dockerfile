@@ -1,7 +1,15 @@
-# Dockerfile cho API Gateway
-FROM openjdk:21-jdk-slim-bullseye
-LABEL maintainer="Planbook <planbook@gmail.com>"
+# Sử dụng một base image Java Runtime nhẹ
+FROM eclipse-temurin:21-jre-jammy
+
+# Đặt thư mục làm việc
 WORKDIR /app
-COPY target/*.jar api-gateway.jar
+
+# Sao chép file jar đã được build từ trước vào container.
+# Tên `app.jar` sẽ được chúng ta đặt cố định trong script CI/CD.
+COPY app.jar .
+
+# Cổng mà ứng dụng Spring Boot sẽ chạy bên trong container
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "api-gateway.jar"]
+
+# Lệnh để chạy ứng dụng
+ENTRYPOINT ["java", "-jar", "app.jar"]
