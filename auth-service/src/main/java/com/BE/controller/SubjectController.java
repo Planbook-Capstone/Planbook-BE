@@ -22,8 +22,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@Tag(name = "Subject", description = "API for managing Subject")
-@RequestMapping("/api/subject")
+@Tag(name = "Subjects", description = "API quản lí môn học")
+@RequestMapping("/api/subjects")
 @SecurityRequirement(name = "api")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -32,7 +32,6 @@ public class SubjectController {
 
     ISubjectService subjectService;
     ResponseHandler responseHandler;
-
 
 
     @PostMapping
@@ -98,7 +97,7 @@ public class SubjectController {
     @ApiResponse(responseCode = "500", description = "Lỗi máy chủ nội bộ.")
     public ResponseEntity<Object> createSubject(@Valid @RequestBody SubjectRequest request) {
         SubjectResponse response = subjectService.createSubject(request);
-        return responseHandler.response(201, "Subject created successfully!", response);
+        return responseHandler.response(201, "Tạo môn học thành công!", response);
     }
 
     // --- API: LẤY DANH SÁCH MÔN HỌC (GET All Subjects) ---
@@ -129,7 +128,7 @@ public class SubjectController {
             @RequestParam(required = false, defaultValue = "asc") String sortDirection) {
         int pageForBackend = page > 0 ? page - 1 : 0;
         Page<SubjectResponse> subjectPage = subjectService.getAllSubjects(pageForBackend, size, search, status, sortBy, sortDirection);
-        return responseHandler.response(200, "Subjects retrieved successfully!", subjectPage);
+        return responseHandler.response(200, "Lấy thông tin môn học thành công!", subjectPage);
     }
 
     // --- API: LẤY MÔN HỌC BẰNG ID (GET By ID) ---
@@ -148,7 +147,7 @@ public class SubjectController {
     @ApiResponse(responseCode = "500", description = "Lỗi máy chủ nội bộ.")
     public ResponseEntity<Object> getSubjectById(@PathVariable long id) {
         SubjectResponse response = subjectService.getSubjectById(id);
-        return responseHandler.response(200, "Subject retrieved successfully!", response);
+        return responseHandler.response(200, "Lấy thông tin môn học thành công!", response);
     }
 
     // --- API: CẬP NHẬT MÔN HỌC (PUT) ---
@@ -198,7 +197,7 @@ public class SubjectController {
     @ApiResponse(responseCode = "500", description = "Lỗi máy chủ nội bộ.")
     public ResponseEntity<Object> updateSubject(@PathVariable long id, @Valid @RequestBody SubjectRequest request) {
         SubjectResponse response = subjectService.updateSubject(id, request);
-        return responseHandler.response(200, "Subject updated successfully!", response);
+        return responseHandler.response(200, "Cập nhật môn học thành công !", response);
     }
 
     // --- API: CẬP NHẬT TRẠNG THÁI MÔN HỌC (PATCH Status) ---
@@ -231,7 +230,7 @@ public class SubjectController {
             @PathVariable long id,
             @RequestParam String newStatus) {
         SubjectResponse response = subjectService.changeSubjectStatus(id, newStatus);
-        return responseHandler.response(200, "Subject status updated successfully!", response);
+        return responseHandler.response(200, "Cập nhật trạng thái môn học thành công !", response);
     }
 
     // --- API MỚI: LẤY DANH SÁCH MÔN HỌC THEO GRADE ID (GET By Grade ID) ---
@@ -265,7 +264,7 @@ public class SubjectController {
             @RequestParam(required = false, defaultValue = "asc") String sortDirection) {
         int pageForBackend = page > 0 ? page - 1 : 0;
         Page<SubjectResponse> subjectPage = subjectService.getSubjectsByGradeId(gradeId, pageForBackend, size, search, status, sortBy, sortDirection);
-        return responseHandler.response(200, "Subjects retrieved successfully for Grade ID: " + gradeId, subjectPage);
+        return responseHandler.response(200, "Lấy danh sách môn học theo khối lớp: " + gradeId, subjectPage);
     }
 
 }

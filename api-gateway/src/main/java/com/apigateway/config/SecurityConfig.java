@@ -18,8 +18,8 @@ import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 public class SecurityConfig {
 
       // === BƯỚC 1: Inject giá trị từ application.yml ===
-    @Value("${spring.security.oauth2.resourceserver.jwt.jwk-set-uri}")
-    private String jwkSetUri;
+//    @Value("${spring.security.oauth2.resourceserver.jwt.jwk-set-uri}")
+//    private String jwkSetUri;
 
     private final String[] PUBLIC_ENDPOINTS = {
             "/error",
@@ -28,8 +28,8 @@ public class SecurityConfig {
             "/webjars/**",
             "/swagger-ui/**",
             "/swagger-resources/**",
-            "/*/v3/api-docs/**",
-             "/*/api/login"
+            "/*/v3/api-docs/**"
+//             "/*/api/login"
     };
 
     @Bean
@@ -44,19 +44,17 @@ public class SecurityConfig {
                 )
                 // Kích hoạt tính năng xác thực token JWT như một Resource Server
                 // === BƯỚC 2: Chỉ định decoder tường minh ===
-                .oauth2ResourceServer(oauth2 -> oauth2
-                        .jwt(jwt -> jwt.jwtDecoder(reactiveJwtDecoder()))
-                );
+                .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults())); // Updated line
 
         return http.build();
     }
 
       // === BƯỚC 3: Tạo bean ReactiveJwtDecoder ===
-    @Bean
-    public ReactiveJwtDecoder reactiveJwtDecoder() {
-        // Spring sẽ dùng URI này để lấy public key và xác thực token JWT
-        return ReactiveJwtDecoders.fromOidcIssuerLocation(jwkSetUri);
-    }
+//    @Bean
+//    public ReactiveJwtDecoder reactiveJwtDecoder() {
+//        // Spring sẽ dùng URI này để lấy public key và xác thực token JWT
+//        return ReactiveJwtDecoders.fromOidcIssuerLocation(jwkSetUri);
+//    }
 
 
     @Bean

@@ -23,8 +23,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 @RestController
-@Tag(name = "BookType", description = "API để quản lý các loại sách (ví dụ: Sách giáo khoa, Sách bài tập)")
-@RequestMapping("/api/book-type")
+@Tag(name = "BookTypes", description = "API để quản lý loại công cụ hỗ trợ (ví dụ: Tạo giáo án, Chấm điểm, ...)")
+@RequestMapping("/api/book-types")
 @SecurityRequirement(name = "api")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -50,22 +50,22 @@ public class BookTypeController {
                                     @ExampleObject(
                                             name = "createGradingToolExample",
                                             summary = "Ví dụ tạo Loại Công cụ: Chấm điểm",
-                                            value = "{\n  \"name\": \"Chấm điểm\",\n  \"description\": \"Công cụ giúp giảng viên quản lý và chấm điểm bài tập, bài kiểm tra của sinh viên.\",\n  \"icon\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==\",\n  \"tokenCostPerQuery\": 5\n}" // ĐÃ THÊM tokenCostPerQuery
+                                            value = "{\n  \"name\": \"Chấm điểm\",\n  \"description\": \"Công cụ giúp giảng viên quản lý và chấm điểm bài tập, bài kiểm tra của sinh viên.\",\n \"priority\": 1,\n \"href\": \"example\",\n  \"icon\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==\",\n  \"tokenCostPerQuery\": 5\n}" // ĐÃ THÊM tokenCostPerQuery
                                     ),
                                     @ExampleObject(
                                             name = "createLessonPlanToolExample",
                                             summary = "Ví dụ tạo Loại Công cụ: Tạo giáo án",
-                                            value = "{\n  \"name\": \"Tạo giáo án\",\n  \"description\": \"Công cụ hỗ trợ xây dựng và quản lý các giáo án điện tử.\",\n  \"icon\": null,\n  \"tokenCostPerQuery\": 10\n}" // ĐÃ THÊM tokenCostPerQuery
+                                            value = "{\n  \"name\": \"Tạo giáo án\",\n  \"description\": \"Công cụ hỗ trợ xây dựng và quản lý các giáo án điện tử.\",\n \"priority\": 1,\n  \"icon\": null,\n  \"tokenCostPerQuery\": 10\n}" // ĐÃ THÊM tokenCostPerQuery
                                     ),
                                     @ExampleObject(
                                             name = "createSlideToolExample",
                                             summary = "Ví dụ tạo Loại Công cụ: Tạo slide bài giảng",
-                                            value = "{\n  \"name\": \"Tạo slide bài giảng\",\n  \"description\": \"Công cụ giúp thiết kế và trình bày slide bài giảng một cách chuyên nghiệp.\",\n  \"icon\": null,\n  \"tokenCostPerQuery\": 15\n}" // ĐÃ THÊM tokenCostPerQuery
+                                            value = "{\n  \"name\": \"Tạo slide bài giảng\",\n  \"description\": \"Công cụ giúp thiết kế và trình bày slide bài giảng một cách chuyên nghiệp.\",\n \"priority\": 1,\n  \"icon\": null,\n  \"tokenCostPerQuery\": 15\n}" // ĐÃ THÊM tokenCostPerQuery
                                     ),
                                     @ExampleObject(
                                             name = "createExamToolExample",
                                             summary = "Ví dụ tạo Loại Công cụ: Tạo đề thi",
-                                            value = "{\n  \"name\": \"Tạo đề thi\",\n  \"description\": \"Công cụ hỗ trợ tạo và quản lý các đề thi trắc nghiệm, tự luận.\",\n  \"icon\": null,\n  \"tokenCostPerQuery\": 20\n}" // ĐÃ THÊM tokenCostPerQuery
+                                            value = "{\n  \"name\": \"Tạo đề thi\",\n  \"description\": \"Công cụ hỗ trợ tạo và quản lý các đề thi trắc nghiệm, tự luận.\",\n \"priority\": 1,\n  \"icon\": null,\n  \"tokenCostPerQuery\": 20\n}" // ĐÃ THÊM tokenCostPerQuery
                                     )
                             }
                     )
@@ -83,7 +83,7 @@ public class BookTypeController {
     @ApiResponse(responseCode = "500", description = "Lỗi máy chủ nội bộ.")
     public ResponseEntity<Object> createBookType(@Valid @RequestBody BookTypeRequest request) {
         BookTypeResponse response = bookTypeService.createBookType(request);
-        return responseHandler.response(201, "BookType created successfully!", response);
+        return responseHandler.response(201, "Tạo loại công cụ thành công!", response);
     }
 
     // --- API: LẤY DANH SÁCH LOẠI CÔNG CỤ (GET All BookTypes) ---
@@ -115,7 +115,7 @@ public class BookTypeController {
             @RequestParam(required = false, defaultValue = "asc") String sortDirection) {
         int pageForBackend = page > 0 ? page - 1 : 0;
         Page<BookTypeResponse> bookTypePage = bookTypeService.getAllBookTypes(pageForBackend, size, search, status, sortBy, sortDirection);
-        return responseHandler.response(200, "BookTypes retrieved successfully!", bookTypePage);
+        return responseHandler.response(200, "Lấy thông tin tất cả các loại công cụ hỗ trợ thành công!", bookTypePage);
     }
 
     // --- API: LẤY LOẠI CÔNG CỤ BẰNG ID (GET By ID) ---
@@ -141,7 +141,7 @@ public class BookTypeController {
     @ApiResponse(responseCode = "500", description = "Lỗi máy chủ nội bộ.")
     public ResponseEntity<Object> getBookTypeById(@PathVariable UUID id) {
         BookTypeResponse response = bookTypeService.getBookTypeById(id);
-        return responseHandler.response(200, "BookType retrieved successfully!", response);
+        return responseHandler.response(200, "Lấy thông tin loại công cụ thành công!", response);
     }
 
     // --- API: CẬP NHẬT LOẠI CÔNG CỤ (PUT) ---
@@ -159,12 +159,12 @@ public class BookTypeController {
                                     @ExampleObject(
                                             name = "updateGradingToolExample", // ĐÃ THAY ĐỔI TÊN EXAMPLE
                                             summary = "Ví dụ cập nhật công cụ 'Chấm điểm' (cả token)",
-                                            value = "{\n  \"name\": \"Chấm điểm (Đã nâng cấp)\",\n  \"description\": \"Công cụ giúp giảng viên quản lý và chấm điểm bài tập, bài kiểm tra của sinh viên, với nhiều tính năng mới.\",\n  \"icon\": null,\n  \"tokenCostPerQuery\": 7\n}" // ĐÃ THÊM tokenCostPerQuery và sửa giá trị
+                                            value = "{\n  \"name\": \"Chấm điểm (Đã nâng cấp)\",\n  \"description\": \"Công cụ giúp giảng viên quản lý và chấm điểm bài tập, bài kiểm tra của sinh viên, với nhiều tính năng mới.\",\n \"priority\": 1,\n  \"icon\": null,\n  \"tokenCostPerQuery\": 7\n}" // ĐÃ THÊM tokenCostPerQuery và sửa giá trị
                                     ),
                                     @ExampleObject(
                                             name = "updateLessonPlanToolExample", // ĐÃ THAY ĐỔI TÊN EXAMPLE
                                             summary = "Ví dụ cập nhật công cụ 'Tạo giáo án' (cả token)",
-                                            value = "{\n  \"name\": \"Tạo giáo án\",\n  \"description\": \"Công cụ số hóa và quản lý giáo án điện tử toàn diện.\",\n  \"icon\": \"data:image/jpeg;base64,.....\",\n  \"tokenCostPerQuery\": 12\n}" // ĐÃ THÊM tokenCostPerQuery và sửa giá trị
+                                            value = "{\n  \"name\": \"Tạo giáo án\",\n  \"description\": \"Công cụ số hóa và quản lý giáo án điện tử toàn diện.\",\n \"priority\": 1,\n  \"icon\": \"data:image/jpeg;base64,.....\",\n  \"tokenCostPerQuery\": 12\n}" // ĐÃ THÊM tokenCostPerQuery và sửa giá trị
                                     )
                             }
                     )
@@ -191,7 +191,7 @@ public class BookTypeController {
     @ApiResponse(responseCode = "500", description = "Lỗi máy chủ nội bộ.")
     public ResponseEntity<Object> updateBookType(@PathVariable UUID id, @Valid @RequestBody BookTypeRequest request) {
         BookTypeResponse response = bookTypeService.updateBookType(id, request);
-        return responseHandler.response(200, "BookType updated successfully!", response);
+        return responseHandler.response(200, "Cập nhật loại công cụ thành công!", response);
     }
 
     // --- API: CẬP NHẬT TRẠNG THÁI LOẠI CÔNG CỤ (PATCH Status) ---
@@ -233,6 +233,6 @@ public class BookTypeController {
             @PathVariable UUID id,
             @RequestParam String newStatus) {
         BookTypeResponse response = bookTypeService.changeBookTypeStatus(id, newStatus);
-        return responseHandler.response(200, "BookType status updated successfully!", response);
+        return responseHandler.response(200, "Trạng thái công cụ cập nhật thành công !", response);
     }
 }

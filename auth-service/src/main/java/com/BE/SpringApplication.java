@@ -22,6 +22,7 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 //                description = "Information"
 //        )
 //)
+
 @SecurityScheme(name = "api", scheme = "bearer", type = SecuritySchemeType.HTTP, in = SecuritySchemeIn.HEADER)
 public class SpringApplication {
 

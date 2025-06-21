@@ -28,7 +28,6 @@ public class Filter extends OncePerRequestFilter {
     protected void doFilterInternal(jakarta.servlet.http.HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
         String requestURI = request.getRequestURI();
-        System.out.println(" " + requestURI);
         String method = request.getMethod();
 
         AntPathMatcher pathMatcher = new AntPathMatcher();

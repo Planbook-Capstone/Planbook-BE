@@ -12,14 +12,14 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 
 @SpringBootApplication
 @EnableDiscoveryClient
-@OpenAPIDefinition(
-        servers = @Server(url = "https://planbook.vn"), // Đặt URL domain cuối cùng ở đây
-        info = @Info(
-                title = "Planbook API (Gateway)", // Đổi tên cho rõ ràng
-                version = "2.0",
-                description = "API Gateway for Planbook services" // Đổi mô tả
-        )
-)
+//@OpenAPIDefinition(
+//        servers = @Server(url = "https://planbook.vn"), // Đặt URL domain cuối cùng ở đây
+//        info = @Info(
+//                title = "Planbook API (Gateway)", // Đổi tên cho rõ ràng
+//                version = "2.0",
+//                description = "API Gateway for Planbook services" // Đổi mô tả
+//        )
+//)
 @SecurityScheme(name = "api", scheme = "bearer", type = SecuritySchemeType.HTTP, in = SecuritySchemeIn.HEADER)
 public class GatewayApplication {
 

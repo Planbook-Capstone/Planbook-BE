@@ -109,7 +109,7 @@ jobs:
               container_name: planbook-be
               restart: always
               ports:
-                - "8081:8080"
+                - "8080:8080"
               environment:
                 # BỎ CÁC DÒNG SAU, VÌ KEY PATH SẼ ĐƯỢC ĐỌC TỪ application.properties TRONG JAR
                 SPRING_JWT_PRIVATE_KEY_PATH: "${{ secrets.PRIVATE_KEY_PATH }}"

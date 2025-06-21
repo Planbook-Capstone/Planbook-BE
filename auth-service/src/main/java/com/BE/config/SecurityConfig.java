@@ -3,6 +3,9 @@ package com.BE.config;
 import com.BE.exception.handler.AuthenticationHandler;
 import com.BE.filter.Filter;
 import com.BE.service.JpaUserDetailsService;
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.jwk.JWKSet;
+import com.nimbusds.jose.jwk.RSAKey;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -28,6 +31,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsUtils;
 
 import javax.crypto.spec.SecretKeySpec;
+import java.security.interfaces.RSAPublicKey;
 
 
 @Configuration
@@ -35,14 +39,10 @@ import javax.crypto.spec.SecretKeySpec;
 @EnableMethodSecurity
 public class SecurityConfig  {
 
-    @Value("${spring.secretkey}")
-    private String SECRET_KEY;
+    @Autowired
+    RSAKey rsaKey;
 
     private final String[] PUBLIC_ENDPOINTS = {
-            "/error",
-            "/swagger-ui.html",
-            "/v3/api-docs/swagger-config",
-            "/webjars/**",
             "/swagger-ui/**",
             "/v3/api-docs/**",
             "/*/v3/api-docs/**",
@@ -55,19 +55,21 @@ public class SecurityConfig  {
             "/api/status",
             "/api/refresh",
             "/api/logout",
-            "/api/grade",
-            "/api/grade/**",
-            "/api/subject",
-            "/api/subject/**/",
-            "/api/book",
-            "/api/book/**",
-            "/api/chapter",
-            "/api/chapter/**",
-            "/api/lesson",
-            "/api/lesson/**",
-            "/api/book-type",
-            "/api/book-type/**",
+            "/api/grades",
+            "/api/grades/**",
+            "/api/subjects",
+            "/api/subjects/**/",
+            "/api/books",
+            "/api/books/**",
+            "/api/chapters",
+            "/api/chapters/**",
+            "/api/lessons",
+            "/api/lessons/**",
+            "/api/book-types",
+            "/api/book-types/**",
             "/api/sendMessage",
+
+
     };
 
     private final String[] PUBLIC_ENDPOINTS_METHOD = {
@@ -98,8 +100,14 @@ public class SecurityConfig  {
                         .anyRequest().authenticated())
 
                 .oauth2ResourceServer(oauth2 -> oauth2
-                        .jwt(jwtConfigurer -> jwtConfigurer.decoder(jwtDecoder())
-                                .jwtAuthenticationConverter(jwtAuthenticationConverter()))
+                        .jwt(jwtConfigurer -> {
+                            try {
+                                jwtConfigurer.decoder(jwtDecoder())
+                                        .jwtAuthenticationConverter(jwtAuthenticationConverter());
+                            } catch (JOSEException e) {
+                                throw new RuntimeException(e);
+                            }
+                        })
                         .authenticationEntryPoint(authenticationHandler))
 
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -112,9 +120,9 @@ public class SecurityConfig  {
     }
 
     @Bean
-    JwtDecoder jwtDecoder(){
-        SecretKeySpec secretKeySpec = new SecretKeySpec(SECRET_KEY.getBytes(),"HS512");
-        return NimbusJwtDecoder.withSecretKey(secretKeySpec).macAlgorithm(MacAlgorithm.HS512).build();
+    public JwtDecoder jwtDecoder() throws JOSEException {
+        RSAPublicKey publicKey = rsaKey.toRSAPublicKey();
+        return NimbusJwtDecoder.withPublicKey(publicKey).build();
     }
 
     @Bean
@@ -131,6 +139,12 @@ public class SecurityConfig  {
     @Bean
     PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(10);
+    }
+
+    // Optional: expose public JWK
+    @Bean
+    public JWKSet jwkSet() {
+        return new JWKSet(rsaKey.toPublicJWK());
     }
 }
 

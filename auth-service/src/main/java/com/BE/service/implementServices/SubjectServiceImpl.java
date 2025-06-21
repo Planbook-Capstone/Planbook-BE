@@ -27,31 +27,31 @@ import java.util.Optional;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class SubjectServiceImpl implements ISubjectService {
 
-     @Autowired
-     SubjectRepository subjectRepository;
+    @Autowired
+    SubjectRepository subjectRepository;
 
-     @Autowired
-     GradeRepository gradeRepository; // Cần để tìm Grade theo ID
+    @Autowired
+    GradeRepository gradeRepository; // Cần để tìm Grade theo ID
 
-     @Autowired
-     DateNowUtils dateNowUtils;
+    @Autowired
+    DateNowUtils dateNowUtils;
 
-     @Autowired
-     SubjectMapper subjectMapper;
+    @Autowired
+    SubjectMapper subjectMapper;
 
-     @Autowired
-     PageUtil pageUtil;
+    @Autowired
+    PageUtil pageUtil;
 
     @Override
     public SubjectResponse createSubject(SubjectRequest request) {
         // Kiểm tra tên môn học đã tồn tại trong cùng một Grade chưa
         // Nên dùng DuplicateResourceException để consistent với API
         if (subjectRepository.findByNameAndGradeId(request.getName().trim(), request.getGradeId()).isPresent()) {
-            throw new DataIntegrityViolationException("Subject with name '" + request.getName() + "' already exists for Grade ID: " + request.getGradeId());
+            throw new DataIntegrityViolationException("Môn học có tên '" + request.getName() + "' đã tồn tại trong lớp có ID: " + request.getGradeId());
         }
 
         Grade grade = gradeRepository.findById(request.getGradeId())
-                .orElseThrow(() -> new NotFoundException("Grade not found with ID: " + request.getGradeId()));
+                .orElseThrow(() -> new NotFoundException("Không tìm thấy lớp có ID: " + request.getGradeId()));
 
         Subject subject = subjectMapper.toSubject(request);
         subject.setGrade(grade); // Set Grade entity
@@ -73,7 +73,7 @@ public class SubjectServiceImpl implements ISubjectService {
             try {
                 statusEnum = StatusEnum.valueOf(status.toUpperCase());
             } catch (IllegalArgumentException e) {
-                throw new IllegalArgumentException("Invalid status value: " + status + ". Must be ACTIVE or INACTIVE.");
+                throw new IllegalArgumentException("Giá trị trạng thái không hợp lệ: " + status + ". Phải là ACTIVE hoặc INACTIVE.");
             }
         }
 
@@ -89,20 +89,20 @@ public class SubjectServiceImpl implements ISubjectService {
     @Override
     public SubjectResponse getSubjectById(long id) {
         Subject subject = subjectRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Subject not found with ID: " + id));
+                .orElseThrow(() -> new NotFoundException("Không tìm thấy môn học có ID: " + id));
         return subjectMapper.toSubjectResponse(subject);
     }
 
     @Override
     public SubjectResponse updateSubject(long id, SubjectRequest request) {
         Subject existingSubject = subjectRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Subject not found with ID: " + id));
+                .orElseThrow(() -> new NotFoundException("Không tìm thấy môn học có ID: " + id));
 
         // Kiểm tra xem Grade ID có thay đổi không
         // SỬA LỖI Ở ĐÂY: So sánh primitive long với Long wrapper
         if (existingSubject.getGrade().getId() != request.getGradeId()) {
             Grade newGrade = gradeRepository.findById(request.getGradeId())
-                    .orElseThrow(() -> new NotFoundException("New Grade not found with ID: " + request.getGradeId()));
+                    .orElseThrow(() -> new NotFoundException("Không tìm thấy lớp mới có ID: " + request.getGradeId()));
             existingSubject.setGrade(newGrade);
         }
 
@@ -117,7 +117,7 @@ public class SubjectServiceImpl implements ISubjectService {
         if (nameChanged || gradeChanged) { // Chỉ kiểm tra khi có thay đổi liên quan đến tên hoặc Grade
             Optional<Subject> duplicateSubject = subjectRepository.findByNameAndGradeIdAndIdNot(request.getName(), request.getGradeId(), id);
             if (duplicateSubject.isPresent()) {
-                throw new DataIntegrityViolationException("Subject with name '" + request.getName() + "' already exists for Grade ID: " + request.getGradeId());
+                throw new DataIntegrityViolationException("Môn học có tên '" + request.getName() + "' đã tồn tại trong lớp có ID: " + request.getGradeId());
             }
         }
 
@@ -130,20 +130,20 @@ public class SubjectServiceImpl implements ISubjectService {
         } catch (DataIntegrityViolationException e) {
             // Đây là lỗi từ DB (ví dụ: unique constraint) - xử lý race condition
             // Nên throw DuplicateResourceException để consistent với createSubject
-            throw new DataIntegrityViolationException("Failed to update subject: Subject with name '" + request.getName() + "' already exists for Grade ID: " + request.getGradeId() + " (Possible race condition).");
+            throw new DataIntegrityViolationException("Không thể cập nhật môn học: Môn học có tên '" + request.getName() + "' đã tồn tại trong lớp có ID: " + request.getGradeId() + " (Có thể xung đột).");
         }
     }
 
     @Override
     public SubjectResponse changeSubjectStatus(long id, String newStatus) {
         Subject existingSubject = subjectRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Subject not found with ID: " + id));
+                .orElseThrow(() -> new NotFoundException("Không tìm thấy môn học có ID: " + id));
 
         StatusEnum statusEnum = null;
         try {
             statusEnum = StatusEnum.valueOf(newStatus.toUpperCase());
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Invalid status value: " + newStatus + ". Must be ACTIVE or INACTIVE.");
+            throw new IllegalArgumentException("Giá trị trạng thái không hợp lệ: " + newStatus + ". Phải là ACTIVE hoặc INACTIVE.");
         }
 
         existingSubject.setStatus(statusEnum);
@@ -160,7 +160,7 @@ public class SubjectServiceImpl implements ISubjectService {
 
         // Kiểm tra sự tồn tại của Grade
         if (!gradeRepository.existsById(gradeId)) {
-            throw new NotFoundException("Grade not found with ID: " + gradeId);
+            throw new NotFoundException("Không tìm thấy lớp có ID: " + gradeId);
         }
 
         StatusEnum statusEnum = null;
@@ -168,7 +168,7 @@ public class SubjectServiceImpl implements ISubjectService {
             try {
                 statusEnum = StatusEnum.valueOf(status.toUpperCase());
             } catch (IllegalArgumentException e) {
-                throw new IllegalArgumentException("Invalid status value: " + status + ". Must be ACTIVE or INACTIVE.");
+                throw new IllegalArgumentException("Giá trị trạng thái không hợp lệ: " + status + ". Phải là ACTIVE hoặc INACTIVE.");
             }
         }
 

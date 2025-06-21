@@ -39,6 +39,15 @@ public class BookTypeResponse {
     )
     String description;
 
+    String href;
+    
+    @Schema(
+            description = "Độ ưu tiên của công cụ hỗ trợ trong danh sách các công cụ. ",
+            type = "integer",
+            example = "1" // ĐÃ THAY ĐỔI VÍ DỤ
+    )
+    int priority;
+
     @Schema(
             description = "Icon đại diện cho công cụ hỗ trợ, thường là base64 encoded string của hình ảnh.", // ĐÃ THAY ĐỔI MÔ TẢ
             type = "string",
@@ -58,7 +67,7 @@ public class BookTypeResponse {
     @Schema(
             description = "Trạng thái hoạt động của công cụ hỗ trợ. Có thể là 'ACTIVE' hoặc 'INACTIVE'.", // ĐÃ THAY ĐỔI MÔ TẢ
             type = "string",
-            allowableValues = { "ACTIVE", "INACTIVE" },
+            allowableValues = {"ACTIVE", "INACTIVE"},
             example = "ACTIVE"
     )
     StatusEnum status;

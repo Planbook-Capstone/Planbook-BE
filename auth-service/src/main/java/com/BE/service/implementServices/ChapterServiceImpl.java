@@ -46,11 +46,11 @@ public class ChapterServiceImpl implements IChapterService {
     public ChapterResponse createChapter(ChapterRequest request) {
         // Kiểm tra tên chương đã tồn tại trong cùng một Book chưa
         if (chapterRepository.findByNameAndBookId(request.getName().trim(), request.getBookId()).isPresent()) {
-            throw new DataIntegrityViolationException("Chapter with name '" + request.getName() + "' already exists for Book ID: " + request.getBookId());
+            throw new DataIntegrityViolationException("Chương với tên '" + request.getName() + "' đã tồn tại trong sách có ID: " + request.getBookId());
         }
 
         Book book = bookRepository.findById(request.getBookId())
-                .orElseThrow(() -> new NotFoundException("Book not found with ID: " + request.getBookId()));
+                .orElseThrow(() -> new NotFoundException("Không tìm thấy sách với ID: " + request.getBookId()));
 
         Chapter chapter = chapterMapper.toChapter(request);
         chapter.setBook(book); // Set Book entity
@@ -72,7 +72,7 @@ public class ChapterServiceImpl implements IChapterService {
             try {
                 statusEnum = StatusEnum.valueOf(status.toUpperCase());
             } catch (IllegalArgumentException e) {
-                throw new IllegalArgumentException("Invalid status value: " + status + ". Must be ACTIVE or INACTIVE.");
+                throw new IllegalArgumentException("Trạng thái không hợp lệ: " + status + ". Giá trị hợp lệ là ACTIVE hoặc INACTIVE.");
             }
         }
 
@@ -87,19 +87,19 @@ public class ChapterServiceImpl implements IChapterService {
     @Override
     public ChapterResponse getChapterById(long id) {
         Chapter chapter = chapterRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Chapter not found with ID: " + id));
+                .orElseThrow(() -> new NotFoundException("Không tìm thấy chương với ID: " + id));
         return chapterMapper.toChapterResponse(chapter);
     }
 
     @Override
     public ChapterResponse updateChapter(long id, ChapterRequest request) {
         Chapter existingChapter = chapterRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Chapter not found with ID: " + id));
+                .orElseThrow(() -> new NotFoundException("Không tìm thấy chương với ID: " + id));
 
         // Kiểm tra xem Book ID có thay đổi không
         if (existingChapter.getBook().getId() != request.getBookId()) {
             Book newBook = bookRepository.findById(request.getBookId())
-                    .orElseThrow(() -> new NotFoundException("New Book not found with ID: " + request.getBookId()));
+                    .orElseThrow(() -> new NotFoundException("Không tìm thấy sách mới với ID: " + request.getBookId()));
             existingChapter.setBook(newBook);
         }
 
@@ -110,7 +110,7 @@ public class ChapterServiceImpl implements IChapterService {
         if (nameChanged || bookChanged) {
             Optional<Chapter> duplicateChapter = chapterRepository.findByNameAndBookIdAndIdNot(request.getName(), request.getBookId(), id);
             if (duplicateChapter.isPresent()) {
-                throw new DataIntegrityViolationException("Chapter with name '" + request.getName() + "' already exists for Book ID: " + request.getBookId());
+                throw new DataIntegrityViolationException("Chương với tên '" + request.getName() + "' đã tồn tại trong sách có ID: " + request.getBookId());
             }
         }
 
@@ -121,20 +121,20 @@ public class ChapterServiceImpl implements IChapterService {
             Chapter updatedChapter = chapterRepository.save(existingChapter);
             return chapterMapper.toChapterResponse(updatedChapter);
         } catch (DataIntegrityViolationException e) {
-            throw new DataIntegrityViolationException("Failed to update chapter: Chapter with name '" + request.getName() + "' already exists for Book ID: " + request.getBookId() + " (Possible race condition).");
+            throw new DataIntegrityViolationException("Cập nhật chương thất bại: Chương với tên '" + request.getName() + "' đã tồn tại trong sách có ID: " + request.getBookId() + " (Có thể do đồng thời).");
         }
     }
 
     @Override
     public ChapterResponse changeChapterStatus(long id, String newStatus) {
         Chapter existingChapter = chapterRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Chapter not found with ID: " + id));
+                .orElseThrow(() -> new NotFoundException("Không tìm thấy chương với ID: " + id));
 
         StatusEnum statusEnum = null;
         try {
             statusEnum = StatusEnum.valueOf(newStatus.toUpperCase());
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Invalid status value: " + newStatus + ". Must be ACTIVE or INACTIVE.");
+            throw new IllegalArgumentException("Trạng thái không hợp lệ: " + newStatus + ". Giá trị hợp lệ là ACTIVE hoặc INACTIVE.");
         }
 
         existingChapter.setStatus(statusEnum);
@@ -151,7 +151,7 @@ public class ChapterServiceImpl implements IChapterService {
 
         // Kiểm tra sự tồn tại của Book
         if (!bookRepository.existsById(bookId)) {
-            throw new NotFoundException("Book not found with ID: " + bookId);
+            throw new NotFoundException("Không tìm thấy sách với ID: " + bookId);
         }
 
         StatusEnum statusEnum = null;
@@ -159,7 +159,7 @@ public class ChapterServiceImpl implements IChapterService {
             try {
                 statusEnum = StatusEnum.valueOf(status.toUpperCase());
             } catch (IllegalArgumentException e) {
-                throw new IllegalArgumentException("Invalid status value: " + status + ". Must be ACTIVE or INACTIVE.");
+                throw new IllegalArgumentException("Trạng thái không hợp lệ: " + status + ". Giá trị hợp lệ là ACTIVE hoặc INACTIVE.");
             }
         }
 

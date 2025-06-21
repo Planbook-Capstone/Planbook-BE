@@ -1,5 +1,6 @@
 package com.BE.model.entity;
 
+import com.BE.enums.FormStatusEnum;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -20,13 +21,16 @@ public class Form {
     @Column(name = "form_name", nullable = false)
     String name;
 
+    @Column(name = "form_status", nullable = false)
+    FormStatusEnum status;
+    
     @Column(name = "form_description")
     String description;
 
     @Column(name = "form_definition", columnDefinition = "json")
     String formDefinition;
 
-    LocalDateTime createdAt;
-    LocalDateTime updatedAt;
+    String createdAt;
+    String updatedAt;
 
 }

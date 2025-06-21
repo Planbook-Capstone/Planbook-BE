@@ -23,8 +23,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@Tag(name = "Book", description = "API for managing Book")
-@RequestMapping("/api/book")
+@Tag(name = "Books", description = "API quản lí sách giáo khoa")
+@RequestMapping("/api/books")
 @SecurityRequirement(name = "api")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -82,7 +82,7 @@ public class BookController {
     @ApiResponse(responseCode = "500", description = "Lỗi máy chủ nội bộ.")
     public ResponseEntity<Object> createBook(@Valid @RequestBody BookRequest request) {
         BookResponse response = bookService.createBook(request);
-        return responseHandler.response(201, "Book created successfully!", response);
+        return responseHandler.response(201, "Tạo sách thành công!", response);
     }
 
     // --- API: LẤY DANH SÁCH SÁCH (GET All Books) ---
@@ -111,7 +111,7 @@ public class BookController {
             @RequestParam(required = false, defaultValue = "asc") String sortDirection) {
         int pageForBackend = page > 0 ? page - 1 : 0;
         Page<BookResponse> bookPage = bookService.getAllBooks(pageForBackend, size, search, status, sortBy, sortDirection);
-        return responseHandler.response(200, "Books retrieved successfully!", bookPage);
+        return responseHandler.response(200, "Lấy danh sách sách thành công!", bookPage);
     }
 
     // --- API: LẤY SÁCH BẰNG ID (GET By ID) ---
@@ -128,7 +128,7 @@ public class BookController {
     @ApiResponse(responseCode = "500", description = "Lỗi máy chủ nội bộ.")
     public ResponseEntity<Object> getBookById(@PathVariable long id) {
         BookResponse response = bookService.getBookById(id);
-        return responseHandler.response(200, "Book retrieved successfully!", response);
+        return responseHandler.response(200, "Lấy thông tin sách thành công!", response);
     }
 
     // --- API: CẬP NHẬT SÁCH (PUT) ---
@@ -172,7 +172,7 @@ public class BookController {
     @ApiResponse(responseCode = "500", description = "Lỗi máy chủ nội bộ.")
     public ResponseEntity<Object> updateBook(@PathVariable long id, @Valid @RequestBody BookRequest request) {
         BookResponse response = bookService.updateBook(id, request);
-        return responseHandler.response(200, "Book updated successfully!", response);
+        return responseHandler.response(200, "Cập nhật sách thành công!", response);
     }
 
     // --- API: CẬP NHẬT TRẠNG THÁI SÁCH (PATCH Status) ---
@@ -204,7 +204,7 @@ public class BookController {
             @PathVariable long id,
             @RequestParam String newStatus) {
         BookResponse response = bookService.changeBookStatus(id, newStatus);
-        return responseHandler.response(200, "Book status updated successfully!", response);
+        return responseHandler.response(200, "Cập nhật trạng thái sách thành công!", response);
     }
 
     // --- API MỚI: LẤY DANH SÁCH SÁCH THEO SUBJECT ID (GET By Subject ID) ---
@@ -237,7 +237,7 @@ public class BookController {
             @RequestParam(required = false, defaultValue = "asc") String sortDirection) {
         int pageForBackend = page > 0 ? page - 1 : 0;
         Page<BookResponse> bookPage = bookService.getBooksBySubjectId(subjectId, pageForBackend, size, search, status, sortBy, sortDirection);
-        return responseHandler.response(200, "Books retrieved successfully for Subject ID: " + subjectId, bookPage);
+        return responseHandler.response(200, "Lấy danh sách sách theo môn học thành công!", bookPage);
     }
 
 

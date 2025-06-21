@@ -22,8 +22,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@Tag(name = "Chapter", description = "API for managing Chapter")
-@RequestMapping("/api/chapter")
+@Tag(name = "Chapters", description = "API quản lí chương sách")
+@RequestMapping("/api/chapters")
 @RequiredArgsConstructor
 @SecurityRequirement(name = "api")
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -80,7 +80,7 @@ public class ChapterController {
     @ApiResponse(responseCode = "500", description = "Lỗi máy chủ nội bộ.")
     public ResponseEntity<Object> createChapter(@Valid @RequestBody ChapterRequest request) {
         ChapterResponse response = chapterService.createChapter(request);
-        return responseHandler.response(201, "Chapter created successfully!", response);
+        return responseHandler.response(201, "Tạo chương thành công!", response);
     }
 
     // --- API: LẤY DANH SÁCH CHƯƠNG (GET All Chapters) ---
@@ -109,7 +109,7 @@ public class ChapterController {
             @RequestParam(required = false, defaultValue = "asc") String sortDirection) {
         int pageForBackend = page > 0 ? page - 1 : 0;
         Page<ChapterResponse> chapterPage = chapterService.getAllChapters(pageForBackend, size, search, status, sortBy, sortDirection);
-        return responseHandler.response(200, "Chapters retrieved successfully!", chapterPage);
+        return responseHandler.response(200, "Lấy danh sách chương thành công!", chapterPage);
     }
 
     // --- API: LẤY CHƯƠNG BẰNG ID (GET By ID) ---
@@ -126,7 +126,7 @@ public class ChapterController {
     @ApiResponse(responseCode = "500", description = "Lỗi máy chủ nội bộ.")
     public ResponseEntity<Object> getChapterById(@PathVariable long id) {
         ChapterResponse response = chapterService.getChapterById(id);
-        return responseHandler.response(200, "Chapter retrieved successfully!", response);
+        return responseHandler.response(200, "Lấy thông tin chương thành công!", response);
     }
 
     // --- API: CẬP NHẬT CHƯƠNG (PUT) ---
@@ -170,7 +170,7 @@ public class ChapterController {
     @ApiResponse(responseCode = "500", description = "Lỗi máy chủ nội bộ.")
     public ResponseEntity<Object> updateChapter(@PathVariable long id, @Valid @RequestBody ChapterRequest request) {
         ChapterResponse response = chapterService.updateChapter(id, request);
-        return responseHandler.response(200, "Chapter updated successfully!", response);
+        return responseHandler.response(200, "Cập nhật chương thành công!", response);
     }
 
     // --- API: CẬP NHẬT TRẠNG THÁI CHƯƠNG (PATCH Status) ---
@@ -202,7 +202,7 @@ public class ChapterController {
             @PathVariable long id,
             @RequestParam String newStatus) {
         ChapterResponse response = chapterService.changeChapterStatus(id, newStatus);
-        return responseHandler.response(200, "Chapter status updated successfully!", response);
+        return responseHandler.response(200, "Cập nhật trạng thái chương thành công!", response);
     }
 
     // --- API MỚI: LẤY DANH SÁCH CHƯƠNG THEO BOOK ID (GET By Book ID) ---
@@ -235,10 +235,8 @@ public class ChapterController {
             @RequestParam(required = false, defaultValue = "asc") String sortDirection) {
         int pageForBackend = page > 0 ? page - 1 : 0;
         Page<ChapterResponse> chapterPage = chapterService.getChaptersByBookId(bookId, pageForBackend, size, search, status, sortBy, sortDirection);
-        return responseHandler.response(200, "Chapters retrieved successfully for Book ID: " + bookId, chapterPage);
+        return responseHandler.response(200, "Lấy danh sách chương theo sách thành công!", chapterPage);
     }
-
-
 
 
 }

@@ -75,7 +75,7 @@ public class AcademicYearServiceImpl implements IAcademicYearService {
     public AcademicYearResponse update(UUID id, AcademicYearRequest request) {
         dateNowUtils.validateAcademicYear(request);
         AcademicYear academicYear = academicYearRepository.findById(id)
-                .orElseThrow(() -> new BadRequestException("AcademicYear not found"));
+                .orElseThrow(() -> new BadRequestException("Không tìm thấy năm học"));
         academicYearMapper.updateAcademicYear(academicYear, request);
         // Set default status
         academicYear.setStatus(AcademicYearStatusEnum.INACTIVE);
@@ -93,7 +93,7 @@ public class AcademicYearServiceImpl implements IAcademicYearService {
             }
         }
         AcademicYear academicYear = academicYearRepository.findById(id)
-                .orElseThrow(() -> new BadRequestException("AcademicYear not found"));
+                .orElseThrow(() -> new BadRequestException("Không tìm thấy năm học"));
         academicYear.setStatus(status);
         academicYear.setUpdatedAt(LocalDateTime.now());
         return academicYearMapper.toResponse(academicYearRepository.save(academicYear));

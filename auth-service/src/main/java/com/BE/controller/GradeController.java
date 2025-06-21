@@ -24,8 +24,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@Tag(name = "Grade", description = "API for managing Grade")
-@RequestMapping("/api/grade")
+@Tag(name = "Grades", description = "API quản lí lớp học")
+@RequestMapping("/api/grades")
 @SecurityRequirement(name = "api")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -136,11 +136,11 @@ public class GradeController {
             )
     )
     public ResponseEntity<GradeResponse> createGrade(
-            @Valid // Annotation của Jakarta Validation để kích hoạt kiểm tra ràng buộc
-            @RequestBody // Annotation của Spring MVC để bind request body
+            @Valid
+            @RequestBody
             GradeRequest request) {
         GradeResponse response = gradeService.createGrade(request);
-        return responseHandler.response(200, "Create Grade success!", response);
+        return responseHandler.response(200, "Tạo khối lớp thành công!", response);
     }
 
 
@@ -175,7 +175,7 @@ public class GradeController {
                                     "  }\n}")))
     @ApiResponse(responseCode = "500", description = "Lỗi máy chủ nội bộ.")
     public ResponseEntity<Object> getAllGrades(
-            @RequestParam(defaultValue = "1") int page, // THAY ĐỔI Ở ĐÂY: Mặc định là 1
+            @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String search,
             @Parameter(
@@ -190,11 +190,10 @@ public class GradeController {
             @RequestParam(required = false) String sortBy,
             @RequestParam(required = false, defaultValue = "asc") String sortDirection) {
 
-        // THAY ĐỔI Ở ĐÂY: Trừ đi 1 để chuyển từ base-1 (FE) sang base-0 (Spring Data JPA)
-        int pageForBackend = page > 0 ? page - 1 : 0; // Đảm bảo không âm nếu FE gửi 0 hoặc số âm
+        int pageForBackend = page > 0 ? page - 1 : 0;
 
         Page<GradeResponse> gradePage = gradeService.getAllGrades(pageForBackend, size, search, status, sortBy, sortDirection);
-        return responseHandler.response(200, "Grades retrieved successfully!", gradePage);
+        return responseHandler.response(200, "Lấy danh sách khối lớp thành công!", gradePage);
     }
 
     // --- API: LẤY KHỐI LỚP THEO ID (GET Grade By ID) ---
@@ -213,7 +212,7 @@ public class GradeController {
     @ApiResponse(responseCode = "500", description = "Lỗi máy chủ nội bộ.")
     public ResponseEntity<Object> getGradeById(@PathVariable long id) {
         GradeResponse response = gradeService.getGradeById(id);
-        return responseHandler.response(200, "Grade retrieved successfully!", response);
+        return responseHandler.response(200, "Lấy thông tin khối lớp thành công!", response);
     }
 
     // --- API: CẬP NHẬT TÊN KHỐI LỚP (UPDATE Name) ---
@@ -242,7 +241,7 @@ public class GradeController {
     @ApiResponse(responseCode = "500", description = "Lỗi máy chủ nội bộ.")
     public ResponseEntity<Object> updateGrade(@PathVariable long id, @Valid @RequestBody GradeRequest request) {
         GradeResponse response = gradeService.updateGrade(id, request);
-        return responseHandler.response(200, "Grade updated successfully!", response);
+        return responseHandler.response(200, "Cập nhật khối lớp thành công!", response);
     }
 
 
@@ -279,11 +278,8 @@ public class GradeController {
             @PathVariable long id,
             @RequestParam String newStatus) {
         GradeResponse response = gradeService.changeGradeStatus(id, newStatus);
-        return responseHandler.response(200, "Grade status updated successfully!", response);
+        return responseHandler.response(200, "Cập nhật trạng thái khối lớp thành công!", response);
     }
-
-
-
 
 
 }

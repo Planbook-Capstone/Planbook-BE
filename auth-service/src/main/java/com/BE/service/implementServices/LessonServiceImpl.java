@@ -47,11 +47,11 @@ public class LessonServiceImpl implements ILessonService {
     public LessonResponse createLesson(LessonRequest request) {
         // Kiểm tra tên bài học đã tồn tại trong cùng một Chapter chưa
         if (lessonRepository.findByNameAndChapterId(request.getName().trim(), request.getChapterId()).isPresent()) {
-            throw new DataIntegrityViolationException("Lesson with name '" + request.getName() + "' already exists for Chapter ID: " + request.getChapterId());
+            throw new DataIntegrityViolationException("Bài học có tên '" + request.getName() + "' đã tồn tại cho chương có ID: " + request.getChapterId());
         }
 
         Chapter chapter = chapterRepository.findById(request.getChapterId())
-                .orElseThrow(() -> new NotFoundException("Chapter not found with ID: " + request.getChapterId()));
+                .orElseThrow(() -> new NotFoundException("Không tìm thấy chương có ID: " + request.getChapterId()));
 
         Lesson lesson = lessonMapper.toLesson(request);
         lesson.setChapter(chapter); // Set Chapter entity
@@ -73,7 +73,7 @@ public class LessonServiceImpl implements ILessonService {
             try {
                 statusEnum = StatusEnum.valueOf(status.toUpperCase());
             } catch (IllegalArgumentException e) {
-                throw new IllegalArgumentException("Invalid status value: " + status + ". Must be ACTIVE or INACTIVE.");
+                throw new IllegalArgumentException("Giá trị trạng thái không hợp lệ: " + status + ". Phải là ACTIVE hoặc INACTIVE.");
             }
         }
 
@@ -88,19 +88,19 @@ public class LessonServiceImpl implements ILessonService {
     @Override
     public LessonResponse getLessonById(long id) {
         Lesson lesson = lessonRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Lesson not found with ID: " + id));
+                .orElseThrow(() -> new NotFoundException("Không tìm thấy bài học có ID: " + id));
         return lessonMapper.toLessonResponse(lesson);
     }
 
     @Override
     public LessonResponse updateLesson(long id, LessonRequest request) {
         Lesson existingLesson = lessonRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Lesson not found with ID: " + id));
+                .orElseThrow(() -> new NotFoundException("Không tìm thấy bài học có ID: " + id));
 
         // Kiểm tra xem Chapter ID có thay đổi không
         if (existingLesson.getChapter().getId() != request.getChapterId()) {
             Chapter newChapter = chapterRepository.findById(request.getChapterId())
-                    .orElseThrow(() -> new NotFoundException("New Chapter not found with ID: " + request.getChapterId()));
+                    .orElseThrow(() -> new NotFoundException("Không tìm thấy chương mới có ID: " + request.getChapterId()));
             existingLesson.setChapter(newChapter);
         }
 
@@ -111,7 +111,7 @@ public class LessonServiceImpl implements ILessonService {
         if (nameChanged || chapterChanged) {
             Optional<Lesson> duplicateLesson = lessonRepository.findByNameAndChapterIdAndIdNot(request.getName(), request.getChapterId(), id);
             if (duplicateLesson.isPresent()) {
-                throw new DataIntegrityViolationException("Lesson with name '" + request.getName() + "' already exists for Chapter ID: " + request.getChapterId());
+                throw new DataIntegrityViolationException("Bài học có tên '" + request.getName() + "' đã tồn tại cho chương có ID: " + request.getChapterId());
             }
         }
 
@@ -122,20 +122,20 @@ public class LessonServiceImpl implements ILessonService {
             Lesson updatedLesson = lessonRepository.save(existingLesson);
             return lessonMapper.toLessonResponse(updatedLesson);
         } catch (DataIntegrityViolationException e) {
-            throw new DataIntegrityViolationException("Failed to update lesson: Lesson with name '" + request.getName() + "' already exists for Chapter ID: " + request.getChapterId() + " (Possible race condition).");
+            throw new DataIntegrityViolationException("Không thể cập nhật bài học: Bài học có tên '" + request.getName() + "' đã tồn tại cho chương có ID: " + request.getChapterId() + " (Có thể xung đột).");
         }
     }
 
     @Override
     public LessonResponse changeLessonStatus(long id, String newStatus) {
         Lesson existingLesson = lessonRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Lesson not found with ID: " + id));
+                .orElseThrow(() -> new NotFoundException("Không tìm thấy bài học có ID: " + id));
 
         StatusEnum statusEnum = null;
         try {
             statusEnum = StatusEnum.valueOf(newStatus.toUpperCase());
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Invalid status value: " + newStatus + ". Must be ACTIVE or INACTIVE.");
+            throw new IllegalArgumentException("Giá trị trạng thái không hợp lệ: " + newStatus + ". Phải là ACTIVE hoặc INACTIVE.");
         }
 
         existingLesson.setStatus(statusEnum);
@@ -152,7 +152,7 @@ public class LessonServiceImpl implements ILessonService {
 
         // Kiểm tra sự tồn tại của Chapter
         if (!chapterRepository.existsById(chapterId)) {
-            throw new NotFoundException("Chapter not found with ID: " + chapterId);
+            throw new NotFoundException("Không tìm thấy chương có ID: " + chapterId);
         }
 
         StatusEnum statusEnum = null;
@@ -160,7 +160,7 @@ public class LessonServiceImpl implements ILessonService {
             try {
                 statusEnum = StatusEnum.valueOf(status.toUpperCase());
             } catch (IllegalArgumentException e) {
-                throw new IllegalArgumentException("Invalid status value: " + status + ". Must be ACTIVE or INACTIVE.");
+                throw new IllegalArgumentException("Giá trị trạng thái không hợp lệ: " + status + ". Phải là ACTIVE hoặc INACTIVE.");
             }
         }
 
@@ -172,7 +172,6 @@ public class LessonServiceImpl implements ILessonService {
         );
         return lessonsPage.map(lessonMapper::toLessonResponse);
     }
-
 
 
 }

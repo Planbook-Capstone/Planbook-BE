@@ -1,5 +1,6 @@
 package com.BE.model.response;
 
+import com.BE.enums.FormStatusEnum;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -16,7 +17,8 @@ public class FormResponse {
     long id;
     String name;
     String description;
+    FormStatusEnum status;
     JsonNode formData;
-    LocalDateTime createdAt;
-    LocalDateTime updatedAt;
+    String createdAt;
+    String updatedAt;
 }

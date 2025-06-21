@@ -25,8 +25,10 @@ public class FormServiceImpl implements IFormService {
     FormRepository formRepository;
     @Autowired
     ObjectMapper objectMapper;
+
     @Autowired
     DateNowUtils dateNowUtils;
+
     @Autowired
     FormMapper formMapper;
 
@@ -38,18 +40,19 @@ public class FormServiceImpl implements IFormService {
             form.setName(formRequest.getName());
             form.setDescription(formRequest.getDescription());
             form.setFormDefinition(jsonString);
-            form.setCreatedAt(dateNowUtils.getCurrentDateTimeHCM());
-            form.setUpdatedAt(dateNowUtils.getCurrentDateTimeHCM());
+            form.setStatus(formRequest.getStatus());
+            form.setCreatedAt(dateNowUtils.dateNow());
+            form.setUpdatedAt(dateNowUtils.dateNow());
             return formRepository.save(form);
         } catch (JsonProcessingException e) {
-            throw new BadRequestException("Error converting form definition to JSON");
+            throw new BadRequestException("Lỗi khi chuyển đổi định nghĩa biểu mẫu thành JSON");
         }
     }
 
     @Override
     public FormResponse getForm(Long id) {
         Form form = formRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Form not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy biểu mẫu"));
 
         return formMapper.toFormResponse(form);
     }
@@ -58,5 +61,29 @@ public class FormServiceImpl implements IFormService {
     public List<FormResponse> getAllForms() {
         List<Form> forms = formRepository.findAll();
         return formMapper.toFormResponseList(forms);
+    }
+
+    @Override
+    public FormResponse updateForm(Long id, FormRequest formRequest) {
+        Form existingForm = formRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy biểu mẫu có id: " + id));
+
+        try {
+            // Convert formData to JSON string
+            String jsonString = objectMapper.writeValueAsString(formRequest.getFormData());
+
+            // Update form fields
+            existingForm.setName(formRequest.getName());
+            existingForm.setDescription(formRequest.getDescription());
+            existingForm.setFormDefinition(jsonString);
+            existingForm.setStatus(formRequest.getStatus());
+            existingForm.setUpdatedAt(dateNowUtils.dateNow());
+
+            // Save updated form and convert to response using mapper
+            Form updatedForm = formRepository.save(existingForm);
+            return formMapper.toFormResponse(updatedForm);
+        } catch (JsonProcessingException e) {
+            throw new BadRequestException("Lỗi khi chuyển đổi định nghĩa biểu mẫu thành JSON");
+        }
     }
 }
