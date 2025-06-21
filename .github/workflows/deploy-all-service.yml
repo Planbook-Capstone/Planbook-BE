@@ -3,7 +3,7 @@ name: Build and Deploy Directly to VPS
 on:
   push:
     branches:
-      - master # Hoặc nhánh chính của bạn
+      - master
 
 jobs:
   build-and-deploy:
@@ -45,7 +45,8 @@ jobs:
           cp api-gateway/target/*.jar deploy_package/api-gateway/app.jar
           cp api-gateway/Dockerfile deploy_package/api-gateway/Dockerfile
 
-          cat <<EOF > deploy_package/docker-compose.yml
+          # SỬA LỖI YAML: Sử dụng 'EOF' để ngăn shell nội suy và bọc các biến trong dấu ngoặc kép
+          cat <<'EOF' > deploy_package/docker-compose.yml
           name: planbook-monorepo-stack
 
           services:
@@ -64,9 +65,9 @@ jobs:
               environment:
                 KAFKA_BROKER_ID: 1
                 KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-                KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://${{ secrets.VPS_HOST }}:9092
-                KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-                KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+                KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://kafka:29092,PLAINTEXT_HOST://${{ secrets.VPS_HOST }}:9092"
+                KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT"
+                KAFKA_INTER_BROKER_LISTENER_NAME: "PLAINTEXT"
                 KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
               volumes: [kafka_data:/var/lib/kafka/data]
               depends_on: [zookeeper]
@@ -93,24 +94,24 @@ jobs:
               restart: always
               ports: ["8081:8080"]
               environment:
-                SPRING_DATASOURCE_URL: "\${{ secrets.DB_URL }}"
-                SPRING_DATASOURCE_USERNAME: "\${{ secrets.DB_USERNAME }}"
-                SPRING_DATASOURCE_PASSWORD: "\${{ secrets.DB_PASSWORD }}"
+                SPRING_DATASOURCE_URL: "${{ secrets.DB_URL }}"
+                SPRING_DATASOURCE_USERNAME: "${{ secrets.DB_USERNAME }}"
+                SPRING_DATASOURCE_PASSWORD: "${{ secrets.DB_PASSWORD }}"
                 SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: "org.hibernate.dialect.MySQL8Dialect"
                 SPRING_JPA_HIBERNATE_DDL_AUTO: "update"
                 SPRING_MVC_PATHMATCH_MATCHING_STRATEGY: "ANT_PATH_MATCHER"
-                SUPABASE_JWT_SECRET: "\${{ secrets.SUPABASE_JWT_SECRET_KEY }}"
-                SPRING_SECRETKEY: "\${{ secrets.SPRING_APP_SECRET_KEY }}"
+                SUPABASE_JWT_SECRET: "${{ secrets.SUPABASE_JWT_SECRET_KEY }}"
+                SPRING_SECRETKEY: "${{ secrets.SPRING_APP_SECRET_KEY }}"
                 SPRING_KAFKA_BOOTSTRAP_SERVERS: "kafka:29092"
-                KAFKA_TOPIC_NAME: "\${{ secrets.KAFKA_TOPIC }}"
-                SPRING_MAIL_HOST: "\${{ secrets.MAIL_HOST }}"
-                SPRING_MAIL_PORT: "\${{ secrets.MAIL_PORT }}"
-                SPRING_MAIL_USERNAME: "\${{ secrets.MAIL_USERNAME }}"
-                SPRING_MAIL_PASSWORD: "\${{ secrets.MAIL_PASSWORD }}"
+                KAFKA_TOPIC_NAME: "${{ secrets.KAFKA_TOPIC }}"
+                SPRING_MAIL_HOST: "${{ secrets.MAIL_HOST }}"
+                SPRING_MAIL_PORT: "${{ secrets.MAIL_PORT }}"
+                SPRING_MAIL_USERNAME: "${{ secrets.MAIL_USERNAME }}"
+                SPRING_MAIL_PASSWORD: "${{ secrets.MAIL_PASSWORD }}"
                 SPRING_DATA_REDIS_HOST: "redis"
                 SPRING_DATA_REDIS_PORT: "6379"
                 SPRING_CACHE_TYPE: "redis"
-                SPRING_DURATION: "\${{ secrets.APP_DURATION }}"
+                SPRING_DURATION: "${{ secrets.APP_DURATION }}"
                 SPRING_PROFILES_ACTIVE: "prod"
                 SERVER_PORT: 8080
               depends_on: [kafka, redis]
@@ -134,15 +135,14 @@ jobs:
             redis_data:
           EOF
 
-      - name: Create Directory on VPS
+      - name: Create Directory and Set Permissions on VPS
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            # Tạo thư mục ứng dụng trên VPS nếu chưa có
-            APP_DIR="/var/www/planbook-be" # <<< ĐÃ THAY ĐỔI
+            APP_DIR="/var/www/planbook-be"
             sudo mkdir -p $APP_DIR
             sudo chown -R $USER:$USER $APP_DIR
 
@@ -153,7 +153,7 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: "./deploy_package/*"
-          target: "/var/www/planbook-be" # <<< ĐÃ THAY ĐỔI
+          target: "/var/www/planbook-be"
           strip_components: 1
 
       - name: Run Docker Compose on VPS
@@ -163,13 +163,9 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd /var/www/planbook-be # <<< ĐÃ THAY ĐỔI
-
+            cd /var/www/planbook-be
             echo "Starting deployment..."
-            
             docker compose up -d --build --force-recreate auth-service api-gateway
-
             echo "Cleaning up old Docker images..."
             docker image prune -af
-
             echo "Deployment completed successfully!"
