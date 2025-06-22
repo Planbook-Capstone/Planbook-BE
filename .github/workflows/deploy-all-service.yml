@@ -1,5 +1,5 @@
 # File: .github/workflows/deploy-all-service.yml
-# PHIÊN BẢN ĐÃ SỬA LỖI HOÀN CHỈNH
+# PHIÊN BẢN CUỐI CÙNG ĐÃ SỬA LỖI
 
 name: Orchestrate All Services Deployment
 
@@ -13,16 +13,13 @@ on:
   workflow_dispatch:
 
 jobs:
-  # Job này là một "caller" job. Nó không có runs-on hay steps riêng.
-  # Mục đích duy nhất của nó là gọi workflow tái sử dụng deploy-auth-service.yml.
   deploy_auth_service:
-    uses: ./.github/workflows/reusable/deploy-auth-service.yml@master
+    # SỬA LỖI: Đã xóa "@master" ở cuối dòng này.
+    uses: ./.github/workflows/reusable/deploy-auth-service.yml
     with:
       service_path: auth-service
       vps_target_path: /var/www/auth-service/
-    # 'secrets' phải nằm cùng cấp với 'uses' và 'with', trực tiếp dưới job.
     secrets:
-      # QUAN TRỌNG: Bạn phải truyền TẤT CẢ các secret mà workflow con yêu cầu tại đây.
       VPS_HOST: ${{ secrets.VPS_HOST }}
       VPS_USER: ${{ secrets.VPS_USER }}
       SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
@@ -40,15 +37,14 @@ jobs:
       MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
       APP_DURATION: ${{ secrets.APP_DURATION }}
 
-  # Job này cũng là một "caller" job.
   deploy_api_gateway:
-    needs: [deploy_auth_service] # Phụ thuộc này là đúng, chạy sau khi auth-service triển khai xong.
-    uses: ./.github/workflows/reusable/deploy-api-gateway.yml@master
+    needs: [deploy_auth_service]
+    # SỬA LỖI: Đã xóa "@master" ở cuối dòng này.
+    uses: ./.github/workflows/reusable/deploy-api-gateway.yml
     with:
       service_path: api-gateway
       vps_target_path: /var/www/api-gateway/
     secrets:
-      # Truyền các secret mà API Gateway workflow yêu cầu.
       VPS_HOST: ${{ secrets.VPS_HOST }}
       VPS_USER: ${{ secrets.VPS_USER }}
       SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
