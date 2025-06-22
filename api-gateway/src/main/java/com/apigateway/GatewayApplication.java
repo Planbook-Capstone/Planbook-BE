@@ -12,7 +12,6 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 
 @SpringBootApplication
 @EnableDiscoveryClient
-
 @OpenAPIDefinition(
        servers = @Server(url = "https://planbook.vn"), // Đặt URL domain cuối cùng ở đây
        info = @Info(
