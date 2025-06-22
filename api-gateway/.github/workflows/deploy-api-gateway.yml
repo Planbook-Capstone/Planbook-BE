@@ -1,13 +1,18 @@
-
-name: Deploy API Gateway with Docker Compose (Local Build)
+# .github/workflows/deploy-api-gateway.yml
+name: Deploy API Gateway Service
 
 on:
+  workflow_call: # Cho phép được gọi từ workflow khác
   push:
     branches:
       - master
+    paths:
+      - 'api-gateway/**'
+      - '.github/workflows/deploy-api-gateway.yml'
+  workflow_dispatch:
 
 jobs:
-  build-and-deploy:
+  build-and-deploy-api-gateway:
     runs-on: ubuntu-latest
 
     steps:
@@ -26,7 +31,7 @@ jobs:
 
       - name: Maven Clean and Package API Gateway
         run: mvn clean package -DskipTests
-        # working-directory: . (mặc định, vì dự án nằm ở thư mục gốc của repo)
+        working-directory: ./api-gateway
 
       # ==========================================================
       # TẠO docker-compose.yml CHỈ CHO API GATEWAY TRÊN RUNNER
@@ -40,8 +45,8 @@ jobs:
           services:
             api-gateway:
               build:
-                context: . # Build context là thư mục gốc của repo hiện tại
-                dockerfile: Dockerfile # Dockerfile nằm ở thư mục gốc của repo hiện tại
+                context: ./api-gateway # Build context là thư mục api-gateway
+                dockerfile: Dockerfile # Dockerfile nằm trong thư mục api-gateway
               image: planbook-api-gateway:latest # Tên image
               container_name: planbook-api-gateway
               restart: always
@@ -52,18 +57,39 @@ jobs:
                 SPRING_PROFILES_ACTIVE: "prod"
                 SERVER_PORT: 8080 # Cổng nội bộ của API Gateway
                 SPRING_APPLICATION_NAME: "api-gateway"
-                # Không cần các biến môi trường cho DB, Kafka, Redis ở đây
-                # Zookeeper connect-string sẽ được đọc từ application.properties trong JAR
+                # Backend service URL - trỏ đến backend đang chạy trên port 8081
+                BACKEND_SERVICE_URL: "http://${{ secrets.VPS_HOST }}:8081"
+                # Auth service URL - sẽ được cập nhật khi auth service được deploy
+                AUTH_SERVICE_URL: "http://${{ secrets.VPS_HOST }}:8082"
+                # Kafka configuration
+                SPRING_KAFKA_BOOTSTRAP_SERVERS: "${{ secrets.VPS_HOST }}:9092"
+                # Redis configuration cho session management
+                SPRING_DATA_REDIS_HOST: "${{ secrets.VPS_HOST }}"
+                SPRING_DATA_REDIS_PORT: "6379"
+                # Logging
+                LOGGING_LEVEL_ROOT: "INFO"
+                LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_CLOUD_GATEWAY: "DEBUG"
+              networks:
+                - planbook-gateway-network
+              healthcheck:
+                test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+                interval: 30s
+                timeout: 10s
+                retries: 3
+
+          networks:
+            planbook-gateway-network:
+              driver: bridge
           EOF
         shell: bash
 
-      - name: Copy Project Files to VPS
+      - name: Copy API Gateway Files to VPS
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "target/*.jar, docker-compose.yml"
+          source: "api-gateway/, docker-compose.yml"
           target: /var/www/api-gateway/
 
       - name: Stop and Remove Old API Gateway Container on VPS
@@ -78,14 +104,15 @@ jobs:
             sudo chown -R ${{ secrets.VPS_USER }}:${{ secrets.VPS_USER }} /var/www/api-gateway
 
             cd /var/www/api-gateway || { echo "Error: /var/www/api-gateway directory not found on VPS."; exit 1; }
+            
             echo "Checking and freeing up port 8080..." # Cổng mà API Gateway sẽ chiếm
             PORT_TO_FREE=8080
-            PID_ON_PORT=$(sudo lsof -t -i :$PORT_TO_FREE)
+            PID_ON_PORT=$(sudo lsof -t -i :$PORT_TO_FREE 2>/dev/null || true)
             if [ -n "$PID_ON_PORT" ]; then
               echo "Found process on port $PORT_TO_FREE with PID: $PID_ON_PORT. Attempting to kill it..."
               sudo kill -9 $PID_ON_PORT 2>/dev/null || true
               sleep 1
-              if sudo lsof -i :$PORT_TO_FREE > /dev/null; then
+              if sudo lsof -i :$PORT_TO_FREE > /dev/null 2>&1; then
                 echo "Warning: Port $PORT_TO_FREE is still in use after killing process. Manual intervention may be needed."
               else
                 echo "Port $PORT_TO_FREE is now free."
@@ -96,7 +123,7 @@ jobs:
 
             echo "Stopping and removing old API Gateway Docker Compose stack if it exists..."
             # Sử dụng --project-name để chỉ dừng stack của API Gateway
-            docker compose -f docker-compose.yml --project-name planbook-api-gateway-stack down 2>/dev/null || true
+            docker compose -f docker-compose.yml --project-name planbook-api-gateway-stack down --remove-orphans 2>/dev/null || true
 
             echo "Cleaning up old API Gateway image if it exists..."
             docker rmi planbook-api-gateway:latest 2>/dev/null || true
@@ -114,4 +141,14 @@ jobs:
             echo "Building and starting API Gateway Docker Compose services..."
             # Sử dụng --project-name để chỉ khởi động stack của API Gateway
             docker compose -f docker-compose.yml --project-name planbook-api-gateway-stack up --build -d --remove-orphans
-            echo "API Gateway Docker Compose services started. Use 'docker compose logs -f planbook-api-gateway' to monitor logs."
+            
+            echo "Waiting for API Gateway to be ready..."
+            sleep 20
+            
+            echo "Checking API Gateway health..."
+            docker compose -f docker-compose.yml --project-name planbook-api-gateway-stack ps
+            
+            echo "API Gateway started successfully!"
+            echo "API Gateway: http://${{ secrets.VPS_HOST }}:8080"
+            echo ""
+            echo "Use 'docker compose -f docker-compose.yml --project-name planbook-api-gateway-stack logs -f planbook-api-gateway' to monitor logs."
