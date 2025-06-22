@@ -30,12 +30,14 @@ public class BookType {
 
     int priority;
 
-    @Column(nullable = false) // Đảm bảo không null và có giá trị mặc định
-    Integer tokenCostPerQuery;
-
     @Lob
     @Column(columnDefinition = "LONGTEXT")
     String icon;
+
+    @Column(nullable = false) // Đảm bảo không null và có giá trị mặc định
+    Integer tokenCostPerQuery;
+
+
 
     @Enumerated(EnumType.STRING)
     StatusEnum status;
