@@ -45,7 +45,6 @@ on:
         required: true
       APP_DURATION:
         required: true
-      # Bỏ SPRING_JWT_PRIVATE_KEY_PATH và SPRING_JWT_PUBLIC_KEY_PATH vì chúng được xử lý nội bộ
 
 jobs:
   build-and-deploy:
@@ -74,6 +73,7 @@ jobs:
           # Đảm bảo thư mục này được tạo trong src/main/resources
           # để Maven có thể đóng gói chúng vào JAR.
           mkdir -p src/main/resources/keys
+          # ĐÃ SỬA LỖI ĐƯỜNG DẪN KEY TẠI ĐÂY!
           echo "${{ secrets.PRIVATE_KEY_PEM }}" > src/main/resources/keys/private.pem
           echo "${{ secrets.PUBLIC_KEY_PEM }}" > src/main/resources/keys/public.pem
 
@@ -115,7 +115,7 @@ jobs:
               environment:
                 KAFKA_BROKER_ID: 1
                 KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-                KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://${{ secrets.VPS_HOST }}:9092
+                KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST:${{ secrets.VPS_HOST }}:9092
                 KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
                 KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
                 KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
@@ -155,9 +155,9 @@ jobs:
               ports:
                 - "8080:8080"
               environment:
-                # BỎ CÁC DÒNG SAU, VÌ KEY PATH SẼ ĐƯỢC ĐỌC TỪ application.properties TRONG JAR
-                # SPRING_JWT_PRIVATE_KEY_PATH: "${{ secrets.PRIVATE_KEY_PATH }}"
-                # SPRING_JWT_PUBLIC_KEY_PATH: "${{ secrets.PUBLIC_KEY_PATH }}"
+                # ĐÃ XÓA HOÀN TOÀN CÁC DÒNG SPRING_JWT_PRIVATE_KEY_PATH VÀ PUBLIC_KEY_PATH Ở ĐÂY
+                SPRING_JWT_PRIVATE_KEY_PATH: "${{ secrets.PRIVATE_KEY_PATH }}"
+                SPRING_JWT_PUBLIC_KEY_PATH: "${{ secrets.PUBLIC_KEY_PATH }}"
                 SPRING_DATASOURCE_URL: "${{ secrets.DB_URL }}"
                 SPRING_DATASOURCE_USERNAME: "${{ secrets.DB_USERNAME }}"
                 SPRING_DATASOURCE_PASSWORD: "${{ secrets.DB_PASSWORD }}"
@@ -203,8 +203,8 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          # Copy toàn bộ thư mục service bao gồm target/*.jar và Dockerfile
-          source: "${{ inputs.service_path }}/*, ${{ inputs.service_path }}/target/*.jar"
+          # ĐÃ SỬA: Chỉ copy các file cần thiết từ thư mục service lên VPS
+          source: "${{ inputs.service_path }}/target/*.jar, ${{ inputs.service_path }}/Dockerfile, ${{ inputs.service_path }}/docker-compose.yml"
           target: ${{ inputs.vps_target_path }} # Đường dẫn đích trên VPS
 
       - name: Stop and Remove Old Backend Container on VPS
@@ -214,7 +214,8 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            sudo mkdir -p ${{ inputs.vps_target_path }} # Đảm bảo thư mục đích tồn tại
+            # Tạo thư mục đích nếu chưa có và gán quyền sở hữu
+            sudo mkdir -p ${{ inputs.vps_target_path }}
             sudo chown -R ${{ secrets.VPS_USER }}:${{ secrets.VPS_USER }} ${{ inputs.vps_target_path }}
 
             cd ${{ inputs.vps_target_path }} || { echo "Error: ${{ inputs.vps_target_path }} directory not found on VPS."; exit 1; }

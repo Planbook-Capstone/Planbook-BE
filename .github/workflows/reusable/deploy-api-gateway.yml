@@ -86,7 +86,8 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            sudo mkdir -p ${{ inputs.vps_target_path }} # Đảm bảo thư mục đích tồn tại
+            # Tạo thư mục đích nếu chưa có và gán quyền sở hữu
+            sudo mkdir -p ${{ inputs.vps_target_path }}
             sudo chown -R ${{ secrets.VPS_USER }}:${{ secrets.VPS_USER }} ${{ inputs.vps_target_path }}
 
             cd ${{ inputs.vps_target_path }} || { echo "Error: ${{ inputs.vps_target_path }} directory not found on VPS."; exit 1; }
