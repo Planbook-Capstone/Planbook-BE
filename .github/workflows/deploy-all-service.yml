@@ -1,16 +1,14 @@
-# File: PLANBOOK-BE/.github/workflows/deploy-all-service.yml
 name: Orchestrate All Services Deployment
 
 on:
   push:
     branches:
-      - master # Kích hoạt khi có thay đổi trên nhánh master của monorepo
-      # Thay 'master' bằng 'main' nếu nhánh chính của bạn là 'main'
+      - master
     paths:
-      - 'api-gateway/**' # Chỉ chạy khi có thay đổi trong thư mục api-gateway
-      - 'auth-service/**' # Chỉ chạy khi có thay đổi trong thư mục auth-service
+      - 'api-gateway/**'
+      - 'auth-service/**'
 
-  workflow_dispatch: # Cho phép chạy thủ công từ GitHub UI
+  workflow_dispatch:
 
 jobs:
   deploy_auth_service:
@@ -20,24 +18,28 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Call Deploy Auth Service Workflow
-        uses: ./.github/workflows/reusable/deploy-auth-service.yml@master # Sử dụng ref của nhánh (hoặc tag nếu bạn có)
-        # Nếu nhánh chính của bạn là 'main', hãy đổi thành @main
+        uses: ./.github/workflows/reusable/deploy-auth-service.yml@master
         with:
-          service_path: auth-service # Đường dẫn tới thư mục service con trong repo
-          vps_target_path: /var/www/auth-service/ # Đường dẫn đích cụ thể cho Auth Service trên VPS
-        secrets: inherit # Truyền tất cả secrets từ workflow cha xuống workflow con
+          service_path: auth-service
+          vps_target_path: /var/www/auth-service/
+        secrets:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
 
   deploy_api_gateway:
     runs-on: ubuntu-latest
-    needs: [deploy_auth_service] # Đảm bảo Auth Service được deploy thành công trước
+    needs: [deploy_auth_service]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Call Deploy API Gateway Workflow
-        uses: ./.github/workflows/reusable/deploy-api-gateway.yml@master # Sử dụng ref của nhánh (hoặc tag nếu bạn có)
-        # Nếu nhánh chính của bạn là 'main', hãy đổi thành @main
+        uses: ./.github/workflows/reusable/deploy-api-gateway.yml@master
         with:
-          service_path: api-gateway # Đường dẫn tới thư mục service con trong repo
-          vps_target_path: /var/www/api-gateway/ # Đường dẫn đích cụ thể cho API Gateway trên VPS
-        secrets: inherit # Truyền tất cả secrets từ workflow cha xuống workflow con
+          service_path: api-gateway
+          vps_target_path: /var/www/api-gateway/
+        secrets:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}

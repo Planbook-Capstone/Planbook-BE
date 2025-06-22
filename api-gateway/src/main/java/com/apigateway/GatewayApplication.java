@@ -21,7 +21,6 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
                description = "API Gateway for Planbook services" // Đổi mô tả
        )
 )
-
 @SecurityScheme(name = "api", scheme = "bearer", type = SecuritySchemeType.HTTP, in = SecuritySchemeIn.HEADER)
 public class GatewayApplication {
 
