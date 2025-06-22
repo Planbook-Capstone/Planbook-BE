@@ -94,11 +94,14 @@ jobs:
               restart: always
               ports: ["8081:8080"]
               environment:
+                SPRING_JWT_PRIVATE_KEY_PATH: "${{ secrets.PRIVATE_KEY_PATH }}"
+                SPRING_JWT_PUBLIC_KEY_PATH: "${{ secrets.PUBLIC_KEY_PATH }}"
                 SPRING_DATASOURCE_URL: "${{ secrets.DB_URL }}"
                 SPRING_DATASOURCE_USERNAME: "${{ secrets.DB_USERNAME }}"
                 SPRING_DATASOURCE_PASSWORD: "${{ secrets.DB_PASSWORD }}"
                 SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: "org.hibernate.dialect.MySQL8Dialect"
                 SPRING_JPA_HIBERNATE_DDL_AUTO: "update"
+                SPRING_MAIN_ALLOW_CIRCULAR_REFERENCES: "true"
                 SPRING_MVC_PATHMATCH_MATCHING_STRATEGY: "ANT_PATH_MATCHER"
                 SUPABASE_JWT_SECRET: "${{ secrets.SUPABASE_JWT_SECRET_KEY }}"
                 SPRING_SECRETKEY: "${{ secrets.SPRING_APP_SECRET_KEY }}"
@@ -108,6 +111,13 @@ jobs:
                 SPRING_MAIL_PORT: "${{ secrets.MAIL_PORT }}"
                 SPRING_MAIL_USERNAME: "${{ secrets.MAIL_USERNAME }}"
                 SPRING_MAIL_PASSWORD: "${{ secrets.MAIL_PASSWORD }}"
+                SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: "true"
+                SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: "true"
+                SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_REQUIRED: "true"
+                SPRING_MAIL_PROPERTIES_MAIL_SMTP_CONNECTIONTIMEOUT: "5000"
+                SPRING_MAIL_PROPERTIES_MAIL_SMTP_TIMEOUT: "5000"
+                SPRING_MAIL_PROPERTIES_MAIL_SMTP_WRITETIMEOT: "5000"
+                SPRING_MAIL_DEFAULT_ENCODING: "UTF-8"
                 SPRING_DATA_REDIS_HOST: "redis"
                 SPRING_DATA_REDIS_PORT: "6379"
                 SPRING_CACHE_TYPE: "redis"
