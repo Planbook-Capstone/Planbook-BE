@@ -110,13 +110,13 @@ jobs:
               ports: ["8081:8080"]
               environment:
                 # KHÔNG CẦN 2 DÒNG NÀY NỮA VÌ KEY ĐÃ NẰM TRONG JAR
-                # SPRING_JWT_PRIVATE_KEY_PATH: "${{ secrets.PRIVATE_KEY_PATH }}"
-                # SPRING_JWT_PUBLIC_KEY_PATH: "${{ secrets.PUBLIC_KEY_PATH }}"
+                SPRING_JWT_PRIVATE_KEY_PATH: "${{ secrets.PRIVATE_KEY_PATH }}"
+                SPRING_JWT_PUBLIC_KEY_PATH: "${{ secrets.PUBLIC_KEY_PATH }}"
                 SPRING_DATASOURCE_URL: "${{ secrets.DB_URL }}"
                 SPRING_DATASOURCE_USERNAME: "${{ secrets.DB_USERNAME }}"
                 SPRING_DATASOURCE_PASSWORD: "${{ secrets.DB_PASSWORD }}"
                 SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: "org.hibernate.dialect.MySQLDialect"
-                SPRING_JPA_HIBERNATE_DDL_AUTO: "validate"
+                SPRING_JPA_HIBERNATE_DDL_AUTO: "none"
                 SPRING_MAIN_ALLOW_CIRCULAR_REFERENCES: "true"
                 SPRING_MVC_PATHMATCH_MATCHING_STRATEGY: "ANT_PATH_MATCHER"
                 SUPABASE_JWT_SECRET: "${{ secrets.SUPABASE_JWT_SECRET_KEY }}"
@@ -172,7 +172,7 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: "./deploy/*"
-          target: "/var/www/planbook-be"
+          target: "/var/www/planbook"
           strip_components: 1
 
       # =================================================================
@@ -185,7 +185,7 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd /var/www/planbook-be
+            cd /var/www/planbook
             echo "Starting deployment..."
             # Lệnh này sẽ build lại image cho các service được chỉ định và khởi động lại chúng
             docker compose up -d --build --force-recreate
