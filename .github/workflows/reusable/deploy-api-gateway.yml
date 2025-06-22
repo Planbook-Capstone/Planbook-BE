@@ -1,15 +1,17 @@
-# File: PLANBOOK-BE/.github/workflows/reusable/deploy-api-gateway.yml
+# File: .github/workflows/reusable/deploy-api-gateway.yml
+# PHIÊN BẢN ĐÃ SỬA LỖI HOÀN CHỈNH
+
 name: Reusable Deploy API Gateway
 
 on:
   workflow_call:
     inputs:
       service_path:
-        description: 'Path to the API Gateway service directory relative to repository root'
+        description: 'Đường dẫn đến thư mục API Gateway'
         required: true
         type: string
       vps_target_path:
-        description: 'Target path on VPS for this service'
+        description: 'Đường dẫn đích trên VPS cho service này'
         required: true
         type: string
     secrets:
@@ -39,32 +41,30 @@ jobs:
           cache: maven
 
       - name: Maven Clean and Package API Gateway
-        working-directory: ${{ inputs.service_path }} # Chạy trong thư mục của service
+        working-directory: ${{ inputs.service_path }}
         run: mvn clean package -DskipTests
 
-      # ==========================================================
-      # TẠO docker-compose.yml CHỈ CHO API GATEWAY TRÊN RUNNER
-      # ==========================================================
       - name: Create docker-compose.yml on runner
-        working-directory: ${{ inputs.service_path }} # Chạy trong thư mục của service
+        working-directory: ${{ inputs.service_path }}
         run: |
           cat <<EOF > docker-compose.yml
           version: '3.8'
-          name: planbook-api-gateway-stack # Tên stack duy nhất cho API Gateway
+          # Tên project duy nhất để không xung đột với stack của auth-service
+          name: planbook-api-gateway-stack
 
           services:
             api-gateway:
               build:
-                context: . # Build context là thư mục gốc của service hiện tại
-                dockerfile: Dockerfile # Dockerfile nằm ở thư mục gốc của service hiện tại
-              image: planbook-api-gateway:latest # Tên image
+                context: .
+                dockerfile: Dockerfile
+              image: planbook-api-gateway:latest
               container_name: planbook-api-gateway
               restart: always
               ports:
-                - "8080:8080" # API Gateway lắng nghe trên cổng 8080 của VPS
+                - "8080:8080" # API Gateway sẽ chạy trên cổng 8080 của VPS
               environment:
                 SPRING_PROFILES_ACTIVE: "prod"
-                SERVER_PORT: 8080 # Cổng nội bộ của API Gateway
+                SERVER_PORT: 8080
                 SPRING_APPLICATION_NAME: "api-gateway"
           EOF
         shell: bash
@@ -75,7 +75,6 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          # Chỉ copy các file cần thiết từ thư mục service lên VPS
           source: "${{ inputs.service_path }}/target/*.jar, ${{ inputs.service_path }}/Dockerfile, ${{ inputs.service_path }}/docker-compose.yml"
           target: ${{ inputs.vps_target_path }}
 
@@ -86,34 +85,17 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            # Tạo thư mục đích nếu chưa có và gán quyền sở hữu
             sudo mkdir -p ${{ inputs.vps_target_path }}
             sudo chown -R ${{ secrets.VPS_USER }}:${{ secrets.VPS_USER }} ${{ inputs.vps_target_path }}
-
-            cd ${{ inputs.vps_target_path }} || { echo "Error: ${{ inputs.vps_target_path }} directory not found on VPS."; exit 1; }
-            echo "Checking and freeing up port 8080..." # Cổng mà API Gateway sẽ chiếm
-            PORT_TO_FREE=8080
-            PID_ON_PORT=$(sudo lsof -t -i :$PORT_TO_FREE)
-            if [ -n "$PID_ON_PORT" ]; then
-              echo "Found process on port $PORT_TO_FREE with PID: $PID_ON_PORT. Attempting to kill it..."
-              sudo kill -9 $PID_ON_PORT 2>/dev/null || true
-              sleep 1
-              if sudo lsof -i :$PORT_TO_FREE > /dev/null; then
-                echo "Warning: Port $PORT_TO_FREE is still in use after killing process. Manual intervention may be needed."
-              else
-                echo "Port $PORT_TO_FREE is now free."
-              fi
-            else
-              echo "Port $PORT_TO_FREE is already free."
-            fi
-
-            echo "Stopping and removing old API Gateway Docker Compose stack if it exists..."
-            # Sử dụng --project-name để chỉ dừng stack của API Gateway
+            cd ${{ inputs.vps_target_path }} || exit 1
+            
+            echo "Stopping and removing old API Gateway stack if it exists..."
+            # Sử dụng --project-name để đảm bảo chỉ dừng đúng stack của API Gateway
             docker compose -f docker-compose.yml --project-name planbook-api-gateway-stack down 2>/dev/null || true
 
-            echo "Cleaning up old API Gateway image if it exists..."
+            echo "Cleaning up old API Gateway image..."
             docker rmi planbook-api-gateway:latest 2>/dev/null || true
-
+            
             echo "Old API Gateway container and image cleaned up."
 
       - name: Start API Gateway with Docker Compose on VPS
@@ -123,8 +105,8 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd ${{ inputs.vps_target_path }} || { echo "Error: ${{ inputs.vps_target_path }} directory not found on VPS."; exit 1; }
-            echo "Building and starting API Gateway Docker Compose services..."
-            # Sử dụng --project-name để chỉ khởi động stack của API Gateway
+            cd ${{ inputs.vps_target_path }} || exit 1
+            echo "Building and starting API Gateway..."
+            # Sử dụng --project-name để đảm bảo chỉ khởi động đúng stack của API Gateway
             docker compose -f docker-compose.yml --project-name planbook-api-gateway-stack up --build -d --remove-orphans
-            echo "API Gateway Docker Compose services started. Use 'docker compose logs -f planbook-api-gateway' to monitor logs."
+            echo "API Gateway started. Use 'docker compose -p planbook-api-gateway-stack logs -f' to monitor."

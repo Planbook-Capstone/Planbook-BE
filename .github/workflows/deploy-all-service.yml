@@ -1,3 +1,6 @@
+# File: .github/workflows/deploy-all-service.yml
+# PHIÊN BẢN ĐÃ SỬA LỖI HOÀN CHỈNH
+
 name: Orchestrate All Services Deployment
 
 on:
@@ -7,39 +10,45 @@ on:
     paths:
       - 'api-gateway/**'
       - 'auth-service/**'
-
   workflow_dispatch:
 
 jobs:
+  # Job này là một "caller" job. Nó không có runs-on hay steps riêng.
+  # Mục đích duy nhất của nó là gọi workflow tái sử dụng deploy-auth-service.yml.
   deploy_auth_service:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    uses: ./.github/workflows/reusable/deploy-auth-service.yml@master
+    with:
+      service_path: auth-service
+      vps_target_path: /var/www/auth-service/
+    # 'secrets' phải nằm cùng cấp với 'uses' và 'with', trực tiếp dưới job.
+    secrets:
+      # QUAN TRỌNG: Bạn phải truyền TẤT CẢ các secret mà workflow con yêu cầu tại đây.
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_USER: ${{ secrets.VPS_USER }}
+      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      PRIVATE_KEY_PEM: ${{ secrets.PRIVATE_KEY_PEM }}
+      PUBLIC_KEY_PEM: ${{ secrets.PUBLIC_KEY_PEM }}
+      DB_URL: ${{ secrets.DB_URL }}
+      DB_USERNAME: ${{ secrets.DB_USERNAME }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      SUPABASE_JWT_SECRET_KEY: ${{ secrets.SUPABASE_JWT_SECRET_KEY }}
+      SPRING_APP_SECRET_KEY: ${{ secrets.SPRING_APP_SECRET_KEY }}
+      KAFKA_TOPIC: ${{ secrets.KAFKA_TOPIC }}
+      MAIL_HOST: ${{ secrets.MAIL_HOST }}
+      MAIL_PORT: ${{ secrets.MAIL_PORT }}
+      MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
+      MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
+      APP_DURATION: ${{ secrets.APP_DURATION }}
 
-      - name: Call Deploy Auth Service Workflow
-        uses: ./.github/workflows/reusable/deploy-auth-service.yml@master
-        with:
-          service_path: auth-service
-          vps_target_path: /var/www/auth-service/
-        secrets:
-          VPS_HOST: ${{ secrets.VPS_HOST }}
-          VPS_USER: ${{ secrets.VPS_USER }}
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-
+  # Job này cũng là một "caller" job.
   deploy_api_gateway:
-    runs-on: ubuntu-latest
-    needs: [deploy_auth_service]
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Call Deploy API Gateway Workflow
-        uses: ./.github/workflows/reusable/deploy-api-gateway.yml@master
-        with:
-          service_path: api-gateway
-          vps_target_path: /var/www/api-gateway/
-        secrets:
-          VPS_HOST: ${{ secrets.VPS_HOST }}
-          VPS_USER: ${{ secrets.VPS_USER }}
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+    needs: [deploy_auth_service] # Phụ thuộc này là đúng, chạy sau khi auth-service triển khai xong.
+    uses: ./.github/workflows/reusable/deploy-api-gateway.yml@master
+    with:
+      service_path: api-gateway
+      vps_target_path: /var/www/api-gateway/
+    secrets:
+      # Truyền các secret mà API Gateway workflow yêu cầu.
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_USER: ${{ secrets.VPS_USER }}
+      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}

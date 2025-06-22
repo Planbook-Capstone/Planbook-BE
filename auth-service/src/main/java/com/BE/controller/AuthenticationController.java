@@ -116,7 +116,7 @@ public class AuthenticationController {
     }
 
 
-    @GetMapping("/git-action")
+    @GetMapping("/git-actionn")
     public ResponseEntity hihi() {
         return ResponseEntity.ok("git-action thành công");
     }

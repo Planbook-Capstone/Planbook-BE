@@ -1,18 +1,21 @@
-# File: PLANBOOK-BE/.github/workflows/reusable/deploy-auth-service.yml
+# File: .github/workflows/reusable/deploy-auth-service.yml
+# PHIÊN BẢN ĐÃ SỬA LỖI HOÀN CHỈNH
+
 name: Reusable Deploy Auth Service
 
 on:
   workflow_call:
     inputs:
       service_path:
-        description: 'Path to the Auth Service directory relative to repository root'
+        description: 'Đường dẫn đến thư mục Auth Service'
         required: true
         type: string
       vps_target_path:
-        description: 'Target path on VPS for this service'
+        description: 'Đường dẫn đích trên VPS cho service này'
         required: true
         type: string
     secrets:
+      # Danh sách đầy đủ các secret mà workflow này cần
       PRIVATE_KEY_PEM:
         required: true
       PUBLIC_KEY_PEM:
@@ -64,31 +67,20 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      # ==========================================================
-      # BƯỚC QUAN TRỌNG: TẠO FILE KEY TRƯỚC KHI MAVEN PACKAGE
-      # ==========================================================
       - name: Write RSA Private/Public Keys to file
-        working-directory: ${{ inputs.service_path }} # Chạy trong thư mục của service
+        working-directory: ${{ inputs.service_path }}
         run: |
-          # Đảm bảo thư mục này được tạo trong src/main/resources
-          # để Maven có thể đóng gói chúng vào JAR.
+          # Ghi các key vào src/main/resources để Maven đóng gói chúng vào file JAR
           mkdir -p src/main/resources/keys
-          # ĐÃ SỬA LỖI ĐƯỜNG DẪN KEY TẠI ĐÂY!
           echo "${{ secrets.PRIVATE_KEY_PEM }}" > src/main/resources/keys/private.pem
           echo "${{ secrets.PUBLIC_KEY_PEM }}" > src/main/resources/keys/public.pem
 
       - name: Maven Clean and Package
-        working-directory: ${{ inputs.service_path }} # Chạy trong thư mục của service
+        working-directory: ${{ inputs.service_path }}
         run: mvn clean package -DskipTests
-        # Sau bước này, file JAR (target/your-app-name.jar) sẽ chứa
-        # các file private.pem và public.pem trong thư mục /keys/
-        # bên trong JAR.
 
-      # ==========================================================
-      # CÁC BƯỚC CÒN LẠI KHÔNG CẦN TRUYỀN THÊM BIẾN MÔI TRƯỜNG CHO KEY
-      # ==========================================================
       - name: Create docker-compose.yml on runner
-        working-directory: ${{ inputs.service_path }} # Chạy trong thư mục của service
+        working-directory: ${{ inputs.service_path }}
         run: |
           cat <<EOF > docker-compose.yml
           version: '3.8'
@@ -153,11 +145,10 @@ jobs:
               container_name: planbook-be
               restart: always
               ports:
-                - "8080:8080"
+                # SỬA LỖI: Đổi cổng host sang 8081 để tránh xung đột với API Gateway (vẫn dùng cổng 8080)
+                - "8081:8080"
               environment:
-                # ĐÃ XÓA HOÀN TOÀN CÁC DÒNG SPRING_JWT_PRIVATE_KEY_PATH VÀ PUBLIC_KEY_PATH Ở ĐÂY
-                SPRING_JWT_PRIVATE_KEY_PATH: "${{ secrets.PRIVATE_KEY_PATH }}"
-                SPRING_JWT_PUBLIC_KEY_PATH: "${{ secrets.PUBLIC_KEY_PATH }}"
+                # Các biến môi trường cho key không còn cần thiết vì chúng đã được đóng gói trong JAR
                 SPRING_DATASOURCE_URL: "${{ secrets.DB_URL }}"
                 SPRING_DATASOURCE_USERNAME: "${{ secrets.DB_USERNAME }}"
                 SPRING_DATASOURCE_PASSWORD: "${{ secrets.DB_PASSWORD }}"
@@ -203,44 +194,28 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          # ĐÃ SỬA: Chỉ copy các file cần thiết từ thư mục service lên VPS
           source: "${{ inputs.service_path }}/target/*.jar, ${{ inputs.service_path }}/Dockerfile, ${{ inputs.service_path }}/docker-compose.yml"
-          target: ${{ inputs.vps_target_path }} # Đường dẫn đích trên VPS
+          target: ${{ inputs.vps_target_path }}
 
-      - name: Stop and Remove Old Backend Container on VPS
+      - name: Stop and Remove Old Containers on VPS
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            # Tạo thư mục đích nếu chưa có và gán quyền sở hữu
             sudo mkdir -p ${{ inputs.vps_target_path }}
             sudo chown -R ${{ secrets.VPS_USER }}:${{ secrets.VPS_USER }} ${{ inputs.vps_target_path }}
-
-            cd ${{ inputs.vps_target_path }} || { echo "Error: ${{ inputs.vps_target_path }} directory not found on VPS."; exit 1; }
-            echo "Checking and freeing up port 8080..."
-            PORT_TO_FREE=8080
-            PID_ON_PORT=$(sudo lsof -t -i :$PORT_TO_FREE)
-            if [ -n "$PID_ON_PORT" ]; then
-              echo "Found process on port $PORT_TO_FREE with PID: $PID_ON_PORT. Attempting to kill it..."
-              sudo kill -9 $PID_ON_PORT 2>/dev/null || true
-              sleep 1
-              if sudo lsof -i :$PORT_TO_FREE > /dev/null; then
-                echo "Warning: Port $PORT_TO_FREE is still in use after killing process. Manual intervention may be needed."
-              else
-                echo "Port $PORT_TO_FREE is now free."
-              fi
-            else
-              echo "Port $PORT_TO_FREE is already free."
-            fi
-
-            echo "Stopping and removing old backend container if it exists..."
-            docker stop planbook-be 2>/dev/null || true
-            docker rm -f planbook-be 2>/dev/null || true
+            cd ${{ inputs.vps_target_path }} || exit 1
+            
+            echo "Stopping and removing old Docker Compose stack if it exists..."
+            # Dừng toàn bộ stack cũ dựa trên file docker-compose.yml hiện tại
+            docker compose down 2>/dev/null || true
+            
+            echo "Cleaning up old backend image..."
             docker rmi planbook-be:latest 2>/dev/null || true
-
-            echo "Old backend container and image cleaned up."
+            
+            echo "Old containers and image cleaned up."
 
       - name: Start Application with Docker Compose on VPS
         uses: appleboy/ssh-action@v1.0.3
@@ -249,7 +224,7 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd ${{ inputs.vps_target_path }} || { echo "Error: ${{ inputs.vps_target_path }} directory not found on VPS."; exit 1; }
+            cd ${{ inputs.vps_target_path }} || exit 1
             echo "Building and starting Docker Compose services..."
-            docker compose -f docker-compose.yml up --build -d --remove-orphans
-            echo "Docker Compose services started. Use 'docker compose logs -f planbook-be' to monitor logs."
+            docker compose up --build -d --remove-orphans
+            echo "Docker Compose services started. Use 'docker compose logs -f' to monitor logs."
