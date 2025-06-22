@@ -28,7 +28,7 @@ public class SecurityConfig {
             "/webjars/**",
             "/swagger-ui/**",
             "/swagger-resources/**",
-            "/*/v3/api-docs/**"
+            "/*/v3/api-docs/**",
             "/*/api/login"
     };
 
