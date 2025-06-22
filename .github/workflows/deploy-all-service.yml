@@ -1,4 +1,4 @@
-name: Build and Deploy Directly to VPS
+name: Build and Deploy Microservices to VPS
 
 on:
   push:
@@ -20,12 +20,20 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
+      # =================================================================
+      # BƯỚC 1: Tạo file key cho Auth Service TRƯỚC KHI BUILD
+      # Điều này sẽ đóng gói các key vào bên trong file JAR
+      # =================================================================
       - name: Write RSA Private/Public Keys for Auth Service
         run: |
           mkdir -p auth-service/src/main/resources/keys
           echo "${{ secrets.PRIVATE_KEY_PEM }}" > auth-service/src/main/resources/keys/private.pem
           echo "${{ secrets.PUBLIC_KEY_PEM }}" > auth-service/src/main/resources/keys/public.pem
+        shell: bash
 
+      # =================================================================
+      # BƯỚC 2: Build JAR cho từng microservice
+      # =================================================================
       - name: Build Auth Service JAR
         run: mvn clean package -DskipTests
         working-directory: ./auth-service
@@ -34,21 +42,28 @@ jobs:
         run: mvn clean package -DskipTests
         working-directory: ./api-gateway
 
+      # =================================================================
+      # BƯỚC 3: Chuẩn bị gói triển khai với cấu trúc thư mục chính xác
+      # =================================================================
       - name: Prepare Deployment Package
         run: |
-          mkdir -p deploy_package
-          mkdir -p deploy_package/auth-service
-          cp auth-service/target/*.jar deploy_package/auth-service/app.jar
-          cp auth-service/Dockerfile deploy_package/auth-service/Dockerfile
+          # Tạo thư mục gốc
+          mkdir -p deploy
 
-          mkdir -p deploy_package/api-gateway
-          cp api-gateway/target/*.jar deploy_package/api-gateway/app.jar
-          cp api-gateway/Dockerfile deploy_package/api-gateway/Dockerfile
+          # Chuẩn bị cho auth-service
+          mkdir -p deploy/auth-service
+          cp auth-service/target/*.jar deploy/auth-service/app.jar
+          cp auth-service/Dockerfile deploy/auth-service/Dockerfile
 
-          # SỬA LỖI YAML: Sử dụng 'EOF' để ngăn shell nội suy và bọc các biến trong dấu ngoặc kép
-          cat <<'EOF' > deploy_package/docker-compose.yml
+          # Chuẩn bị cho api-gateway
+          mkdir -p deploy/api-gateway
+          cp api-gateway/target/*.jar deploy/api-gateway/app.jar
+          cp api-gateway/Dockerfile deploy/api-gateway/Dockerfile
+
+          # Tạo file docker-compose.yml tại thư mục gốc của gói triển khai
+          # Build context giờ sẽ trỏ đúng vào các thư mục con
+          cat <<'EOF' > deploy/docker-compose.yml
           name: planbook-monorepo-stack
-
           services:
             zookeeper:
               image: zookeeper:latest
@@ -94,13 +109,14 @@ jobs:
               restart: always
               ports: ["8081:8080"]
               environment:
-                SPRING_JWT_PRIVATE_KEY_PATH: "${{ secrets.PRIVATE_KEY_PATH }}"
-                SPRING_JWT_PUBLIC_KEY_PATH: "${{ secrets.PUBLIC_KEY_PATH }}"
+                # KHÔNG CẦN 2 DÒNG NÀY NỮA VÌ KEY ĐÃ NẰM TRONG JAR
+                # SPRING_JWT_PRIVATE_KEY_PATH: "${{ secrets.PRIVATE_KEY_PATH }}"
+                # SPRING_JWT_PUBLIC_KEY_PATH: "${{ secrets.PUBLIC_KEY_PATH }}"
                 SPRING_DATASOURCE_URL: "${{ secrets.DB_URL }}"
                 SPRING_DATASOURCE_USERNAME: "${{ secrets.DB_USERNAME }}"
                 SPRING_DATASOURCE_PASSWORD: "${{ secrets.DB_PASSWORD }}"
-                SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: "org.hibernate.dialect.MySQL8Dialect"
-                SPRING_JPA_HIBERNATE_DDL_AUTO: "update"
+                SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: "org.hibernate.dialect.MySQLDialect"
+                SPRING_JPA_HIBERNATE_DDL_AUTO: "validate"
                 SPRING_MAIN_ALLOW_CIRCULAR_REFERENCES: "true"
                 SPRING_MVC_PATHMATCH_MATCHING_STRATEGY: "ANT_PATH_MATCHER"
                 SUPABASE_JWT_SECRET: "${{ secrets.SUPABASE_JWT_SECRET_KEY }}"
@@ -114,17 +130,16 @@ jobs:
                 SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: "true"
                 SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: "true"
                 SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_REQUIRED: "true"
-                SPRING_MAIL_PROPERTIES_MAIL_SMTP_CONNECTIONTIMEOUT: "5000"
-                SPRING_MAIL_PROPERTIES_MAIL_SMTP_TIMEOUT: "5000"
-                SPRING_MAIL_PROPERTIES_MAIL_SMTP_WRITETIMEOT: "5000"
-                SPRING_MAIL_DEFAULT_ENCODING: "UTF-8"
                 SPRING_DATA_REDIS_HOST: "redis"
                 SPRING_DATA_REDIS_PORT: "6379"
                 SPRING_CACHE_TYPE: "redis"
                 SPRING_DURATION: "${{ secrets.APP_DURATION }}"
                 SPRING_PROFILES_ACTIVE: "prod"
                 SERVER_PORT: 8080
-              depends_on: [kafka, redis]
+              depends_on:
+                - zookeeper
+                - kafka
+                - redis
 
             api-gateway:
               build:
@@ -136,37 +151,34 @@ jobs:
                 SPRING_PROFILES_ACTIVE: "prod"
                 SERVER_PORT: 8080
                 SPRING_APPLICATION_NAME: "api-gateway"
-              depends_on: [zookeeper]
+              depends_on: 
+                - zookeeper
 
           volumes:
-            zookeeper_data:
-            zookeeper_datalog:
-            kafka_data:
-            redis_data:
+            zookeeper_data: {}
+            zookeeper_datalog: {}
+            kafka_data: {}
+            redis_data: {}
           EOF
+        shell: bash
 
-      - name: Create Directory and Set Permissions on VPS
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            APP_DIR="/var/www/planbook-be"
-            sudo mkdir -p $APP_DIR
-            sudo chown -R $USER:$USER $APP_DIR
-
+      # =================================================================
+      # BƯỚC 4: Sao chép gói triển khai đã được cấu trúc lại sang VPS
+      # =================================================================
       - name: Copy Deployment Package to VPS
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "./deploy_package/*"
+          source: "./deploy/*"
           target: "/var/www/planbook-be"
           strip_components: 1
 
-      - name: Run Docker Compose on VPS
+      # =================================================================
+      # BƯỚC 5: Chạy Docker Compose trên VPS để build và khởi động container
+      # =================================================================
+      - name: Deploy on VPS via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -175,7 +187,8 @@ jobs:
           script: |
             cd /var/www/planbook-be
             echo "Starting deployment..."
-            docker compose up -d --build --force-recreate auth-service api-gateway
+            # Lệnh này sẽ build lại image cho các service được chỉ định và khởi động lại chúng
+            docker compose up -d --build --force-recreate
             echo "Cleaning up old Docker images..."
             docker image prune -af
             echo "Deployment completed successfully!"
