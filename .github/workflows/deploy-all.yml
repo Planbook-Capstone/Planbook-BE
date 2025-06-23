@@ -1,0 +1,18 @@
+# =======================
+# 1. .github/workflows/deploy-all.yml
+# =======================
+name: Deploy All Microservices
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  deploy-auth-service:
+    uses: ./.github/workflows/deploy-auth.yml
+
+  deploy-api-gateway:
+    needs: deploy-auth-service
+    uses: ./.github/workflows/deploy-gateway.yml

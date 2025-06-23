@@ -36,7 +36,9 @@ public class SwaggerConfigController {
                     // URL sẽ có dạng /<service-id>/v3/api-docs
                     // ví dụ: /auth-service/v3/api-docs
                     url.put("url", "/" + serviceId.toLowerCase() + "/v3/api-docs");
+//                    url.put("url", "https://planbook.vn/" + serviceId.toLowerCase() + "/v3/api-docs");
                     url.put("name", serviceId);
+
                     urls.add(url);
                 });
 

@@ -3,10 +3,10 @@ echo "Building app..."
 #./mvnw clean package
 
 echo "Deploy files to server..."
-scp -r  target/be.jar root@157.245.135.92:/var/www/be/
+scp -r  target/api-gateway.jar root@157.245.135.92:/var/www/api-gateway/
 
 ssh root@157.245.135.92 <<EOF
-pid=\$(sudo lsof -t -i:8081)
+pid=\$(sudo lsof -t -i:8080)
 
 if [ -z "\$pid" ]; then
     echo "Start server..."
@@ -14,8 +14,8 @@ else
     echo "Restart server..."
     sudo kill -9 "\$pid"
 fi
-cd /var/www/be
-java -jar be.jar
+cd /var/www/api-gateway
+java -jar api-gateway.jar
 EOF
 exit
 echo "Done!"
