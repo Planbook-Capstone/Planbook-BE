@@ -69,7 +69,7 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            mkdir -p /var/www/planbook-be
+            mkdir -p /var/www/planbook-be/keys
 
       - name: Copy docker-compose.yml to VPS
         uses: appleboy/scp-action@v0.1.7
@@ -80,6 +80,15 @@ jobs:
           source: "deploy/docker-compose.yml"
           target: /var/www/planbook-be/
 
+      - name: Copy key files to VPS   # <-- chỉ dùng nếu APP cần key file ngoài VPS!
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "auth-service/src/main/resources/keys/*.pem"
+          target: /var/www/planbook-be/keys/
+
       - name: Deploy on VPS
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -89,7 +98,7 @@ jobs:
           script: |
             docker login -u minhlola28 -p ${{ secrets.DOCKERHUB_PASSWORD }}
             cd /var/www/planbook-be
-            # ===== EXPORT ALL SECRETS AS ENV (Đồng bộ với docker-compose.yml) =====
+            # EXPORT SECRETS as ENV (đúng tên biến docker-compose.yml nếu bạn cần)
             export SPRING_JWT_PRIVATE_KEY_PATH="${{ secrets.PRIVATE_KEY_PATH }}"
             export SPRING_JWT_PUBLIC_KEY_PATH="${{ secrets.PUBLIC_KEY_PATH }}"
             export SPRING_DATASOURCE_URL="${{ secrets.DB_URL }}"
@@ -103,7 +112,8 @@ jobs:
             export MAIL_USERNAME="${{ secrets.MAIL_USERNAME }}"
             export MAIL_PASSWORD="${{ secrets.MAIL_PASSWORD }}"
             export APP_DURATION="${{ secrets.APP_DURATION }}"
-            # ===== ADD YOUR EXTRA SECRETS HERE (nếu có thêm env) =====
+            # Nếu không cần key path (app đọc key từ JAR/classpath) thì xóa 2 dòng export key path trên!
 
             docker compose pull
             docker compose up -d --remove-orphans
+
