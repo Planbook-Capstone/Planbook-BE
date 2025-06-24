@@ -103,9 +103,7 @@ jobs:
             export APP_DURATION="${{ secrets.APP_DURATION }}"
             # Nếu không cần key path (app đọc key từ JAR/classpath) thì xóa 2 dòng export key path trên!
 
-            # Pull mới nếu cần (bỏ qua buildable service)
             docker compose pull --ignore-buildable
-
-            # Khởi động — không build, không recreate nếu chưa cần
             docker compose up -d --no-build --no-recreate --remove-orphans
+
 

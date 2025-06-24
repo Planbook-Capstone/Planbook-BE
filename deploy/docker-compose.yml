@@ -1,7 +1,7 @@
 services:
   zookeeper:
     image: zookeeper:latest
-    container_name: zookeeper
+    # container_name: zookeeper
     restart: always
     ports:
       - "2181:2181"
@@ -13,7 +13,7 @@ services:
 
   kafka:
     image: confluentinc/cp-kafka:7.5.0
-    container_name: kafka
+    # container_name: kafka
     restart: always
     ports:
       - "9092:9092"
@@ -31,7 +31,7 @@ services:
 
   kafdrop:
     image: obsidiandynamics/kafdrop:latest
-    container_name: kafdrop
+    # container_name: kafdrop
     restart: always
     ports:
       - "9000:9000"
@@ -43,7 +43,7 @@ services:
 
   redis:
     image: redis:latest
-    container_name: redis
+    # container_name: redis
     restart: always
     ports:
       - "6379:6379"
@@ -52,7 +52,7 @@ services:
 
   auth-service:
     image: minhlola28/planbook-auth-service:latest
-    container_name: planbook-auth-service
+    # container_name: planbook-auth-service
     restart: always
     ports:
       - "8081:8080"
@@ -91,7 +91,7 @@ services:
 
   api-gateway:
     image: minhlola28/planbook-api-gateway:latest
-    container_name: planbook-api-gateway
+    # container_name: planbook-api-gateway
     restart: always
     ports:
       - "8080:8080"
