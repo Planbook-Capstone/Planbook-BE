@@ -80,14 +80,14 @@ jobs:
           source: "deploy/docker-compose.yml"
           target: /var/www/planbook-be/
 
-      - name: Copy key files to VPS   # <-- chỉ dùng nếu APP cần key file ngoài VPS!
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "auth-service/src/main/resources/keys/*.pem"
-          target: /var/www/planbook-be/keys/
+      # - name: Copy key files to VPS   # <-- chỉ dùng nếu APP cần key file ngoài VPS!
+      #   uses: appleboy/scp-action@v0.1.7
+      #   with:
+      #     host: ${{ secrets.VPS_HOST }}
+      #     username: ${{ secrets.VPS_USER }}
+      #     key: ${{ secrets.SSH_PRIVATE_KEY }}
+      #     source: "auth-service/src/main/resources/keys/*.pem"
+      #     target: /var/www/planbook-be/keys/
 
       - name: Deploy on VPS
         uses: appleboy/ssh-action@v1.0.3
@@ -99,8 +99,8 @@ jobs:
             docker login -u minhlola28 -p ${{ secrets.DOCKERHUB_PASSWORD }}
             cd /var/www/planbook-be
             # EXPORT SECRETS as ENV (đúng tên biến docker-compose.yml nếu bạn cần)
-            export SPRING_JWT_PRIVATE_KEY_PATH="${{ secrets.PRIVATE_KEY_PATH }}"
-            export SPRING_JWT_PUBLIC_KEY_PATH="${{ secrets.PUBLIC_KEY_PATH }}"
+            # export SPRING_JWT_PRIVATE_KEY_PATH="${{ secrets.PRIVATE_KEY_PATH }}"
+            # export SPRING_JWT_PUBLIC_KEY_PATH="${{ secrets.PUBLIC_KEY_PATH }}"
             export SPRING_DATASOURCE_URL="${{ secrets.DB_URL }}"
             export SPRING_DATASOURCE_USERNAME="${{ secrets.DB_USERNAME }}"
             export SPRING_DATASOURCE_PASSWORD="${{ secrets.DB_PASSWORD }}"
