@@ -23,7 +23,7 @@ jobs:
 
       - name: Build JAR
         run: mvn clean package -DskipTests
-        
+
       - name: Verify JAR content includes keys
         run: |
           jar tf target/*.jar | grep keys/private.pem
@@ -98,6 +98,7 @@ jobs:
           APP_DURATION=${{ secrets.APP_DURATION }}
           SPRING_JWT_PRIVATE_KEY_PATH=${{ secrets.PRIVATE_KEY_PATH }}
           SPRING_JWT_PUBLIC_KEY_PATH=${{ secrets.PUBLIC_KEY_PATH }}
+          SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI=${{ secrets.SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI }}
           EOF
 
       - name: Copy docker-compose.yml and .env to VPS
