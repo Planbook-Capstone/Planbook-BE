@@ -98,9 +98,6 @@ jobs:
           script: |
             docker login -u minhlola28 -p ${{ secrets.DOCKERHUB_PASSWORD }}
             cd /var/www/planbook-be
-            # EXPORT SECRETS as ENV (đúng tên biến docker-compose.yml nếu bạn cần)
-            # export SPRING_JWT_PRIVATE_KEY_PATH="${{ secrets.PRIVATE_KEY_PATH }}"
-            # export SPRING_JWT_PUBLIC_KEY_PATH="${{ secrets.PUBLIC_KEY_PATH }}"
             export SPRING_DATASOURCE_URL="${{ secrets.DB_URL }}"
             export SPRING_DATASOURCE_USERNAME="${{ secrets.DB_USERNAME }}"
             export SPRING_DATASOURCE_PASSWORD="${{ secrets.DB_PASSWORD }}"
