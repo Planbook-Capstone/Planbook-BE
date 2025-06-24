@@ -61,7 +61,7 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        
+
       - name: Ensure deploy folder exists
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -71,13 +71,29 @@ jobs:
           script: |
             mkdir -p /var/www/planbook-be/keys
 
-      - name: Copy docker-compose.yml to VPS
-        uses: appleboy/scp-action@v0.1.7
+      - name: Create .env file for Compose
+        run: |
+          cat <<EOF > deploy/.env
+          SPRING_DATASOURCE_URL=${{ secrets.DB_URL }}
+          SPRING_DATASOURCE_USERNAME=${{ secrets.DB_USERNAME }}
+          SPRING_DATASOURCE_PASSWORD=${{ secrets.DB_PASSWORD }}
+          SUPABASE_JWT_SECRET_KEY=${{ secrets.SUPABASE_JWT_SECRET_KEY }}
+          SPRING_APP_SECRET_KEY=${{ secrets.SPRING_APP_SECRET_KEY }}
+          KAFKA_TOPIC=${{ secrets.KAFKA_TOPIC }}
+          MAIL_HOST=${{ secrets.MAIL_HOST }}
+          MAIL_PORT=${{ secrets.MAIL_PORT }}
+          MAIL_USERNAME=${{ secrets.MAIL_USERNAME }}
+          MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}
+          APP_DURATION=${{ secrets.APP_DURATION }}
+          EOF
+
+      - name: Copy docker-compose.yml and .env to VPS
+        uses: appleboy/scp-action@v1.0.7
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "deploy/docker-compose.yml"
+          source: "deploy/docker-compose.yml,deploy/.env"
           target: "/var/www/planbook-be/"
           strip_components: 1
 
@@ -90,20 +106,12 @@ jobs:
           script: |
             docker login -u minhlola28 -p ${{ secrets.DOCKERHUB_PASSWORD }}
             cd /var/www/planbook-be
-            export SPRING_DATASOURCE_URL="${{ secrets.DB_URL }}"
-            export SPRING_DATASOURCE_USERNAME="${{ secrets.DB_USERNAME }}"
-            export SPRING_DATASOURCE_PASSWORD="${{ secrets.DB_PASSWORD }}"
-            export SUPABASE_JWT_SECRET_KEY="${{ secrets.SUPABASE_JWT_SECRET_KEY }}"
-            export SPRING_APP_SECRET_KEY="${{ secrets.SPRING_APP_SECRET_KEY }}"
-            export KAFKA_TOPIC="${{ secrets.KAFKA_TOPIC }}"
-            export MAIL_HOST="${{ secrets.MAIL_HOST }}"
-            export MAIL_PORT="${{ secrets.MAIL_PORT }}"
-            export MAIL_USERNAME="${{ secrets.MAIL_USERNAME }}"
-            export MAIL_PASSWORD="${{ secrets.MAIL_PASSWORD }}"
-            export APP_DURATION="${{ secrets.APP_DURATION }}"
-            # Nếu không cần key path (app đọc key từ JAR/classpath) thì xóa 2 dòng export key path trên!
 
+            # Cleanup containers đang ở trạng thái Created để tránh bị binding lỗi cổng
+            docker ps -a --filter "status=created" -q | xargs -r docker rm
+
+            # Tự động pull image thay đổi
             docker compose pull --ignore-buildable
+
+            # Up, không tạo lại nếu container đang chạy và không build lại volume
             docker compose up -d --no-build --no-recreate --remove-orphans
-
-
