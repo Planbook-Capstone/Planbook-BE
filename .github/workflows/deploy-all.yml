@@ -1,18 +1,100 @@
-# =======================
-# 1. .github/workflows/deploy-all.yml
-# =======================
-name: Deploy All Microservices
+name: Build & Deploy All Microservices
 
 on:
   push:
-    branches:
-      - master
-  workflow_dispatch:
+    branches: [ master ]
 
 jobs:
-  deploy-auth-service:
-    uses: ./.github/workflows/deploy-auth.yml
+  build-auth-service:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: auth-service
 
-  deploy-api-gateway:
-    needs: deploy-auth-service
-    uses: ./.github/workflows/deploy-gateway.yml
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build JAR
+        run: mvn clean package -DskipTests
+
+      - name: Docker login
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Build & Push Auth-service image
+        run: |
+          docker build -t minhlola28/planbook-auth-service:latest .
+          docker push minhlola28/planbook-auth-service:latest
+
+  build-api-gateway:
+    runs-on: ubuntu-latest
+    needs: build-auth-service
+    defaults:
+      run:
+        working-directory: api-gateway
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build JAR
+        run: mvn clean package -DskipTests
+
+      - name: Docker login
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Build & Push API Gateway image
+        run: |
+          docker build -t minhlola28/planbook-api-gateway:latest .
+          docker push minhlola28/planbook-api-gateway:latest
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [build-auth-service, build-api-gateway]
+
+    steps:
+      - name: Ensure deploy folder exists
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            mkdir -p /var/www/planbook-be
+
+      - name: Copy docker-compose.yml to VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "deploy/docker-compose.yml"
+          target: /var/www/planbook-be/
+
+      # Nếu dùng file .env cho secrets, thêm step copy .env tương tự ở đây
+      # - name: Copy .env to VPS
+      #   uses: appleboy/scp-action@v0.1.7
+      #   with:
+      #     host: ${{ secrets.VPS_HOST }}
+      #     username: ${{ secrets.VPS_USER }}
+      #     key: ${{ secrets.SSH_PRIVATE_KEY }}
+      #     source: "deploy/.env"
+      #     target: /var/www/planbook-be/
+
+      - name: Deploy on VPS
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            docker login -u minhlola28 -p ${{ secrets.DOCKERHUB_PASSWORD }}
+            cd /var/www/planbook-be
+            docker compose pull
+            docker compose up -d --remove-orphans

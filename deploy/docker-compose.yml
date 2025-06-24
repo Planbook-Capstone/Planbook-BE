@@ -1,0 +1,113 @@
+version: '3.8'
+
+services:
+  zookeeper:
+    image: zookeeper:latest
+    container_name: zookeeper
+    restart: always
+    ports:
+      - "2181:2181"
+    environment:
+      ZOO_CLIENT_PORT: 2181
+    volumes:
+      - zookeeper_data:/data
+      - zookeeper_datalog:/datalog
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: kafka
+    restart: always
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://157.245.135.92:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    depends_on:
+      - zookeeper
+
+  kafdrop:
+    image: obsidiandynamics/kafdrop:latest
+    container_name: kafdrop
+    restart: always
+    ports:
+      - "9000:9000"
+    environment:
+      KAFKA_BROKERCONNECT: kafka:29092
+      JVM_OPTS: "-Xms16M -Xmx48M"
+    depends_on:
+      - kafka
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  auth-service:
+    image: minhlola28/planbook-auth-service:latest
+    container_name: planbook-auth-service
+    restart: always
+    ports:
+      - "8081:8080"
+    environment:
+      SPRING_JWT_PRIVATE_KEY_PATH: "${SPRING_JWT_PRIVATE_KEY_PATH}"
+      SPRING_JWT_PUBLIC_KEY_PATH: "${SPRING_JWT_PUBLIC_KEY_PATH}"
+      SPRING_DATASOURCE_URL: "${SPRING_DATASOURCE_URL}"
+      SPRING_DATASOURCE_USERNAME: "${SPRING_DATASOURCE_USERNAME}"
+      SPRING_DATASOURCE_PASSWORD: "${SPRING_DATASOURCE_PASSWORD}"
+      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: "org.hibernate.dialect.MySQL8Dialect"
+      SPRING_JPA_HIBERNATE_DDL_AUTO: "update"
+      SPRING_MAIN_ALLOW_CIRCULAR_REFERENCES: "true"
+      SPRING_MVC_PATHMATCH_MATCHING_STRATEGY: "ANT_PATH_MATCHER"
+      SUPABASE_JWT_SECRET: "${SUPABASE_JWT_SECRET_KEY}"
+      SPRING_SECRETKEY: "${SPRING_APP_SECRET_KEY}"
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: "kafka:29092"
+      KAFKA_TOPIC_NAME: "${KAFKA_TOPIC}"
+      SPRING_MAIL_HOST: "${MAIL_HOST}"
+      SPRING_MAIL_PORT: "${MAIL_PORT}"
+      SPRING_MAIL_USERNAME: "${MAIL_USERNAME}"
+      SPRING_MAIL_PASSWORD: "${MAIL_PASSWORD}"
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: "true"
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: "true"
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_REQUIRED: "true"
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_CONNECTIONTIMEOUT: "5000"
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_TIMEOUT: "5000"
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_WRITETIMEOT: "5000"
+      SPRING_MAIL_DEFAULT_ENCODING: "UTF-8"
+      SPRING_DATA_REDIS_HOST: "redis"
+      SPRING_DATA_REDIS_PORT: "6379"
+      SPRING_CACHE_TYPE: "redis"
+      SPRING_DURATION: "${APP_DURATION}"
+      SPRING_PROFILES_ACTIVE: "prod"
+    depends_on:
+      - zookeeper
+      - kafka
+      - redis
+
+  api-gateway:
+    image: minhlola28/planbook-api-gateway:latest
+    container_name: planbook-api-gateway
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: "prod"
+      SERVER_PORT: 8080
+      SPRING_APPLICATION_NAME: "api-gateway"
+    depends_on:
+      - auth-service
+
+volumes:
+  zookeeper_data:
+  zookeeper_datalog:
+  kafka_data:
+  redis_data:
