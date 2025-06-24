@@ -107,6 +107,7 @@ services:
       SPRING_APPLICATION_NAME: "api-gateway"
     depends_on:
       - auth-service
+      - zookeeper
 
 volumes:
   zookeeper_data:
