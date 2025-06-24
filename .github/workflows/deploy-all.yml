@@ -80,16 +80,6 @@ jobs:
           source: "deploy/docker-compose.yml"
           target: /var/www/planbook-be/
 
-      # Nếu dùng file .env cho secrets, thêm step copy .env tương tự ở đây
-      # - name: Copy .env to VPS
-      #   uses: appleboy/scp-action@v0.1.7
-      #   with:
-      #     host: ${{ secrets.VPS_HOST }}
-      #     username: ${{ secrets.VPS_USER }}
-      #     key: ${{ secrets.SSH_PRIVATE_KEY }}
-      #     source: "deploy/.env"
-      #     target: /var/www/planbook-be/
-
       - name: Deploy on VPS
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -99,5 +89,21 @@ jobs:
           script: |
             docker login -u minhlola28 -p ${{ secrets.DOCKERHUB_PASSWORD }}
             cd /var/www/planbook-be
+            # ===== EXPORT ALL SECRETS AS ENV (Đồng bộ với docker-compose.yml) =====
+            export SPRING_JWT_PRIVATE_KEY_PATH="${{ secrets.PRIVATE_KEY_PATH }}"
+            export SPRING_JWT_PUBLIC_KEY_PATH="${{ secrets.PUBLIC_KEY_PATH }}"
+            export SPRING_DATASOURCE_URL="${{ secrets.DB_URL }}"
+            export SPRING_DATASOURCE_USERNAME="${{ secrets.DB_USERNAME }}"
+            export SPRING_DATASOURCE_PASSWORD="${{ secrets.DB_PASSWORD }}"
+            export SUPABASE_JWT_SECRET_KEY="${{ secrets.SUPABASE_JWT_SECRET_KEY }}"
+            export SPRING_APP_SECRET_KEY="${{ secrets.SPRING_APP_SECRET_KEY }}"
+            export KAFKA_TOPIC="${{ secrets.KAFKA_TOPIC }}"
+            export MAIL_HOST="${{ secrets.MAIL_HOST }}"
+            export MAIL_PORT="${{ secrets.MAIL_PORT }}"
+            export MAIL_USERNAME="${{ secrets.MAIL_USERNAME }}"
+            export MAIL_PASSWORD="${{ secrets.MAIL_PASSWORD }}"
+            export APP_DURATION="${{ secrets.APP_DURATION }}"
+            # ===== ADD YOUR EXTRA SECRETS HERE (nếu có thêm env) =====
+
             docker compose pull
             docker compose up -d --remove-orphans
