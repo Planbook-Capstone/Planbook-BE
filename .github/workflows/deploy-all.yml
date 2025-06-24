@@ -2,7 +2,8 @@ name: Build & Deploy All Microservices
 
 on:
   push:
-    branches: [ master ]
+    branches:
+      - master
 
 jobs:
   build-auth-service:
@@ -10,10 +11,15 @@ jobs:
     defaults:
       run:
         working-directory: auth-service
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Write RSA keys to resources
+        run: |
+          mkdir -p src/main/resources/keys
+          echo "${{ secrets.PRIVATE_KEY_PEM }}" > src/main/resources/keys/private.pem
+          echo "${{ secrets.PUBLIC_KEY_PEM }}" > src/main/resources/keys/public.pem
 
       - name: Build JAR
         run: mvn clean package -DskipTests
@@ -35,7 +41,6 @@ jobs:
     defaults:
       run:
         working-directory: api-gateway
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -56,20 +61,21 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
-    needs: [build-auth-service, build-api-gateway]
-
+    needs:
+      - build-auth-service
+      - build-api-gateway
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Ensure deploy folder exists
-        uses: appleboy/ssh-action@v1.0.3
+        uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            mkdir -p /var/www/planbook-be/keys
+            mkdir -p /var/www/planbook-be
 
       - name: Create .env file for Compose
         run: |
@@ -85,12 +91,10 @@ jobs:
           MAIL_USERNAME=${{ secrets.MAIL_USERNAME }}
           MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}
           APP_DURATION=${{ secrets.APP_DURATION }}
-          SPRING_JWT_PRIVATE_KEY_PATH=${{ secrets.PRIVATE_KEY_PATH }}
-          SPRING_JWT_PUBLIC_KEY_PATH=${{ secrets.PUBLIC_KEY_PATH }}
           EOF
 
       - name: Copy docker-compose.yml and .env to VPS
-        uses: appleboy/scp-action@v0.1.7
+        uses: appleboy/scp-action@v1
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
@@ -100,7 +104,7 @@ jobs:
           strip_components: 1
 
       - name: Deploy on VPS
-        uses: appleboy/ssh-action@v1.0.3
+        uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
@@ -108,12 +112,6 @@ jobs:
           script: |
             docker login -u minhlola28 -p ${{ secrets.DOCKERHUB_PASSWORD }}
             cd /var/www/planbook-be
-
-            # Cleanup containers đang ở trạng thái Created để tránh bị binding lỗi cổng
             docker ps -a --filter "status=created" -q | xargs -r docker rm
-
-            # Tự động pull image thay đổi
             docker compose pull --ignore-buildable
-
-            # Up, không tạo lại nếu container đang chạy và không build lại volume
             docker compose up -d --no-build --no-recreate --remove-orphans
