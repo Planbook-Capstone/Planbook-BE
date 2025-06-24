@@ -91,6 +91,8 @@ jobs:
           MAIL_USERNAME=${{ secrets.MAIL_USERNAME }}
           MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}
           APP_DURATION=${{ secrets.APP_DURATION }}
+          SPRING_JWT_PRIVATE_KEY_PATH=${{ secrets.PRIVATE_KEY_PATH }}
+          SPRING_JWT_PUBLIC_KEY_PATH=${{ secrets.PUBLIC_KEY_PATH }}
           EOF
 
       - name: Copy docker-compose.yml and .env to VPS
