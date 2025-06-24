@@ -78,16 +78,8 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: "deploy/docker-compose.yml"
-          target: /var/www/planbook-be/docker-compose.yml
-
-      # - name: Copy key files to VPS   # <-- chỉ dùng nếu APP cần key file ngoài VPS!
-      #   uses: appleboy/scp-action@v0.1.7
-      #   with:
-      #     host: ${{ secrets.VPS_HOST }}
-      #     username: ${{ secrets.VPS_USER }}
-      #     key: ${{ secrets.SSH_PRIVATE_KEY }}
-      #     source: "auth-service/src/main/resources/keys/*.pem"
-      #     target: /var/www/planbook-be/keys/
+          target: "/var/www/planbook-be/"
+          strip_components: 1
 
       - name: Deploy on VPS
         uses: appleboy/ssh-action@v1.0.3
