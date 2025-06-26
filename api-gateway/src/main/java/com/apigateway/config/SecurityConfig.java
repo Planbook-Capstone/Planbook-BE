@@ -1,9 +1,13 @@
 package com.apigateway.config;
 
+import com.apigateway.filter.JwtBypassWebFilter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
+import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
@@ -14,28 +18,21 @@ import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 @EnableWebFluxSecurity // Bắt buộc cho môi trường reactive của Gateway
 public class SecurityConfig {
 
-      // === BƯỚC 1: Inject giá trị từ application.yml ===
-//    @Value("${spring.security.oauth2.resourceserver.jwt.jwk-set-uri}")
-//    private String jwkSetUri;
+    @Autowired
+    private PublicEndpointConfig publicEndpointConfig;
 
-    private final String[] PUBLIC_ENDPOINTS = {
-            "/error",
-            "/swagger-ui.html",
-            "/v3/api-docs/swagger-config",
-            "/webjars/**",
-            "/swagger-ui/**",
-            "/swagger-resources/**",
-            "/*/v3/api-docs/**",
-            "/*/api/login"
-    };
+    @Autowired
+    private JwtBypassWebFilter jwtBypassWebFilter;
 
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
         http
+                .addFilterAt(jwtBypassWebFilter, SecurityWebFiltersOrder.AUTHENTICATION)
                 .csrf(ServerHttpSecurity.CsrfSpec::disable) // Tắt CSRF cho API
                 .authorizeExchange(exchange -> exchange
                         // Các đường dẫn (path) được phép truy cập công khai
-                        .pathMatchers(PUBLIC_ENDPOINTS).permitAll()
+                        .pathMatchers(publicEndpointConfig.getPublicEndpoints().toArray(new String[0])).permitAll()
+                        .pathMatchers(HttpMethod.GET, publicEndpointConfig.getPublicGetEndpoints().toArray(new String[0])).permitAll()
                         // Tất cả các request còn lại phải được xác thực (có JWT hợp lệ)
                         .anyExchange().authenticated()
                 )
@@ -45,13 +42,6 @@ public class SecurityConfig {
 
         return http.build();
     }
-
-      // === BƯỚC 3: Tạo bean ReactiveJwtDecoder ===
-//    @Bean
-//    public ReactiveJwtDecoder reactiveJwtDecoder() {
-//        // Spring sẽ dùng URI này để lấy public key và xác thực token JWT
-//        return ReactiveJwtDecoders.fromOidcIssuerLocation(jwkSetUri);
-//    }
 
 
     @Bean
