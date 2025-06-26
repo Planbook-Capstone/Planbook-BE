@@ -52,7 +52,7 @@ services:
       - redis_data:/data
 
   auth-service:
-    image: minhlola28/planbook-auth-service:latest
+    image: ${DOCKERHUB_USERNAME}/planbook-auth-service:latest
     container_name: planbook-auth-service
     restart: always
     ports:
@@ -99,7 +99,7 @@ services:
       - redis
 
   api-gateway:
-    image: minhlola28/planbook-api-gateway:latest
+    image: ${DOCKERHUB_USERNAME}/planbook-api-gateway:latest
     container_name: planbook-api-gateway
     restart: always
     ports:

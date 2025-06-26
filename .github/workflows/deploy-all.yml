@@ -37,8 +37,8 @@ jobs:
 
       - name: Build & Push Auth-service image
         run: |
-          docker build -t minhlola28/planbook-auth-service:latest .
-          docker push minhlola28/planbook-auth-service:latest
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/planbook-auth-service:latest .
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/planbook-auth-service:latest
 
   build-api-gateway:
     runs-on: ubuntu-latest
@@ -61,8 +61,8 @@ jobs:
 
       - name: Build & Push API Gateway image
         run: |
-          docker build -t minhlola28/planbook-api-gateway:latest .
-          docker push minhlola28/planbook-api-gateway:latest
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/planbook-api-gateway:latest .
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/planbook-api-gateway:latest
 
   deploy:
     runs-on: ubuntu-latest
@@ -99,6 +99,7 @@ jobs:
           SPRING_JWT_PRIVATE_KEY_PATH=${{ secrets.PRIVATE_KEY_PATH }}
           SPRING_JWT_PUBLIC_KEY_PATH=${{ secrets.PUBLIC_KEY_PATH }}
           SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI=${{ secrets.SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI }}
+          DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}
           EOF
 
       - name: Copy docker-compose.yml and .env to VPS
@@ -118,8 +119,22 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            docker login -u minhlola28 -p ${{ secrets.DOCKERHUB_PASSWORD }}
+            docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_PASSWORD }}
+
             cd /var/www/planbook-be
-            docker ps -a --filter "status=created" -q | xargs -r docker rm
-            docker compose pull --ignore-buildable
-            docker compose up -d --no-build --no-recreate --remove-orphans
+
+            echo "🧹 Removing old containers..."
+            docker rm -f planbook-auth-service || true
+            docker rm -f planbook-api-gateway || true
+
+            echo "🧹 Removing old images..."
+            docker rmi ${{ secrets.DOCKERHUB_USERNAME }}/planbook-auth-service:latest || true
+            docker rmi ${{ secrets.DOCKERHUB_USERNAME }}/planbook-api-gateway:latest || true
+
+            echo "📦 Pulling latest images..."
+            docker compose pull
+
+            echo "🚀 Starting services..."
+            docker compose up -d --remove-orphans
+
+            echo "✅ Deployment complete."
