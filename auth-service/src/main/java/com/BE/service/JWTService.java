@@ -14,11 +14,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+
 import java.text.ParseException;
+import java.time.Duration;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.Date;
-import java.util.UUID;
 
 @Service
 public class JWTService {
@@ -43,8 +43,9 @@ public class JWTService {
             JWTClaimsSet claims = new JWTClaimsSet.Builder()
                     .subject(user.getUsername())
                     .issueTime(new Date())
-                    .expirationTime(Date.from(Instant.now().plus(DURATION, ChronoUnit.SECONDS)))
+                    .expirationTime(Date.from(Instant.now().plus(Duration.ofSeconds(DURATION))))
                     .claim("scope", "ROLE_" + user.getRole())
+                    .claim("userId", user.getId())
                     .claim("refresh", refresh)
                     .build();
 
@@ -69,8 +70,9 @@ public class JWTService {
             JWTClaimsSet claims = new JWTClaimsSet.Builder()
                     .subject(user.getUsername())
                     .issueTime(new Date())
-                    .expirationTime(Date.from(Instant.now().plus(DURATION, ChronoUnit.SECONDS)))
+                    .expirationTime(Date.from(Instant.now().plus(Duration.ofSeconds(DURATION))))
                     .claim("scope", "ROLE_" + user.getRole())
+                    .claim("userId", user.getId())
                     .build();
 
             JWSHeader header = new JWSHeader.Builder(JWSAlgorithm.RS256).keyID(rsaKey.getKeyID()).build();

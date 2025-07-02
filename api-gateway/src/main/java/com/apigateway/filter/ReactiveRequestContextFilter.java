@@ -23,8 +23,10 @@ public class ReactiveRequestContextFilter implements GlobalFilter {
                     if (auth != null && auth.getPrincipal() instanceof Jwt jwt) {
                         String username = jwt.getSubject();
                         String role = jwt.getClaim("scope");
+                        String userId = jwt.getClaim("userId");
+
                         return chain.filter(exchange).contextWrite(ctx ->
-                                ctx.put("username", username).put("role", role)
+                                ctx.put("username", username).put("role", role).put("userId", userId)
                         );
                     }
                     return chain.filter(exchange);

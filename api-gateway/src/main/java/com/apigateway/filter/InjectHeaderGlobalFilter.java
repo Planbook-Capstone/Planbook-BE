@@ -18,11 +18,13 @@ public class InjectHeaderGlobalFilter implements GlobalFilter {
         return Mono.deferContextual(ctx -> {
             String username = ctx.getOrDefault("username", "");
             String role = ctx.getOrDefault("role", "");
+            String userId = ctx.getOrDefault("userId", "");
 
             ServerHttpRequest mutatedRequest = exchange.getRequest()
                     .mutate()
                     .header("X-Username", username)
                     .header("X-User-Role", role)
+                    .header("X-User-Id", userId)
                     .build();
 
             return chain.filter(exchange.mutate().request(mutatedRequest).build());
