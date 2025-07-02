@@ -1,6 +1,7 @@
 package com.BE.service.implementServices;
 
 import com.BE.enums.Status;
+import com.BE.mapper.LessonPlanMapper;
 import com.BE.model.dto.LessonPlanDTO;
 import com.BE.model.entity.LessonPlan;
 import com.BE.model.request.CreateLessonPlanRequest;
@@ -24,20 +25,19 @@ import org.springframework.transaction.annotation.Transactional;
 public class LessonPlanServiceImpl implements LessonPlanService {
 
     private final LessonPlanRepository lessonPlanRepository;
+    private final LessonPlanMapper lessonPlanMapper;
 
     @Override
     public LessonPlanDTO createLessonPlan(CreateLessonPlanRequest request) {
         log.info("Creating new lesson plan with name: {}", request.getName());
 
-        LessonPlan lessonPlan = new LessonPlan();
-        lessonPlan.setName(request.getName());
-        lessonPlan.setDescription(request.getDescription());
-        lessonPlan.setStatus(request.getStatus() != null ? request.getStatus() : Status.ACTIVE);
+        // Convert request to entity using mapper
+        LessonPlan lessonPlan = lessonPlanMapper.toEntity(request);
 
         LessonPlan savedLessonPlan = lessonPlanRepository.save(lessonPlan);
         log.info("Created lesson plan with ID: {}", savedLessonPlan.getId());
 
-        return convertToDTO(savedLessonPlan);
+        return lessonPlanMapper.toDTO(savedLessonPlan);
     }
 
     @Override
@@ -48,7 +48,7 @@ public class LessonPlanServiceImpl implements LessonPlanService {
         LessonPlan lessonPlan = lessonPlanRepository.findByIdAndStatus(id, Status.ACTIVE)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy giáo án với ID: " + id));
 
-        return convertToDTO(lessonPlan);
+        return lessonPlanMapper.toDTO(lessonPlan);
     }
 
     @Override
@@ -57,8 +57,8 @@ public class LessonPlanServiceImpl implements LessonPlanService {
         log.info("Getting all lesson plans with keyword: '{}', status: {}, page: {}", keyword, status, pageable.getPageNumber());
 
         Page<LessonPlan> lessonPlans = lessonPlanRepository.findWithSearchAndStatus(keyword, status, pageable);
-        
-        return lessonPlans.map(this::convertToDTO);
+
+        return lessonPlans.map(lessonPlanMapper::toDTO);
     }
 
     @Override
@@ -67,22 +67,14 @@ public class LessonPlanServiceImpl implements LessonPlanService {
 
         LessonPlan lessonPlan = lessonPlanRepository.findByIdAndStatus(id, Status.ACTIVE)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy giáo án với ID: " + id));
-        
-        // Update fields if provided
-        if (request.getName() != null) {
-            lessonPlan.setName(request.getName());
-        }
-        if (request.getDescription() != null) {
-            lessonPlan.setDescription(request.getDescription());
-        }
-        if (request.getStatus() != null) {
-            lessonPlan.setStatus(request.getStatus());
-        }
-        
+
+        // Update fields using mapper
+        lessonPlanMapper.updateEntityFromRequest(lessonPlan, request);
+
         LessonPlan savedLessonPlan = lessonPlanRepository.save(lessonPlan);
         log.info("Updated lesson plan with ID: {}", savedLessonPlan.getId());
 
-        return convertToDTO(savedLessonPlan);
+        return lessonPlanMapper.toDTO(savedLessonPlan);
     }
 
     @Override
@@ -96,16 +88,5 @@ public class LessonPlanServiceImpl implements LessonPlanService {
         lessonPlanRepository.save(lessonPlan);
         
         log.info("Soft deleted lesson plan with ID: {}", id);
-    }
-
-    private LessonPlanDTO convertToDTO(LessonPlan lessonPlan) {
-        LessonPlanDTO dto = new LessonPlanDTO();
-        dto.setId(lessonPlan.getId());
-        dto.setName(lessonPlan.getName());
-        dto.setDescription(lessonPlan.getDescription());
-        dto.setCreatedAt(lessonPlan.getCreatedAt());
-        dto.setUpdatedAt(lessonPlan.getUpdatedAt());
-        dto.setStatus(lessonPlan.getStatus());
-        return dto;
     }
 }
