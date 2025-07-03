@@ -1,4 +1,4 @@
-package com.BE.service;
+package com.BE.service.implementServices;
 
 import com.BE.exception.AcademicResourceException;
 import com.BE.exception.ResourceNotFoundException;
@@ -8,6 +8,7 @@ import com.BE.model.response.PagedResponse;
 import com.BE.model.response.TagResponse;
 import com.BE.repository.ResourceTagRepository;
 import com.BE.repository.TagRepository;
+import com.BE.service.interfaceServices.TagService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -23,7 +24,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class TagService {
+public class TagServiceImpl implements TagService {
 
     private final TagRepository tagRepository;
     private final ResourceTagRepository resourceTagRepository;

@@ -1,8 +1,10 @@
-package com.BE.service;
+package com.BE.service.implementServices;
 
 import com.BE.config.SupabaseConfig;
 import com.BE.exception.FileUploadException;
+import com.BE.exception.exceptions.BadRequestException;
 import com.BE.model.response.FileUploadResponse;
+import com.BE.service.interfaceServices.SupabaseStorageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hc.client5.http.classic.methods.HttpDelete;
@@ -24,11 +26,11 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class SupabaseStorageService {
+public class SupabaseStorageServiceImpl implements SupabaseStorageService {
 
     private final SupabaseConfig supabaseConfig;
 
-    public FileUploadResponse uploadFile(MultipartFile file) throws IOException {
+    public FileUploadResponse uploadFile(MultipartFile file)  {
         if (file.isEmpty()) {
             throw new FileUploadException("File is empty");
         }
@@ -93,6 +95,8 @@ public class SupabaseStorageService {
                 log.error("Error uploading file: {}", uniqueFilename, e);
                 throw new FileUploadException("Error uploading file to Supabase Storage", e);
             }
+        } catch (IOException e) {
+            throw new BadRequestException("Error reading file input stream: " + e.getMessage());
         }
     }
 
