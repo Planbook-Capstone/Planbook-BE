@@ -30,6 +30,7 @@ public class LessonPlanNodeMapper {
                 .parentId(entity.getParent() != null ? entity.getParent().getId() : null)
                 .title(entity.getTitle())
                 .content(entity.getContent())
+                .fieldType(entity.getFieldType())
                 .type(entity.getType())
                 .orderIndex(entity.getOrderIndex())
                 .metadata(entity.getMetadata())
@@ -99,6 +100,7 @@ public class LessonPlanNodeMapper {
                 .lessonPlanId(request.getLessonPlanId())
                 .title(request.getTitle())
                 .content(request.getContent())
+                .fieldType(request.getFieldType())
                 .type(request.getType())
                 .orderIndex(request.getOrderIndex())
                 .metadata(request.getMetadata())
@@ -119,6 +121,9 @@ public class LessonPlanNodeMapper {
         }
         if (request.getContent() != null) {
             entity.setContent(request.getContent());
+        }
+        if (request.getFieldType() != null) {
+            entity.setFieldType(request.getFieldType());
         }
         if (request.getType() != null) {
             entity.setType(request.getType());

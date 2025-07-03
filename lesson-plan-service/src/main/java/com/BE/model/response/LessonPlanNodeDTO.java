@@ -35,6 +35,9 @@ public class LessonPlanNodeDTO {
     @Schema(description = "Nội dung của node", example = "Học sinh hiểu được khái niệm cơ bản")
     String content;
 
+    @Schema(description = "Loại input", example = "INPUT, UPLOAD", required = true)
+    String fieldType;
+
     @Schema(description = "Loại node", example = "SECTION")
     NodeType type;
 
