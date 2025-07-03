@@ -38,6 +38,10 @@ public class CreateLessonPlanNodeRequest {
     @Schema(description = "Loại node", example = "SECTION", required = true)
     NodeType type;
 
+
+    @Schema(description = "Loại input", example = "INPUT, UPLOAD", required = true)
+    String fieldType;
+
     @NotNull(message = "Thứ tự sắp xếp không được để trống")
     @Schema(description = "Thứ tự sắp xếp", example = "1", required = true)
     Integer orderIndex;

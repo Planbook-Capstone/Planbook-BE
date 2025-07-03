@@ -48,6 +48,8 @@ public class LessonPlanNode {
     @Column(columnDefinition = "TEXT")
     String content;
 
+    String fieldType;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     NodeType type;

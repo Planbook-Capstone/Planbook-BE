@@ -2,7 +2,7 @@ package com.BE.model.request;
 
 
 
-import com.BE.enums.StatusEnum;
+import com.BE.enums.Status;
 import com.BE.exception.EnumValidator;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.EnumType;
@@ -20,9 +20,9 @@ import lombok.experimental.FieldDefaults;
 public class StatusRequest {
 
     @Schema(example = "ACTIVE, INACTIVE", description = "Status Enum")
-    @EnumValidator(enumClass = StatusEnum.class, message = "Invalid status value")
+    @EnumValidator(enumClass = Status.class, message = "Invalid status value")
     @Enumerated(EnumType.STRING)
-    StatusEnum status;
+    Status status;
 
 }
 
