@@ -9,6 +9,7 @@ import com.BE.service.interfaceServices.TagService;
 import com.BE.utils.ResponseHandler;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/tags")
+@SecurityRequirement(name = "api")
 @RequiredArgsConstructor
 @Tag(name = "Tag Management", description = "APIs for managing tags")
 public class TagController {
