@@ -1,7 +1,5 @@
-package com.BE.service;
+package com.BE.service.implementServices;
 
-import com.BE.exception.AcademicResourceException;
-import com.BE.exception.FileUploadException;
 import com.BE.exception.ResourceNotFoundException;
 import com.BE.exception.exceptions.BadRequestException;
 import com.BE.model.AcademicResource;
@@ -18,7 +16,7 @@ import com.BE.model.response.TagResponse;
 import com.BE.repository.AcademicResourceRepository;
 import com.BE.repository.ResourceTagRepository;
 import com.BE.repository.TagRepository;
-import com.BE.utils.AccountUtils;
+import com.BE.service.interfaceServices.AcademicResourceService;
 import com.BE.utils.DateNowUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -30,7 +28,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -41,12 +38,12 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class AcademicResourceService {
+public class AcademicResourceServiceImpl implements AcademicResourceService {
 
     private final AcademicResourceRepository academicResourceRepository;
     private final TagRepository tagRepository;
     private final ResourceTagRepository resourceTagRepository;
-    private final SupabaseStorageService supabaseStorageService;
+    private final SupabaseStorageServiceImpl supabaseStorageServiceImpl;
     private final DateNowUtils dateNowUtils;
 
     @Transactional
@@ -84,11 +81,7 @@ public class AcademicResourceService {
         } catch (JsonProcessingException e) {
             throw new BadRequestException("Invalid metadata JSON format: " + e.getMessage());
         }
-        try {
-            uploadResponse = supabaseStorageService.uploadFile(request.getFile());
-        } catch (IOException e) {
-            throw new BadRequestException("Failed to upload file: " + e.getMessage());
-        }
+        uploadResponse = supabaseStorageServiceImpl.uploadFile(request.getFile());
 
         // Set the uploaded file URL
         createRequest.setUrl(uploadResponse.getFileUrl());
@@ -145,9 +138,9 @@ public class AcademicResourceService {
                 .orElseThrow(() -> new ResourceNotFoundException("Academic resource", id));
 
         // Delete file from storage if it's a Supabase URL
-        String fileName = supabaseStorageService.extractFileNameFromUrl(resource.getUrl());
+        String fileName = supabaseStorageServiceImpl.extractFileNameFromUrl(resource.getUrl());
         if (fileName != null) {
-            supabaseStorageService.deleteFile(fileName);
+            supabaseStorageServiceImpl.deleteFile(fileName);
         }
 
         // Delete resource (cascade will handle resource_tag relationships)

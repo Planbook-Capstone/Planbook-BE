@@ -4,14 +4,14 @@ import com.BE.model.request.TagCreateRequest;
 import com.BE.model.response.DataResponseDTO;
 import com.BE.model.response.PagedResponse;
 import com.BE.model.response.TagResponse;
-import com.BE.service.TagService;
+import com.BE.service.implementServices.TagServiceImpl;
+import com.BE.service.interfaceServices.TagService;
 import com.BE.utils.ResponseHandler;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
