@@ -11,7 +11,6 @@ import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.reactive.CorsWebFilter;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 
 @Configuration
@@ -28,9 +27,11 @@ public class SecurityConfig {
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
         http
                 .addFilterAt(jwtBypassWebFilter, SecurityWebFiltersOrder.AUTHENTICATION)
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(ServerHttpSecurity.CsrfSpec::disable) // Tắt CSRF cho API
                 .authorizeExchange(exchange -> exchange
                         // Các đường dẫn (path) được phép truy cập công khai
+                        .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .pathMatchers(publicEndpointConfig.getPublicEndpoints().toArray(new String[0])).permitAll()
                         .pathMatchers(HttpMethod.GET, publicEndpointConfig.getPublicGetEndpoints().toArray(new String[0])).permitAll()
                         // Tất cả các request còn lại phải được xác thực (có JWT hợp lệ)
@@ -45,15 +46,16 @@ public class SecurityConfig {
 
 
     @Bean
-    public CorsWebFilter corsWebFilter() {
+    public UrlBasedCorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration corsConfig = new CorsConfiguration();
-        corsConfig.addAllowedOrigin("*"); // Có thể thay bằng domain cụ thể của bạn
+        corsConfig.addAllowedOrigin("*");  // Hoặc domain cụ thể
         corsConfig.addAllowedMethod("*");
         corsConfig.addAllowedHeader("*");
         corsConfig.setAllowCredentials(false);
-        corsConfig.setMaxAge(3600L); // Cache pre-flight request trong 1 giờ
+        corsConfig.setMaxAge(3600L);
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", corsConfig); // Áp dụng cho tất cả các đường dẫn
-        return new CorsWebFilter(source);
+        source.registerCorsConfiguration("/**", corsConfig);
+        return source;
     }
 }
