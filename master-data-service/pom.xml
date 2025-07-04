@@ -143,6 +143,14 @@
 
 
 
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-zookeeper-discovery</artifactId>
+			<version>4.1.2</version>
+		</dependency>
+
+
+
 
 	</dependencies>
 
