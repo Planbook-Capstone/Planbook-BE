@@ -1,7 +1,8 @@
 package com.BE.controller;
 
 import com.BE.enums.Status;
-import com.BE.model.dto.LessonPlanDTO;
+import com.BE.feign.UserServiceClient;
+import com.BE.model.response.LessonPlanDTO;
 import com.BE.model.request.CreateLessonPlanRequest;
 import com.BE.model.request.UpdateLessonPlanRequest;
 import com.BE.service.interfaceServices.LessonPlanService;
@@ -28,6 +29,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 @RequestMapping("/api/lesson-plans")
+@SecurityRequirement(name = "api")
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Lesson Plan Controller", description = "Quản lý giáo án")
@@ -36,6 +38,8 @@ public class LessonPlanController {
     private final LessonPlanService lessonPlanService;
     private final ResponseHandler responseHandler;
 
+    private final UserServiceClient userServiceClient;
+
     @PostMapping
     @Operation(summary = "Tạo giáo án mới", description = "Tạo một giáo án mới")
     @ApiResponses(value = {
@@ -43,7 +47,6 @@ public class LessonPlanController {
             @ApiResponse(responseCode = "400", description = "Dữ liệu đầu vào không hợp lệ"),
             @ApiResponse(responseCode = "403", description = "Không có quyền truy cập")
     })
-    @SecurityRequirement(name = "api")
     // @PreAuthorize("hasRole('TEACHER') or hasRole('ADMIN')")
     public ResponseEntity createLessonPlan(@Valid @RequestBody CreateLessonPlanRequest request) {
         try {
@@ -61,7 +64,6 @@ public class LessonPlanController {
             @ApiResponse(responseCode = "404", description = "Không tìm thấy giáo án"),
             @ApiResponse(responseCode = "403", description = "Không có quyền truy cập")
     })
-    @SecurityRequirement(name = "api")
     // @PreAuthorize("hasRole('TEACHER') or hasRole('ADMIN')")
     public ResponseEntity getLessonPlan(@PathVariable Long id) {
         try {
@@ -82,7 +84,6 @@ public class LessonPlanController {
             @ApiResponse(responseCode = "400", description = "Dữ liệu đầu vào không hợp lệ"),
             @ApiResponse(responseCode = "403", description = "Không có quyền truy cập")
     })
-    @SecurityRequirement(name = "api")
     // @PreAuthorize("hasRole('TEACHER') or hasRole('ADMIN')")
     public ResponseEntity updateLessonPlan(@PathVariable Long id, @Valid @RequestBody UpdateLessonPlanRequest request) {
         try {
@@ -100,7 +101,6 @@ public class LessonPlanController {
             @ApiResponse(responseCode = "404", description = "Không tìm thấy giáo án"),
             @ApiResponse(responseCode = "403", description = "Không có quyền truy cập")
     })
-    @SecurityRequirement(name = "api")
     // @PreAuthorize("hasRole('TEACHER') or hasRole('ADMIN')")
     public ResponseEntity deleteLessonPlan(@PathVariable Long id) {
         try {
@@ -121,7 +121,6 @@ public class LessonPlanController {
             @ApiResponse(responseCode = "200", description = "Lấy danh sách thành công"),
             @ApiResponse(responseCode = "403", description = "Không có quyền truy cập")
     })
-    @SecurityRequirement(name = "api")
     // @PreAuthorize("hasRole('TEACHER') or hasRole('ADMIN')")
     public ResponseEntity getAllLessonPlans(
             @RequestParam(required = false) String keyword,
@@ -138,6 +137,15 @@ public class LessonPlanController {
         } catch (Exception e) {
             return responseHandler.response(500, "Lỗi khi lấy danh sách giáo án: " + e.getMessage(), null);
         }
+    }
+
+
+
+
+
+    @GetMapping("/sendMessage")
+    public String sendMessage(@RequestParam String message) {
+        return userServiceClient.sendMessageToKafka(message);
     }
 
 
