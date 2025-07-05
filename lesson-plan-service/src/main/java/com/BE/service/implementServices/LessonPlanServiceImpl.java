@@ -2,7 +2,7 @@ package com.BE.service.implementServices;
 
 import com.BE.enums.Status;
 import com.BE.mapper.LessonPlanMapper;
-import com.BE.model.dto.LessonPlanDTO;
+import com.BE.model.response.LessonPlanDTO;
 import com.BE.model.entity.LessonPlan;
 import com.BE.model.request.CreateLessonPlanRequest;
 import com.BE.model.request.UpdateLessonPlanRequest;

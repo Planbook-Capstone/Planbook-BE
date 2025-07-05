@@ -1,4 +1,4 @@
-package com.BE.model.dto;
+package com.BE.model.response;
 
 import com.BE.enums.Status;
 import io.swagger.v3.oas.annotations.media.Schema;

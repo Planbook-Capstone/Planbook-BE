@@ -1,7 +1,7 @@
 package com.BE.service.interfaceServices;
 
 import com.BE.enums.Status;
-import com.BE.model.dto.LessonPlanDTO;
+import com.BE.model.response.LessonPlanDTO;
 import com.BE.model.request.CreateLessonPlanRequest;
 import com.BE.model.request.UpdateLessonPlanRequest;
 import org.springframework.data.domain.Page;
