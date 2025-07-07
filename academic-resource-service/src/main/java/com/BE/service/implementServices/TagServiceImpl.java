@@ -9,6 +9,7 @@ import com.BE.model.response.TagResponse;
 import com.BE.repository.ResourceTagRepository;
 import com.BE.repository.TagRepository;
 import com.BE.service.interfaceServices.TagService;
+import com.BE.utils.AccountUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -28,6 +29,7 @@ public class TagServiceImpl implements TagService {
 
     private final TagRepository tagRepository;
     private final ResourceTagRepository resourceTagRepository;
+    private final AccountUtils accountUtils;
 
     @Transactional
     public TagResponse createTag(TagCreateRequest request) {
@@ -39,7 +41,7 @@ public class TagServiceImpl implements TagService {
         Tag tag = new Tag();
         tag.setName(request.getName());
         tag.setDescription(request.getDescription());
-
+        tag.setCreatedBy(accountUtils.getCurrentUserId());
         tag = tagRepository.save(tag);
 
         return convertToResponse(tag);

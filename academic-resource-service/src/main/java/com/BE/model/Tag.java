@@ -26,6 +26,8 @@ public class Tag {
     
     @Column(name = "description", columnDefinition = "TEXT")
     String description;
+
+    String createdBy;
     
     @OneToMany(mappedBy = "tag", cascade = CascadeType.ALL)
     Set<ResourceTag> resourceTags;

@@ -4,10 +4,7 @@ import com.BE.model.request.AcademicResourceCreateRequest;
 import com.BE.model.request.AcademicResourceCreateWithFileRequest;
 import com.BE.model.request.AcademicResourceSearchRequest;
 import com.BE.model.request.AcademicResourceUpdateRequest;
-import com.BE.model.response.AcademicResourceResponse;
-import com.BE.model.response.DataResponseDTO;
-import com.BE.model.response.FileUploadResponse;
-import com.BE.model.response.PagedResponse;
+import com.BE.model.response.*;
 import com.BE.service.implementServices.AcademicResourceServiceImpl;
 import com.BE.service.implementServices.SupabaseStorageServiceImpl;
 import com.BE.service.interfaceServices.AcademicResourceService;
@@ -47,6 +44,15 @@ public class AcademicResourceController {
                 return responseHandler.response(201, "Academic resource created successfully", response);
         }
 
+        @PostMapping(value = "/internal", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+        @Operation(summary = "Create Internal academic resource with file upload", description = "Create a new Internal academic resource and upload file to Supabase storage")
+        public ResponseEntity<DataResponseDTO<AcademicResourceInternalResponse>> createResourceInternal(
+                        @Parameter(description = "File to upload") @RequestParam("file") MultipartFile file) {
+                AcademicResourceInternalResponse response = academicResourceService.createResourceInternal(file);
+                return responseHandler.response(201, "Internal Academic resource created with file upload successfully",
+                                response);
+        }
+
         @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
         @Operation(summary = "Create academic resource with file upload", description = "Create a new academic resource and upload file to Supabase storage")
         public ResponseEntity<Object> createResourceWithFile(
@@ -73,6 +79,16 @@ public class AcademicResourceController {
 
                 AcademicResourceResponse response = academicResourceService.getResourceById(id);
                 return responseHandler.response(200, "Academic resource retrieved successfully", response);
+        }
+
+        @GetMapping("/internal/{id}")
+        @Operation(summary = "Get internal academic resource by ID", description = "Retrieve an internal academic resource by its ID")
+        public ResponseEntity<Object> getInternalResourceByCreatorId(
+                        @Parameter(description = "Resource ID") @PathVariable String id,
+                        @Parameter(description = "Page number") @RequestParam(defaultValue = "0") Integer page,
+                        @Parameter(description = "Page size") @RequestParam(defaultValue = "10") Integer size) {
+                PagedResponse<AcademicResourceInternalResponse> response = academicResourceService.getResourcesByCreatorId(id, page, size);
+                return responseHandler.response(200, "Internal academic resource retrieved successfully", response);
         }
 
         @PutMapping("/{id}")

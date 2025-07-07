@@ -1,6 +1,8 @@
 package com.BE.enums;
 
 public enum RoleEnum {
-    USER,
-    ADMIN
+    ROLE_TEACHER,
+    ROLE_ADMIN,
+    ROLE_STAFF,
+    ROLE_PARTNER
 }
