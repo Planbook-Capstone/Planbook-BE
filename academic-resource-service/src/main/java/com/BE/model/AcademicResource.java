@@ -1,5 +1,6 @@
 package com.BE.model;
 
+import com.BE.enums.AcademicResourceEnum;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -22,10 +23,10 @@ public class AcademicResource {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
-    @Column(name = "type", length = 20, nullable = false)
+    @Column(name = "type", length = 20)
     String type; // image, gif, video, webp, iframe
 
-    @Column(name = "name", length = 255, nullable = false)
+    @Column(name = "name", length = 255)
     String name;
 
     @Column(name = "description", columnDefinition = "TEXT")
@@ -34,7 +35,12 @@ public class AcademicResource {
     @Column(name = "url", columnDefinition = "TEXT", nullable = false)
     String url;
 
-    @Column(name = "created_at", nullable = false)
+    @Enumerated(EnumType.STRING)
+    AcademicResourceEnum visibility;
+
+    String createdBy;
+
+    @Column(name = "created_at")
     String createdAt;
 
     @Column(name = "updated_at")

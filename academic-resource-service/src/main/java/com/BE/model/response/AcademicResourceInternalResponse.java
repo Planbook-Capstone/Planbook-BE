@@ -6,23 +6,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
-import java.time.LocalDateTime;
-import java.util.Set;
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class AcademicResourceResponse {
-    
-    Long id;
-    String type;
+public class AcademicResourceInternalResponse {
     String name;
-    String description;
     String url;
-    String visibility;
-    String createdBy;
-    String createdAt;
-    String updatedAt;
-    Set<TagResponse> tags;
 }

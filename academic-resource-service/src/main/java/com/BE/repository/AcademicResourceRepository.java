@@ -72,4 +72,6 @@ public interface AcademicResourceRepository extends JpaRepository<AcademicResour
        // Find recent resources
        @Query("SELECT ar FROM AcademicResource ar ORDER BY ar.createdAt DESC")
        Page<AcademicResource> findRecentResources(Pageable pageable);
+
+       Page<AcademicResource> findAcademicResourceByCreatedBy(String createdBy, Pageable pageable);
 }

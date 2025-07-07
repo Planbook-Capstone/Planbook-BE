@@ -1,7 +1,10 @@
 package com.BE.service.implementServices;
 
+import com.BE.enums.AcademicResourceEnum;
+import com.BE.enums.RoleEnum;
 import com.BE.exception.ResourceNotFoundException;
 import com.BE.exception.exceptions.BadRequestException;
+import com.BE.mapper.AcademicResourceMapper;
 import com.BE.model.AcademicResource;
 import com.BE.model.ResourceTag;
 import com.BE.model.Tag;
@@ -9,14 +12,13 @@ import com.BE.model.request.AcademicResourceCreateRequest;
 import com.BE.model.request.AcademicResourceCreateWithFileRequest;
 import com.BE.model.request.AcademicResourceSearchRequest;
 import com.BE.model.request.AcademicResourceUpdateRequest;
-import com.BE.model.response.AcademicResourceResponse;
-import com.BE.model.response.FileUploadResponse;
-import com.BE.model.response.PagedResponse;
-import com.BE.model.response.TagResponse;
+import com.BE.model.response.*;
 import com.BE.repository.AcademicResourceRepository;
 import com.BE.repository.ResourceTagRepository;
 import com.BE.repository.TagRepository;
 import com.BE.service.interfaceServices.AcademicResourceService;
+import com.BE.service.interfaceServices.SupabaseStorageService;
+import com.BE.utils.AccountUtils;
 import com.BE.utils.DateNowUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -28,6 +30,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -43,8 +46,10 @@ public class AcademicResourceServiceImpl implements AcademicResourceService {
     private final AcademicResourceRepository academicResourceRepository;
     private final TagRepository tagRepository;
     private final ResourceTagRepository resourceTagRepository;
-    private final SupabaseStorageServiceImpl supabaseStorageServiceImpl;
+    private final SupabaseStorageService supabaseStorageService;
     private final DateNowUtils dateNowUtils;
+    private final AccountUtils accountUtils;
+    private final AcademicResourceMapper academicResourceMapper;
 
     @Transactional
     public AcademicResourceResponse createResource(AcademicResourceCreateRequest request) {
@@ -56,6 +61,13 @@ public class AcademicResourceServiceImpl implements AcademicResourceService {
         resource.setDescription(request.getDescription());
         resource.setUrl(request.getUrl());
         resource.setCreatedAt(dateNowUtils.dateNow());
+        resource.setCreatedBy(accountUtils.getCurrentUserId());
+        //
+        List<String> roles = accountUtils.getCurrentUserRoles();
+        System.out.println("Current user roles: " + roles);
+        if (roles.contains(RoleEnum.ROLE_ADMIN.name()) || roles.contains(RoleEnum.ROLE_STAFF.name())) {
+            resource.setVisibility(AcademicResourceEnum.EXTERNAL);
+        }
         // Save resource
         resource = academicResourceRepository.save(resource);
 
@@ -65,6 +77,23 @@ public class AcademicResourceServiceImpl implements AcademicResourceService {
         }
 
         return convertToResponse(resource);
+    }
+
+    @Transactional
+    public AcademicResourceInternalResponse createResourceInternal(MultipartFile file){
+        FileUploadResponse uploadResponse = null;
+        uploadResponse = supabaseStorageService.uploadFile(file);
+        String userId = accountUtils.getCurrentUserId();
+        List<String> roles = accountUtils.getCurrentUserRoles();
+        AcademicResource resource = new AcademicResource();
+        resource.setName("user_" + userId + "_resource_" + dateNowUtils.getCurrentDateTimeHCM());
+        resource.setDescription("Uploaded by user " + userId);
+        resource.setVisibility(AcademicResourceEnum.INTERNAL);
+        resource.setCreatedBy(userId);
+        resource.setCreatedAt(dateNowUtils.dateNow());
+        resource.setUrl(uploadResponse.getFileUrl());
+        resource = academicResourceRepository.save(resource);
+        return academicResourceMapper.toInternalResponse(resource);
     }
 
     @Transactional
@@ -81,7 +110,7 @@ public class AcademicResourceServiceImpl implements AcademicResourceService {
         } catch (JsonProcessingException e) {
             throw new BadRequestException("Invalid metadata JSON format: " + e.getMessage());
         }
-        uploadResponse = supabaseStorageServiceImpl.uploadFile(request.getFile());
+        uploadResponse = supabaseStorageService.uploadFile(request.getFile());
 
         // Set the uploaded file URL
         createRequest.setUrl(uploadResponse.getFileUrl());
@@ -138,13 +167,19 @@ public class AcademicResourceServiceImpl implements AcademicResourceService {
                 .orElseThrow(() -> new ResourceNotFoundException("Academic resource", id));
 
         // Delete file from storage if it's a Supabase URL
-        String fileName = supabaseStorageServiceImpl.extractFileNameFromUrl(resource.getUrl());
+        String fileName = supabaseStorageService.extractFileNameFromUrl(resource.getUrl());
         if (fileName != null) {
-            supabaseStorageServiceImpl.deleteFile(fileName);
+            supabaseStorageService.deleteFile(fileName);
         }
 
         // Delete resource (cascade will handle resource_tag relationships)
         academicResourceRepository.delete(resource);
+    }
+
+    public PagedResponse<AcademicResourceInternalResponse> getResourcesByCreatorId(String creatorId, int page, int size){
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<AcademicResource> resourcePage = academicResourceRepository.findAcademicResourceByCreatedBy(creatorId, pageable);
+        return convertToInternalPagedResponse(resourcePage);
     }
 
     public PagedResponse<AcademicResourceResponse> searchResources(AcademicResourceSearchRequest request) {
@@ -209,6 +244,8 @@ public class AcademicResourceServiceImpl implements AcademicResourceService {
         response.setName(resource.getName());
         response.setDescription(resource.getDescription());
         response.setUrl(resource.getUrl());
+        response.setVisibility(String.valueOf(resource.getVisibility()));
+        response.setCreatedBy(resource.getCreatedBy());
         response.setCreatedAt(resource.getCreatedAt());
         response.setUpdatedAt(resource.getUpdatedAt());
 
@@ -239,6 +276,23 @@ public class AcademicResourceServiceImpl implements AcademicResourceService {
                 .collect(Collectors.toList());
 
         PagedResponse<AcademicResourceResponse> response = new PagedResponse<>();
+        response.setContent(content);
+        response.setPage(page.getNumber());
+        response.setSize(page.getSize());
+        response.setTotalElements(page.getTotalElements());
+        response.setTotalPages(page.getTotalPages());
+        response.setFirst(page.isFirst());
+        response.setLast(page.isLast());
+        response.setHasNext(page.hasNext());
+        response.setHasPrevious(page.hasPrevious());
+
+        return response;
+    }
+    private PagedResponse<AcademicResourceInternalResponse> convertToInternalPagedResponse(Page<AcademicResource> page) {
+        List<AcademicResourceInternalResponse> content = page.getContent().stream()
+                .map(academicResourceMapper::toInternalResponse)
+                .collect(Collectors.toList());
+        PagedResponse<AcademicResourceInternalResponse> response = new PagedResponse<>();
         response.setContent(content);
         response.setPage(page.getNumber());
         response.setSize(page.getSize());
