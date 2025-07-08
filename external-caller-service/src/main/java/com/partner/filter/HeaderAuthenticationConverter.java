@@ -23,7 +23,7 @@ public class HeaderAuthenticationConverter implements ServerAuthenticationConver
         String userId = request.getHeaders().getFirst("X-User-Id");
         String role = request.getHeaders().getFirst("X-User-Role");
 
-        if (username != null && userId != null && role != null) {
+        if (username != null && !username.isBlank() && userId != null && !userId.isBlank() && role != null && !role.isBlank()) {
             var authorities = List.of(new SimpleGrantedAuthority(role));
             var auth = new UsernamePasswordAuthenticationToken(username, null, authorities);
             return Mono.just(auth);
