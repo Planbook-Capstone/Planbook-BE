@@ -1,12 +1,8 @@
 package com.BE.config;
 
-import com.nimbusds.jose.JWSVerifier;
-import com.nimbusds.jose.crypto.RSASSAVerifier;
 import com.nimbusds.jwt.SignedJWT;
+import com.nimbusds.jose.crypto.RSASSAVerifier;
 import org.springframework.http.server.ServerHttpRequest;
-import org.springframework.http.server.ServerHttpResponse;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.server.support.DefaultHandshakeHandler;
 
@@ -28,29 +24,21 @@ public class HeaderHandshakeHandler extends DefaultHandshakeHandler {
                                       WebSocketHandler wsHandler,
                                       Map<String, Object> attributes) {
         try {
-            String token = extractJwtFromHeader(request);
-            SignedJWT jwt = SignedJWT.parse(token);
-            JWSVerifier verifier = new RSASSAVerifier(publicKey);
-
-            if (jwt.verify(verifier)) {
-                var claims = jwt.getJWTClaimsSet();
-                String username = claims.getSubject();
-                String role = (String) claims.getClaim("scope");
-                return new UsernamePasswordAuthenticationToken(username, null,
-                        List.of(new SimpleGrantedAuthority(role)));
+            // Đọc token từ query param: ?token=xxx
+            String query = request.getURI().getQuery();
+            if (query != null && query.startsWith("token=")) {
+                String token = query.substring("token=".length());
+                SignedJWT jwt = SignedJWT.parse(token);
+                if (jwt.verify(new RSASSAVerifier(publicKey))) {
+                    String username = jwt.getJWTClaimsSet().getSubject();
+                    System.out.println("✅ WebSocket Principal: " + username);
+                    return () -> username; // Principal đơn giản
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        return null;
-    }
-
-    private String extractJwtFromHeader(ServerHttpRequest request) {
-        String authHeader = request.getHeaders().getFirst("Authorization");
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            return authHeader.substring(7);
-        }
         return null;
     }
 }
