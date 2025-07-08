@@ -16,7 +16,7 @@ public interface AcademicResourceService {
     AcademicResourceInternalResponse createResourceInternal(MultipartFile file);
     AcademicResourceResponse createResourceWithFile(AcademicResourceCreateWithFileRequest request);
     AcademicResourceResponse getResourceById(Long id);
-    PagedResponse<AcademicResourceInternalResponse> getResourcesByCreatorId(String creatorId, int page, int size);
+    PagedResponse<AcademicResourceInternalResponse> getResourcesByCreatorId(int page, int size);
     AcademicResourceResponse updateResource(Long id, AcademicResourceUpdateRequest request);
     void deleteResource(Long id);
     PagedResponse<AcademicResourceResponse> searchResources(AcademicResourceSearchRequest request);
