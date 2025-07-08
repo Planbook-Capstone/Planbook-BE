@@ -81,7 +81,7 @@ public class AcademicResourceController {
                 return responseHandler.response(200, "Academic resource retrieved successfully", response);
         }
 
-        @GetMapping("/internal/{id}")
+        @GetMapping("/internal")
         @Operation(summary = "Get internal academic resource by creator ID", description = "Retrieve an internal academic resource by creator ID")
         public ResponseEntity<Object> getInternalResourceByCreatorId(
                         @Parameter(description = "Page number") @RequestParam(defaultValue = "0") Integer page,
