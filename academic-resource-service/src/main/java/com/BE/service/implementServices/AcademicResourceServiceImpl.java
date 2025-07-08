@@ -176,8 +176,9 @@ public class AcademicResourceServiceImpl implements AcademicResourceService {
         academicResourceRepository.delete(resource);
     }
 
-    public PagedResponse<AcademicResourceInternalResponse> getResourcesByCreatorId(String creatorId, int page, int size){
+    public PagedResponse<AcademicResourceInternalResponse> getResourcesByCreatorId(int page, int size){
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        String creatorId = accountUtils.getCurrentUserId();
         Page<AcademicResource> resourcePage = academicResourceRepository.findAcademicResourceByCreatedBy(creatorId, pageable);
         return convertToInternalPagedResponse(resourcePage);
     }

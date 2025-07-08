@@ -82,12 +82,11 @@ public class AcademicResourceController {
         }
 
         @GetMapping("/internal/{id}")
-        @Operation(summary = "Get internal academic resource by ID", description = "Retrieve an internal academic resource by its ID")
+        @Operation(summary = "Get internal academic resource by creator ID", description = "Retrieve an internal academic resource by creator ID")
         public ResponseEntity<Object> getInternalResourceByCreatorId(
-                        @Parameter(description = "Resource ID") @PathVariable String id,
                         @Parameter(description = "Page number") @RequestParam(defaultValue = "0") Integer page,
                         @Parameter(description = "Page size") @RequestParam(defaultValue = "10") Integer size) {
-                PagedResponse<AcademicResourceInternalResponse> response = academicResourceService.getResourcesByCreatorId(id, page, size);
+                PagedResponse<AcademicResourceInternalResponse> response = academicResourceService.getResourcesByCreatorId( page, size);
                 return responseHandler.response(200, "Internal academic resource retrieved successfully", response);
         }
 
