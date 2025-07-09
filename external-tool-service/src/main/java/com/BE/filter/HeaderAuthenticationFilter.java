@@ -11,6 +11,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.UUID;
 
 public class HeaderAuthenticationFilter extends OncePerRequestFilter {
 
@@ -23,8 +24,9 @@ public class HeaderAuthenticationFilter extends OncePerRequestFilter {
         String role = request.getHeader("X-User-Role");
         String userId = request.getHeader("X-User-Id");
         if (username != null && !username.isBlank() && userId != null && !userId.isBlank() && role != null && !role.isBlank()) {
+            UUID uuid = UUID.fromString(userId);
             var auth = new UsernamePasswordAuthenticationToken(
-                    userId,
+                    uuid,
                     null,
                     Collections.singletonList(new SimpleGrantedAuthority(role))
             );
