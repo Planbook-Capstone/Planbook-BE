@@ -1,5 +1,6 @@
 package com.BE.controller;
 
+import com.BE.enums.StatusEnum;
 import com.BE.model.request.ExternalToolConfigRequest;
 import com.BE.model.request.ExternalToolSearchRequest;
 import com.BE.model.response.ExternalToolConfigResponse;
@@ -120,6 +121,26 @@ public class ExternalToolConfigController {
             @Valid @RequestBody ExternalToolConfigRequest request
     ) {
         return responseHandler.response(200, "Cập nhật thành công", service.update(id, request));
+    }
+
+
+    @PatchMapping("/{id}/status")
+    @Operation(summary = "Thay đổi trạng thái công cụ",
+            description = "Chỉ thay đổi giữa trạng thái ACTIVE hoặc INACTIVE.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Cập nhật trạng thái thành công"),
+            @ApiResponse(responseCode = "404", description = "Không tìm thấy công cụ")
+    })
+    public ResponseEntity<?> changeStatus(
+            @PathVariable Long id,
+            @Parameter(
+                    description = "Trạng thái mới cần cập nhật",
+                    required = true,
+                    schema = @Schema(implementation = StatusEnum.class, allowableValues = {"ACTIVE", "INACTIVE"})
+            )
+            @RequestParam StatusEnum status
+    ) {
+        return responseHandler.response(200, "Cập nhật trạng thái thành công", service.updateStatus(id, status));
     }
 }
 
