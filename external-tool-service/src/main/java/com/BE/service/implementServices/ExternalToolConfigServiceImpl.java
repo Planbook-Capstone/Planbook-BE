@@ -12,6 +12,7 @@ import com.BE.model.response.ExternalToolConfigResponse;
 import com.BE.repository.ExternalToolConfigRepository;
 import com.BE.service.interfaceServices.IExternalToolConfigService;
 import com.BE.utils.AccountUtils;
+import com.BE.utils.DateNowUtils;
 import com.BE.utils.PageUtil;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -34,6 +36,7 @@ public class ExternalToolConfigServiceImpl implements IExternalToolConfigService
     ExternalToolConfigMapper mapper;
     PageUtil pageUtil;
     AccountUtils accountUtils;
+    DateNowUtils dateNowUtils;
 
 
 
@@ -88,5 +91,15 @@ public class ExternalToolConfigServiceImpl implements IExternalToolConfigService
         return repository.findById(id)
                 .map(mapper::toResponse)
                 .orElseThrow(() -> new NotFoundException("Không tìm thấy cấu hình với ID: " + id));
+    }
+
+    @Override
+    public ExternalToolConfigResponse update(Long id, ExternalToolConfigRequest request) {
+        ExternalToolConfig config = repository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Không tìm thấy cấu hình"));
+        mapper.update(config,request);
+        config.setUpdatedAt(dateNowUtils.getCurrentDateTimeHCM());
+
+        return mapper.toResponse(repository.save(config));
     }
 }

@@ -29,6 +29,9 @@ public class ExternalToolConfig {
     String tokenUrl;
     String clientId;
     String clientSecret;
+
+    @Lob
+    @Column(columnDefinition = "LONGTEXT")
     String description;
 
     @Enumerated(EnumType.STRING)

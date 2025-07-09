@@ -14,4 +14,6 @@ public interface IExternalToolConfigService {
    Page<ExternalToolConfigResponse> getAll(ExternalToolSearchRequest request);
 
    ExternalToolConfigResponse getById(Long id);
+   ExternalToolConfigResponse update(Long id, ExternalToolConfigRequest request);
+
 }
