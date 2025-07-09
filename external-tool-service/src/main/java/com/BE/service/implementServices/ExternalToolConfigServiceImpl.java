@@ -2,6 +2,7 @@ package com.BE.service.implementServices;
 
 
 import com.BE.enums.StatusEnum;
+import com.BE.enums.ToolTypeEnum;
 import com.BE.exception.exceptions.NotFoundException;
 import com.BE.mapper.ExternalToolConfigMapper;
 
@@ -44,10 +45,13 @@ public class ExternalToolConfigServiceImpl implements IExternalToolConfigService
     @Override
     public ExternalToolConfigResponse create(ExternalToolConfigRequest request) {
         ExternalToolConfig config = mapper.toEntity(request);
-        config.setStatus(StatusEnum.ACTIVE);
+        config.setStatus(StatusEnum.PENDING);
+        config.setToolType(ToolTypeEnum.EXTERNAL);
         config.setCreatedBy(accountUtils.getCurrentUserId());
         return mapper.toResponse(repository.save(config));
     }
+
+    @Override
     public Page<ExternalToolConfigResponse> getAll(ExternalToolSearchRequest request) {
         pageUtil.checkOffset(request.getOffset());
 
@@ -97,6 +101,7 @@ public class ExternalToolConfigServiceImpl implements IExternalToolConfigService
     public ExternalToolConfigResponse update(Long id, ExternalToolConfigRequest request) {
         ExternalToolConfig config = repository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Không tìm thấy cấu hình"));
+
         mapper.update(config,request);
         config.setUpdatedAt(dateNowUtils.getCurrentDateTimeHCM());
 

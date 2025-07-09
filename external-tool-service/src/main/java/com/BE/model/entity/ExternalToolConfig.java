@@ -1,6 +1,7 @@
 package com.BE.model.entity;
 
 import com.BE.enums.StatusEnum;
+import com.BE.enums.ToolTypeEnum;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -30,9 +31,17 @@ public class ExternalToolConfig {
     String clientId;
     String clientSecret;
 
+    Integer tokenCostPerQuery;
+
+    @Enumerated(EnumType.STRING)
+    ToolTypeEnum toolType;
+
     @Lob
     @Column(columnDefinition = "LONGTEXT")
     String description;
+
+    @Column(columnDefinition = "json")
+    String inputJson;
 
     @Enumerated(EnumType.STRING)
     StatusEnum status;

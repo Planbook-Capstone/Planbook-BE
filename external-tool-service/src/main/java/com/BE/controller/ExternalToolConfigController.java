@@ -56,7 +56,9 @@ public class ExternalToolConfigController {
                                       "tokenUrl": "https://api.aiwriter.com/token",
                                       "clientId": "ai-client",
                                       "clientSecret": "super-secret",
-                                      "description": "Tích hợp AI để tạo văn bản"
+                                      "description": "Tích hợp AI để tạo văn bản",
+                                      "tokenCostPerQuery": 8,
+                                      "inputJson": "{\\"className\\": \\"SE1705\\"}"
                                     }
                                     """
                             )
@@ -114,7 +116,28 @@ public class ExternalToolConfigController {
     @io.swagger.v3.oas.annotations.parameters.RequestBody(
             description = "Dữ liệu cấu hình cập nhật",
             required = true,
-            content = @Content(schema = @Schema(implementation = ExternalToolConfigRequest.class))
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ExternalToolConfigRequest.class),
+                    examples = {
+                            @ExampleObject(
+                                    name = "Ví dụ cấu hình AI Tool",
+                                    summary = "Công cụ AI nội bộ",
+                                    value = """
+                                    {
+                                      "name": "Tạo slide bài giảng",
+                                      "apiUrl": "https://api.aiwriter.com/generate",
+                                      "tokenUrl": "https://api.aiwriter.com/token",
+                                      "clientId": "ai-client",
+                                      "clientSecret": "super-secret",
+                                      "description": "Tích hợp AI để tạo văn bản",
+                                      "tokenCostPerQuery": 10,
+                                      "inputJson": "{\\"className\\": \\"SE1705\\"}"
+                                    }
+                                    """
+                            )
+                    }
+            )
     )
     public ResponseEntity<?> update(
             @PathVariable Long id,
@@ -136,7 +159,17 @@ public class ExternalToolConfigController {
             @Parameter(
                     description = "Trạng thái mới cần cập nhật",
                     required = true,
-                    schema = @Schema(implementation = StatusEnum.class, allowableValues = {"ACTIVE", "INACTIVE"})
+                    schema = @Schema(
+                            description = "Trạng thái hiện tại của công cụ. " +
+                                    "Có thể là: PENDING (chờ duyệt), APPROVED (đã duyệt), " +
+                                    "ACTIVE (đang hoạt động), INACTIVE (ngừng hoạt động), " +
+                                    "REJECTED (bị từ chối), CANCELLED (bị hủy), DELETED (đã xóa).",
+                            implementation = StatusEnum.class,
+                            allowableValues = {
+                                    "PENDING", "APPROVED", "ACTIVE", "INACTIVE",
+                                    "REJECTED", "CANCELLED", "DELETED"
+                            }
+                    )
             )
             @RequestParam StatusEnum status
     ) {

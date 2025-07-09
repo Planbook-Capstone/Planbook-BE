@@ -1,6 +1,7 @@
 package com.BE.model.response;
 
 import com.BE.enums.StatusEnum;
+import com.BE.enums.ToolTypeEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -63,6 +64,14 @@ public class BookTypeResponse {
             format = "int32"
     )
     Integer tokenCostPerQuery;
+
+    @Schema(
+            description = "Loại công cụ hỗ trợ. Có thể là 'EXTERNAL' hoặc 'INTERNAL'.", // ĐÃ THAY ĐỔI MÔ TẢ
+            type = "string",
+            allowableValues = {"EXTERNAL", "INTERNAL"},
+            example = "INTERNAL"
+    )
+    ToolTypeEnum toolType;
 
     @Schema(
             description = "Trạng thái hoạt động của công cụ hỗ trợ. Có thể là 'ACTIVE' hoặc 'INACTIVE'.", // ĐÃ THAY ĐỔI MÔ TẢ

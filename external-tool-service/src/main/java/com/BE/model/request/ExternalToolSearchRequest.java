@@ -46,9 +46,15 @@ public class ExternalToolSearchRequest {
     String search;
 
     @Schema(
-            description = "Trạng thái công cụ (ACTIVE hoặc INACTIVE)",
-            example = "ACTIVE",
-            allowableValues = {"ACTIVE", "INACTIVE"}
+            description = "Trạng thái hiện tại của công cụ. " +
+                    "Có thể là: PENDING (chờ duyệt), APPROVED (đã duyệt), " +
+                    "ACTIVE (đang hoạt động), INACTIVE (ngừng hoạt động), " +
+                    "REJECTED (bị từ chối), CANCELLED (bị hủy), DELETED (đã xóa).",
+            implementation = StatusEnum.class,
+            allowableValues = {
+                    "PENDING", "APPROVED", "ACTIVE", "INACTIVE",
+                    "REJECTED", "CANCELLED", "DELETED"
+            }
     )
     StatusEnum status;
 
