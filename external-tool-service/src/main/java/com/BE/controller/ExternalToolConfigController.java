@@ -98,5 +98,28 @@ public class ExternalToolConfigController {
     public ResponseEntity<?> getById(@PathVariable Long id) {
         return responseHandler.response(200, "Lấy chi tiết thành công", service.getById(id));
     }
+
+
+
+    @PutMapping("/{id}")
+    @Operation(summary = "Cập nhật cấu hình công cụ",
+            description = "Cập nhật các thông tin chi tiết về công cụ bên ngoài, ngoại trừ trạng thái (status).")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Cập nhật thành công",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ExternalToolConfigResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Không tìm thấy công cụ cần cập nhật"),
+            @ApiResponse(responseCode = "400", description = "Dữ liệu không hợp lệ")
+    })
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            description = "Dữ liệu cấu hình cập nhật",
+            required = true,
+            content = @Content(schema = @Schema(implementation = ExternalToolConfigRequest.class))
+    )
+    public ResponseEntity<?> update(
+            @PathVariable Long id,
+            @Valid @RequestBody ExternalToolConfigRequest request
+    ) {
+        return responseHandler.response(200, "Cập nhật thành công", service.update(id, request));
+    }
 }
 
