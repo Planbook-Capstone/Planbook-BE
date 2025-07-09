@@ -1,6 +1,7 @@
 package com.BE.service.implementServices;
 
 import com.BE.enums.StatusEnum;
+import com.BE.enums.ToolTypeEnum;
 import com.BE.exception.exceptions.NotFoundException;
 import com.BE.mapper.BookTypeMapper;
 import com.BE.model.entity.BookType;
@@ -49,6 +50,7 @@ public class BookTypeServiceImpl implements IBookTypeService {
         if (request.getHref() == null || request.getHref().trim().isEmpty()) {
             bookType.setHref("/");
         }
+        bookType.setToolType(ToolTypeEnum.INTERNAL); // Mặc định là ACTIVE khi tạo
         bookType.setStatus(StatusEnum.ACTIVE); // Mặc định là ACTIVE khi tạo
         bookType.setCreatedAt(dateNowUtils.dateNow());
         bookType.setUpdatedAt(dateNowUtils.dateNow());

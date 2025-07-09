@@ -1,6 +1,7 @@
 package com.BE.model.entity;
 
 import com.BE.enums.StatusEnum;
+import com.BE.enums.ToolTypeEnum;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -33,6 +34,10 @@ public class BookType {
     @Lob
     @Column(columnDefinition = "LONGTEXT")
     String icon;
+
+    @Enumerated(EnumType.STRING)
+    ToolTypeEnum toolType;
+
 
     @Column(nullable = false) // Đảm bảo không null và có giá trị mặc định
     Integer tokenCostPerQuery;

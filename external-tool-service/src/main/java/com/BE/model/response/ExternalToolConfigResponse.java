@@ -1,6 +1,7 @@
 package com.BE.model.response;
 
 import com.BE.enums.StatusEnum;
+import com.BE.enums.ToolTypeEnum;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -18,6 +19,10 @@ public class ExternalToolConfigResponse {
     String apiUrl;
     String tokenUrl;
     String clientId;
+    String clientSecret;
+    Integer tokenCostPerQuery;
+    ToolTypeEnum toolType;
+    String inputJson;
     String description;
     StatusEnum status;
     UUID createdBy;

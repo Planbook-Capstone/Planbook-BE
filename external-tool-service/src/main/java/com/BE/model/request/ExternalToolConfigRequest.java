@@ -1,7 +1,10 @@
 package com.BE.model.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 @Schema(description = "Dữ liệu gửi lên để cấu hình công cụ bên thứ ba (External Tool)")
@@ -51,6 +54,17 @@ public class ExternalToolConfigRequest {
             required = true
     )
     String clientSecret;
+
+
+    @NotBlank(message = "Trường inputJson không được để trống")
+    @Schema(description = "Dữ liệu JSON đầu vào cho tool", example = "{\"query\": \"...\"}")
+    String inputJson;
+
+    @NotNull(message = "Số lượng token bị trừ mỗi khi người dùng gọi một truy vấn (query).")
+    @Min(value = 1, message = "Giá trị tối thiểu: 1.")
+    @Max(value = 1000, message = "Giá trị tối đa đề xuất: 1000.")
+    Integer tokenCostPerQuery;
+
 
     @Schema(
             description = "Mô tả ngắn gọn về công cụ, có thể dùng để ghi chú hoặc hiển thị cho người dùng.",
