@@ -15,5 +15,6 @@ public interface IExternalToolConfigService {
 
    ExternalToolConfigResponse getById(Long id);
    ExternalToolConfigResponse update(Long id, ExternalToolConfigRequest request);
+   ExternalToolConfigResponse updateStatus(Long id, StatusEnum status);
 
 }

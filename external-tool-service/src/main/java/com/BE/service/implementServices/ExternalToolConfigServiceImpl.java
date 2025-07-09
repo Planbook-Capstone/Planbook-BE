@@ -102,4 +102,11 @@ public class ExternalToolConfigServiceImpl implements IExternalToolConfigService
 
         return mapper.toResponse(repository.save(config));
     }
+    @Override
+    public ExternalToolConfigResponse updateStatus(Long id, StatusEnum status) {
+        ExternalToolConfig config = repository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Không tìm thấy cấu hình"));
+        config.setStatus(status);
+        return mapper.toResponse(repository.save(config));
+    }
 }
