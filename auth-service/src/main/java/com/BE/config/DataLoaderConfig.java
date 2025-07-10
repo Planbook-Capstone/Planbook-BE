@@ -30,21 +30,20 @@ public class DataLoaderConfig implements CommandLineRunner {
     public void run(String... args) throws Exception {
         log.info("Checking and initializing default users...");
 
-        createUserIfNotExist("admin", "admin@gmail.com", "admin", RoleEnum.ADMIN);
-        createUserIfNotExist("teacher", "teacher@gmail.com", "teacher", RoleEnum.TEACHER);
-        createUserIfNotExist("staff", "staff@gmail.com", "staff", RoleEnum.STAFF);
+        createUserIfNotExist("admin", "admin@gmail.com", RoleEnum.ADMIN);
+        createUserIfNotExist("teacher", "teacher@gmail.com",  RoleEnum.TEACHER);
+        createUserIfNotExist("staff", "staff@gmail.com",  RoleEnum.STAFF);
 
         log.info("Default admin, staff, teacher users initialization completed.");
     }
 
-    private void createUserIfNotExist(String username, String email, String fullName, RoleEnum role) {
+    private void createUserIfNotExist(String username, String email, RoleEnum role) {
         Optional<User> existingUser = userRepository.findByUsername(username);
         if (existingUser.isEmpty()) {
             User newUser = User.builder()
                     .username(username)
                     .password(passwordEncoder.encode(username)) // It's a bad practice to use the username as a password, consider using a more secure password.
                     .email(email)
-                    .fullName(fullName)
                     .role(role)
                     .build();
             userRepository.save(newUser);

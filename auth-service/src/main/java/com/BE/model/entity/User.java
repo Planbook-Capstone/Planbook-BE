@@ -26,8 +26,6 @@ public class User implements UserDetails {
     @UuidGenerator
     UUID id;
 
-    String fullName;
-
     @Column(unique = true)
     String email;
 

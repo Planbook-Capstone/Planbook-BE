@@ -1,0 +1,206 @@
+name: Deploy Spring Boot Backend with Docker Compose (Local Build)
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      # ==========================================================
+      # BƯỚC QUAN TRỌNG: TẠO FILE KEY TRƯỚC KHI MAVEN PACKAGE
+      # ==========================================================
+      - name: Write RSA Private/Public Keys to file
+        run: |
+          # Đảm bảo thư mục này được tạo trong src/main/resources
+          # để Maven có thể đóng gói chúng vào JAR.
+          mkdir -p src/main/resources/keys
+          echo "${{ secrets.PRIVATE_KEY_PEM }}" > src/main/resources/keys/private.pem
+          echo "${{ secrets.PUBLIC_KEY_PEM }}" > src/main/resources/keys/public.pem
+        # Ensure this step runs before 'Maven Clean and Package'
+
+      - name: Maven Clean and Package
+        run: mvn clean package -DskipTests
+        # Sau bước này, file JAR (target/your-app-name.jar) sẽ chứa
+        # các file private.pem và public.pem trong thư mục /keys/
+        # bên trong JAR.
+
+      # ==========================================================
+      # CÁC BƯỚC CÒN LẠI KHÔNG CẦN TRUYỀN THÊM BIẾN MÔI TRƯỜNG CHO KEY
+      # ==========================================================
+      - name: Create docker-compose.yml on runner
+        run: |
+          cat <<EOF > docker-compose.yml
+          version: '3.8'
+
+          services:
+            zookeeper:
+              image: zookeeper:latest
+              container_name: zookeeper
+              restart: always
+              ports:
+                - "2181:2181"
+              environment:
+                ZOO_CLIENT_PORT: 2181
+              volumes:
+                - zookeeper_data:/data
+                - zookeeper_datalog:/datalog
+
+            kafka:
+              image: confluentinc/cp-kafka:7.5.0
+              container_name: kafka
+              restart: always
+              ports:
+                - "9092:9092"
+              environment:
+                KAFKA_BROKER_ID: 1
+                KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+                KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://157.245.135.92:9092
+                KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+                KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+                KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+              volumes:
+                - kafka_data:/var/lib/kafka/data
+              depends_on:
+                - zookeeper
+
+            kafdrop:
+              image: obsidiandynamics/kafdrop:latest
+              container_name: kafdrop
+              restart: always
+              ports:
+                - "9000:9000"
+              environment:
+                KAFKA_BROKERCONNECT: kafka:29092
+                JVM_OPTS: "-Xms16M -Xmx48M"
+              depends_on:
+                - kafka
+
+            redis:
+              image: redis:latest
+              container_name: redis
+              restart: always
+              ports:
+                - "6379:6379"
+              volumes:
+                - redis_data:/data
+
+            backend:
+              build:
+                context: .
+                dockerfile: Dockerfile
+              image: planbook-be:latest
+              container_name: planbook-be
+              restart: always
+              ports:
+                - "8080:8080"
+              environment:
+                # BỎ CÁC DÒNG SAU, VÌ KEY PATH SẼ ĐƯỢC ĐỌC TỪ application.properties TRONG JAR
+                SPRING_JWT_PRIVATE_KEY_PATH: "${{ secrets.PRIVATE_KEY_PATH }}"
+                SPRING_JWT_PUBLIC_KEY_PATH: "${{ secrets.PUBLIC_KEY_PATH }}"
+                SPRING_DATASOURCE_URL: "${{ secrets.DB_URL }}"
+                SPRING_DATASOURCE_USERNAME: "${{ secrets.DB_USERNAME }}"
+                SPRING_DATASOURCE_PASSWORD: "${{ secrets.DB_PASSWORD }}"
+                SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: "org.hibernate.dialect.MySQL8Dialect"
+                SPRING_JPA_HIBERNATE_DDL_AUTO: "update"
+                SPRING_MAIN_ALLOW_CIRCULAR_REFERENCES: "true"
+                SPRING_MVC_PATHMATCH_MATCHING_STRATEGY: "ANT_PATH_MATCHER"
+                SUPABASE_JWT_SECRET: "${{ secrets.SUPABASE_JWT_SECRET_KEY }}"
+                SPRING_SECRETKEY: "${{ secrets.SPRING_APP_SECRET_KEY }}"
+                SPRING_KAFKA_BOOTSTRAP_SERVERS: "kafka:29092"
+                KAFKA_TOPIC_NAME: "${{ secrets.KAFKA_TOPIC }}"
+                SPRING_MAIL_HOST: "${{ secrets.MAIL_HOST }}"
+                SPRING_MAIL_PORT: "${{ secrets.MAIL_PORT }}"
+                SPRING_MAIL_USERNAME: "${{ secrets.MAIL_USERNAME }}"
+                SPRING_MAIL_PASSWORD: "${{ secrets.MAIL_PASSWORD }}"
+                SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: "true"
+                SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: "true"
+                SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_REQUIRED: "true"
+                SPRING_MAIL_PROPERTIES_MAIL_SMTP_CONNECTIONTIMEOUT: "5000"
+                SPRING_MAIL_PROPERTIES_MAIL_SMTP_TIMEOUT: "5000"
+                SPRING_MAIL_PROPERTIES_MAIL_SMTP_WRITETIMEOT: "5000"
+                SPRING_MAIL_DEFAULT_ENCODING: "UTF-8"
+                SPRING_DATA_REDIS_HOST: "redis"
+                SPRING_DATA_REDIS_PORT: "6379"
+                SPRING_CACHE_TYPE: "redis"
+                SPRING_DURATION: "${{ secrets.APP_DURATION }}"
+                SPRING_PROFILES_ACTIVE: "prod"
+              depends_on:
+                - zookeeper
+                - kafka
+                - redis
+          volumes:
+            zookeeper_data:
+            zookeeper_datalog:
+            kafka_data:
+            redis_data:
+          EOF
+        shell: bash
+
+      - name: Copy Project Files to VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "."
+          target: /var/www/be/
+
+      - name: Stop and Remove Old Backend Container on VPS
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /var/www/be || { echo "Error: /var/www/be directory not found on VPS."; exit 1; }
+            echo "Checking and freeing up port 8080..."
+            PORT_TO_FREE=8080
+            PID_ON_PORT=$(sudo lsof -t -i :$PORT_TO_FREE)
+            if [ -n "$PID_ON_PORT" ]; then
+              echo "Found process on port $PORT_TO_FREE with PID: $PID_ON_PORT. Attempting to kill it..."
+              sudo kill -9 $PID_ON_PORT 2>/dev/null || true
+              sleep 1
+              if sudo lsof -i :$PORT_TO_FREE > /dev/null; then
+                echo "Warning: Port $PORT_TO_FREE is still in use after killing process. Manual intervention may be needed."
+              else
+                echo "Port $PORT_TO_FREE is now free."
+              fi
+            else
+              echo "Port $PORT_TO_FREE is already free."
+            fi
+
+            echo "Stopping and removing old backend container if it exists..."
+            docker stop planbook-be 2>/dev/null || true
+            docker rm -f planbook-be 2>/dev/null || true
+            docker rmi planbook-be:latest 2>/dev/null || true
+
+            echo "Old backend container and image cleaned up."
+
+      - name: Start Application with Docker Compose on VPS
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /var/www/be || { echo "Error: /var/www/be directory not found on VPS."; exit 1; }
+            echo "Building and starting Docker Compose services..."
+            docker compose -f docker-compose.yml up --build -d --remove-orphans
+            echo "Docker Compose services started. Use 'docker compose logs -f planbook-be' to monitor logs."

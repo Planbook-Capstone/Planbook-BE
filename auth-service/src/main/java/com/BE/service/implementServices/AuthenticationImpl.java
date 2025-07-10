@@ -148,7 +148,7 @@ public class AuthenticationImpl implements IAuthenticationService {
             User user = userRepository.findByEmail(email).orElse(null);
             if (user == null) {
                 user = new User();
-                user.setFullName(fullNameFromGoogle);
+//                user.setFullName(fullNameFromGoogle);
                 user.setEmail(email);
                 user.setUsername(email);
                 user.setRole(RoleEnum.TEACHER); // Hoặc kiểm tra quyền nếu cần
@@ -187,7 +187,7 @@ public class AuthenticationImpl implements IAuthenticationService {
         emailDetail.setSubject("Khôi phục mật khẩu cho: " + user.getEmail() + "!");
         emailDetail.setMsgBody("aaa");
         emailDetail.setButtonValue("Reset Password");
-        emailDetail.setFullName(user.getFullName());
+//        emailDetail.setFullName(user.getFullName());
         emailDetail.setLink("http://localhost:5173?token=" + jwtService.generateToken(user));
 
         Runnable r = new Runnable() {
