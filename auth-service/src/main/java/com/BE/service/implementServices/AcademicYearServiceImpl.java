@@ -4,12 +4,12 @@ import com.BE.enums.AcademicYearStatusEnum;
 import com.BE.exception.exceptions.BadRequestException;
 import com.BE.mapper.AcademicYearMapper;
 import com.BE.model.entity.AcademicYear;
-import com.BE.model.entity.User;
+import com.BE.model.entity.AuthUser;
 import com.BE.model.entity.WorkSpace;
 import com.BE.model.request.AcademicYearRequest;
 import com.BE.model.response.AcademicYearResponse;
 import com.BE.repository.AcademicYearRepository;
-import com.BE.repository.UserRepository;
+import com.BE.repository.AuthenRepository;
 import com.BE.repository.WorkSpaceRepository;
 import com.BE.service.interfaceServices.IAcademicYearService;
 import com.BE.utils.DateNowUtils;
@@ -29,7 +29,7 @@ public class AcademicYearServiceImpl implements IAcademicYearService {
     @Autowired
     private AcademicYearRepository academicYearRepository;
     @Autowired
-    private UserRepository userRepository;
+    private AuthenRepository authenRepository;
     @Autowired
     private WorkSpaceRepository workSpaceRepository;
     @Autowired
@@ -56,14 +56,14 @@ public class AcademicYearServiceImpl implements IAcademicYearService {
         academicYear.setStatus(AcademicYearStatusEnum.UPCOMING);
         AcademicYear saved = academicYearRepository.save(academicYear);
         if (saved.getStatus() == AcademicYearStatusEnum.UPCOMING) {
-            List<User> users = userRepository.findAll();
-            for (User user : users) {
-                boolean hasWorkspace = workSpaceRepository.existsByUserAndAcademicYear(user, saved);
+            List<AuthUser> auths = authenRepository.findAll();
+            for (AuthUser auth : auths) {
+                boolean hasWorkspace = workSpaceRepository.existsByAuthAndAcademicYear(auth, saved);
                 if (!hasWorkspace) {
                     WorkSpace ws = new WorkSpace();
-                    ws.setName(saved.getYearLabel() + " - " + user.getUsername());
+                    ws.setName(saved.getYearLabel() + " - " + auth.getUsername());
                     ws.setAcademicYear(saved);
-                    ws.setUser(user);
+                    ws.setAuth(auth);
                     workSpaceRepository.save(ws);
                 }
             }
@@ -113,13 +113,13 @@ public class AcademicYearServiceImpl implements IAcademicYearService {
 
     @Override
     @Transactional
-    public WorkSpace createWorkspaceForNewUser(User user) {
+    public WorkSpace createWorkspaceForNewUser(AuthUser auth) {
         AcademicYear activeYear = getActiveAcademicYear();
         if (activeYear != null) {
             WorkSpace ws = new WorkSpace();
-            ws.setName(activeYear.getYearLabel() + " - " + user.getUsername());
+            ws.setName(activeYear.getYearLabel() + " - " + auth.getUsername());
             ws.setAcademicYear(activeYear);
-            ws.setUser(user);
+            ws.setAuth(auth);
             return ws;
         }
         return null;

@@ -1,8 +1,8 @@
 package com.BE.config;
 
 import com.BE.enums.RoleEnum;
-import com.BE.model.entity.User;
-import com.BE.repository.UserRepository;
+import com.BE.model.entity.AuthUser;
+import com.BE.repository.AuthenRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +20,7 @@ public class DataLoaderConfig implements CommandLineRunner {
 
 
     @Autowired
-    UserRepository userRepository;
+    AuthenRepository authenRepository;
 
     @Autowired
     PasswordEncoder passwordEncoder;
@@ -38,15 +38,15 @@ public class DataLoaderConfig implements CommandLineRunner {
     }
 
     private void createUserIfNotExist(String username, String email, RoleEnum role) {
-        Optional<User> existingUser = userRepository.findByUsername(username);
+        Optional<AuthUser> existingUser = authenRepository.findByUsername(username);
         if (existingUser.isEmpty()) {
-            User newUser = User.builder()
+            AuthUser newUser = AuthUser.builder()
                     .username(username)
                     .password(passwordEncoder.encode(username)) // It's a bad practice to use the username as a password, consider using a more secure password.
                     .email(email)
                     .role(role)
                     .build();
-            userRepository.save(newUser);
+            authenRepository.save(newUser);
             log.info("Created default {} user", username);
         } else {
             log.info("{} user already exists", username);

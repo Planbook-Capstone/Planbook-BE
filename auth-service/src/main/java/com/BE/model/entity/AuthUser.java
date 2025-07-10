@@ -20,7 +20,7 @@ import java.util.*;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class User implements UserDetails {
+public class AuthUser implements UserDetails {
 
     @Id
     @UuidGenerator
@@ -38,11 +38,11 @@ public class User implements UserDetails {
     @Enumerated(value = EnumType.STRING)
     RoleEnum role;
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "auth")
     @JsonIgnore
     Set<RefreshToken> refreshTokens = new HashSet<>();
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "auth")
     private Set<WorkSpace> workSpaces = new HashSet<>();
 
     @Override

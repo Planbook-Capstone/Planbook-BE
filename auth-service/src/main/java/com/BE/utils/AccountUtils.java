@@ -1,7 +1,7 @@
 package com.BE.utils;
 
-import com.BE.model.entity.User;
-import com.BE.repository.UserRepository;
+import com.BE.model.entity.AuthUser;
+import com.BE.repository.AuthenRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -9,11 +9,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class AccountUtils {
     @Autowired
-    UserRepository userRepository;
+    AuthenRepository authenRepository;
 
-    public User getCurrentUser(){
+    public AuthUser getCurrentUser(){
         String userName=  SecurityContextHolder.getContext().getAuthentication().getName();
-        User user = userRepository.findByUsername(userName).orElseThrow();
-        return user;
+        AuthUser auth = authenRepository.findByUsername(userName).orElseThrow();
+        return auth;
         }
 }

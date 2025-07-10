@@ -12,6 +12,6 @@ public interface WorkSpaceMapper {
     WorkSpaceMapper INSTANCE = Mappers.getMapper(WorkSpaceMapper.class);
 
     @Mapping(target = "academicYearId", source = "academicYear.id")
-    @Mapping(target = "userId", source = "user.id")
+    @Mapping(target = "authId", source = "auth.id")
     WorkSpaceResponse toResponse(WorkSpace entity);
 }
