@@ -1,8 +1,8 @@
 package com.BE.service;
 
 
-import com.BE.model.entity.User;
-import com.BE.repository.UserRepository;
+import com.BE.model.entity.AuthUser;
+import com.BE.repository.AuthenRepository;
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.RSASSASigner;
 import com.nimbusds.jose.crypto.RSASSAVerifier;
@@ -31,26 +31,26 @@ public class JWTService {
 
 
     @Autowired
-    UserRepository userRepository;
+    AuthenRepository authenRepository;
     @Autowired
     RefreshTokenService refreshTokenService;
 
 
-    public String generateToken(User user, String refresh, boolean isRefresh) {
+    public String generateToken(AuthUser auth, String refresh, boolean isRefresh) {
 
         try {
 
             JWTClaimsSet claims = new JWTClaimsSet.Builder()
-                    .subject(user.getUsername())
+                    .subject(auth.getUsername())
                     .issueTime(new Date())
                     .expirationTime(Date.from(Instant.now().plus(Duration.ofSeconds(DURATION))))
-                    .claim("scope", "ROLE_" + user.getRole())
-                    .claim("userId", user.getId())
+                    .claim("scope", "ROLE_" + auth.getRole())
+                    .claim("userId", auth.getId())
                     .claim("refresh", refresh)
                     .build();
 
             if (!isRefresh) {
-                refreshTokenService.saveRefreshToken(refresh, user.getId());
+                refreshTokenService.saveRefreshToken(refresh, auth.getId());
             }
             JWSHeader header = new JWSHeader.Builder(JWSAlgorithm.RS256).keyID(rsaKey.getKeyID()).build();
             SignedJWT signedJWT = new SignedJWT(header, claims);
@@ -64,15 +64,15 @@ public class JWTService {
     }
 
 
-    public String generateToken(User user) {
+    public String generateToken(AuthUser auth) {
         try {
 
             JWTClaimsSet claims = new JWTClaimsSet.Builder()
-                    .subject(user.getUsername())
+                    .subject(auth.getUsername())
                     .issueTime(new Date())
                     .expirationTime(Date.from(Instant.now().plus(Duration.ofSeconds(DURATION))))
-                    .claim("scope", "ROLE_" + user.getRole())
-                    .claim("userId", user.getId())
+                    .claim("scope", "ROLE_" + auth.getRole())
+                    .claim("userId", auth.getId())
                     .build();
 
             JWSHeader header = new JWSHeader.Builder(JWSAlgorithm.RS256).keyID(rsaKey.getKeyID()).build();
@@ -85,11 +85,11 @@ public class JWTService {
         }
     }
 
-    public User getUserByToken(String token) {
+    public AuthUser getUserByToken(String token) {
         try {
             JWTClaimsSet claims = parseAndVerify(token);
             String username = claims.getSubject();
-            return userRepository.findByUsername(username).orElse(null);
+            return authenRepository.findByUsername(username).orElse(null);
         } catch (Exception e) {
             throw new RuntimeException("Error processing token", e);
         }

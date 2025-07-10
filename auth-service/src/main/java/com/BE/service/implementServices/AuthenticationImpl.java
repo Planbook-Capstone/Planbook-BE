@@ -3,14 +3,14 @@ package com.BE.service.implementServices;
 import com.BE.enums.RoleEnum;
 import com.BE.exception.exceptions.BadRequestException;
 import com.BE.exception.exceptions.InvalidRefreshTokenException;
-import com.BE.mapper.UserMapper;
+import com.BE.mapper.AuthMapper;
 import com.BE.model.EmailDetail;
+import com.BE.model.entity.AuthUser;
 import com.BE.model.request.*;
 import com.BE.model.response.AuthenResponse;
 import com.BE.model.response.AuthenticationResponse;
-import com.BE.model.entity.User;
 import com.BE.model.entity.WorkSpace;
-import com.BE.repository.UserRepository;
+import com.BE.repository.AuthenRepository;
 import com.BE.service.EmailService;
 import com.BE.service.JWTService;
 import com.BE.service.RefreshTokenService;
@@ -43,7 +43,7 @@ public class AuthenticationImpl implements IAuthenticationService {
     AuthenticationManager authenticationManager;
 
     @Autowired
-    UserRepository userRepository;
+    AuthenRepository authenRepository;
 
     @Autowired
     PasswordEncoder passwordEncoder;
@@ -52,7 +52,7 @@ public class AuthenticationImpl implements IAuthenticationService {
     JWTService jwtService;
 
     @Autowired
-    UserMapper userMapper;
+    AuthMapper authMapper;
 
     @Autowired
     AccountUtils accountUtils;
@@ -73,19 +73,19 @@ public class AuthenticationImpl implements IAuthenticationService {
     private String supabaseJwtSecret;
 
 
-    public User register(AuthenticationRequest request) {
-        User user = userMapper.toUser(request);
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setRole(RoleEnum.TEACHER);
+    public AuthUser register(AuthenticationRequest request) {
+        AuthUser auth = authMapper.toAuth(request);
+        auth.setPassword(passwordEncoder.encode(request.getPassword()));
+        auth.setRole(RoleEnum.TEACHER);
         try {
-            // Create workspace for new user
-            WorkSpace ws = academicYearService.createWorkspaceForNewUser(user);
+            // Create workspace for new auth
+            WorkSpace ws = academicYearService.createWorkspaceForNewUser(auth);
             if (ws != null) {
-                user.getWorkSpaces().add(ws);
-                userRepository.save(user);
+                auth.getWorkSpaces().add(ws);
+                authenRepository.save(auth);
                 workSpaceService.save(ws);
             }
-            return user;
+            return auth;
         } catch (DataIntegrityViolationException e) {
             System.out.println(e.getMessage());
             throw new DataIntegrityViolationException("Đã có username này!");
@@ -104,8 +104,8 @@ public class AuthenticationImpl implements IAuthenticationService {
             throw new NullPointerException("Sai ID hoặc mật khẩu!");
         }
 
-        User user = (User) authentication.getPrincipal();
-        AuthenticationResponse authenticationResponse = userMapper.toAuthenticationResponse(user);
+        AuthUser user = (AuthUser) authentication.getPrincipal();
+        AuthenticationResponse authenticationResponse = authMapper.toAuthenticationResponse(user);
         String refresh = UUID.randomUUID().toString();
         authenticationResponse.setToken(jwtService.generateToken(user, refresh, false));
         authenticationResponse.setRefreshToken(refresh);
@@ -145,30 +145,30 @@ public class AuthenticationImpl implements IAuthenticationService {
             }
 
             // Tìm hoặc tạo mới User
-            User user = userRepository.findByEmail(email).orElse(null);
-            if (user == null) {
-                user = new User();
-//                user.setFullName(fullNameFromGoogle);
-                user.setEmail(email);
-                user.setUsername(email);
-                user.setRole(RoleEnum.TEACHER); // Hoặc kiểm tra quyền nếu cần
+            AuthUser auth = authenRepository.findByEmail(email).orElse(null);
+            if (auth == null) {
+                auth = new AuthUser();
+//                auth.setFullName(fullNameFromGoogle);
+                auth.setEmail(email);
+                auth.setUsername(email);
+                auth.setRole(RoleEnum.TEACHER); // Hoặc kiểm tra quyền nếu cần
 
-                // Tạo workspace nếu là user mới
-                WorkSpace ws = academicYearService.createWorkspaceForNewUser(user);
+                // Tạo workspace nếu là auth mới
+                WorkSpace ws = academicYearService.createWorkspaceForNewUser(auth);
                 if (ws != null) {
-                    user.getWorkSpaces().add(ws);
-                    userRepository.save(user);
+                    auth.getWorkSpaces().add(ws);
+                    authenRepository.save(auth);
                 }
 
-                user = userRepository.save(user);
+                auth = authenRepository.save(auth);
 
 
             }
 
             // Sinh token JWT như cũ
-            AuthenticationResponse authenticationResponse = userMapper.toAuthenticationResponse(user);
+            AuthenticationResponse authenticationResponse = authMapper.toAuthenticationResponse(auth);
             String refresh = UUID.randomUUID().toString();
-            authenticationResponse.setToken(jwtService.generateToken(user, refresh, false));
+            authenticationResponse.setToken(jwtService.generateToken(auth, refresh, false));
             authenticationResponse.setRefreshToken(refresh);
             return authenticationResponse;
 
@@ -180,15 +180,15 @@ public class AuthenticationImpl implements IAuthenticationService {
     }
 
     public void forgotPasswordRequest(String email) {
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new BadRequestException("Không tìm thấy email này!"));
+        AuthUser auth = authenRepository.findByEmail(email).orElseThrow(() -> new BadRequestException("Không tìm thấy email này!"));
 
         EmailDetail emailDetail = new EmailDetail();
-        emailDetail.setRecipient(user.getEmail());
-        emailDetail.setSubject("Khôi phục mật khẩu cho: " + user.getEmail() + "!");
+        emailDetail.setRecipient(auth.getEmail());
+        emailDetail.setSubject("Khôi phục mật khẩu cho: " + auth.getEmail() + "!");
         emailDetail.setMsgBody("aaa");
         emailDetail.setButtonValue("Reset Password");
-//        emailDetail.setFullName(user.getFullName());
-        emailDetail.setLink("http://localhost:5173?token=" + jwtService.generateToken(user));
+//        emailDetail.setFullName(auth.getFullName());
+        emailDetail.setLink("http://localhost:5173?token=" + jwtService.generateToken(auth));
 
         Runnable r = new Runnable() {
             @Override
@@ -201,10 +201,10 @@ public class AuthenticationImpl implements IAuthenticationService {
 
     }
 
-    public User resetPassword(ResetPasswordRequest resetPasswordRequest) {
-        User user = accountUtils.getCurrentUser();
-        user.setPassword(passwordEncoder.encode(resetPasswordRequest.getPassword()));
-        return userRepository.save(user);
+    public AuthUser resetPassword(ResetPasswordRequest resetPasswordRequest) {
+        AuthUser auth = accountUtils.getCurrentUser();
+        auth.setPassword(passwordEncoder.encode(resetPasswordRequest.getPassword()));
+        return authenRepository.save(auth);
     }
 
     public String admin() {
@@ -218,10 +218,10 @@ public class AuthenticationImpl implements IAuthenticationService {
         // String refresh = jwtService.getRefreshClaim(refreshRequest.getToken());
         if (refreshTokenService.validateRefreshToken(refreshRequest.getRefreshToken())) {
             System.out.println(refreshTokenService.getIdFromRefreshToken(refreshRequest.getRefreshToken()));
-            User user = userRepository
+            AuthUser auth = authenRepository
                     .findById(refreshTokenService.getIdFromRefreshToken(refreshRequest.getRefreshToken()))
                     .orElseThrow(() -> new BadRequestException("Không tìm thấy người dùng!"));
-            authenResponse.setToken(jwtService.generateToken(user, refreshRequest.getRefreshToken(), true));
+            authenResponse.setToken(jwtService.generateToken(auth, refreshRequest.getRefreshToken(), true));
         } else {
             throw new InvalidRefreshTokenException("Invalid refresh token");
         }

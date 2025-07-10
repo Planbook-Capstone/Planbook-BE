@@ -18,8 +18,8 @@ public class RefreshToken {
     Long id;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
-    User user;
+    @JoinColumn(name = "auth_id")
+    AuthUser auth;
 
     String token;
     Instant issuedAt;

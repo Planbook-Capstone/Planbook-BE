@@ -1,7 +1,6 @@
 package com.BE.controller;
 
 
-import com.BE.model.entity.User;
 import com.BE.model.request.*;
 import com.BE.model.response.AuthenticationResponse;
 import com.BE.service.interfaceServices.IAuthenticationService;
@@ -52,7 +51,7 @@ public class AuthenticationController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<User> register(@Valid @RequestBody AuthenticationRequest user) {
+    public ResponseEntity register(@Valid @RequestBody AuthenticationRequest user) {
         return responseHandler.response(200, "Đăng ký thành công!", iAuthenticationService.register(user));
     }
 

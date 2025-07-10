@@ -3,7 +3,7 @@ package com.BE.service;
 
 
 import com.BE.model.EmailDetail;
-import com.BE.model.entity.User;
+import com.BE.model.entity.AuthUser;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,7 +50,7 @@ public class EmailService {
         }
     }
 
-    public void sendMail(User user, String subject, String description){
+    public void sendMail(AuthUser auth, String subject, String description){
 
         try{
             // Creating a simple mail message

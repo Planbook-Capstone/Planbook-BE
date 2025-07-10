@@ -4,11 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import org.hibernate.annotations.UuidGenerator;
 import java.util.UUID;
-import com.BE.model.entity.User;
-import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.experimental.FieldDefaults;
 
 @Entity
 @Getter
@@ -29,8 +26,8 @@ public class WorkSpace {
 
     @JsonIgnore
     @ManyToOne
-    @JoinColumn(name = "account_id")
-    private User user;
+    @JoinColumn(name = "auth_id")
+    private AuthUser auth;
 
 
     String createdAt;
