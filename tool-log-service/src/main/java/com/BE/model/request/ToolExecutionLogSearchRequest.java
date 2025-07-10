@@ -27,7 +27,7 @@ public class ToolExecutionLogSearchRequest {
     @Schema(description = "Thứ tự sắp xếp", allowableValues = {"asc", "desc"}, defaultValue = "desc")
     String sortDirection = "desc";
 
-    @Schema(description = "Tìm kiếm theo input hoặc output", example = "generate image")
+    @Schema(description = "Tìm kiếm theo input hoặc output")
     String search;
 
     @Schema(description = "Lọc theo tool type", allowableValues = {"INTERNAL", "EXTERNAL"}, example = "EXTERNAL")

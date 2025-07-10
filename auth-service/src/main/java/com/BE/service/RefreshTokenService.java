@@ -4,8 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 @Service
 public class RefreshTokenService {
@@ -16,7 +16,11 @@ public class RefreshTokenService {
     private final static long REFRESH_TOKEN_TTL = 30L;
 
     public void saveRefreshToken(String refreshToken, UUID id) {
-        redisTemplate.opsForValue().set(refreshToken, id.toString(), REFRESH_TOKEN_TTL, TimeUnit.DAYS);
+        redisTemplate.opsForValue().set(
+                refreshToken,
+                id.toString(),
+                Duration.ofDays(REFRESH_TOKEN_TTL)
+        );
     }
 
 

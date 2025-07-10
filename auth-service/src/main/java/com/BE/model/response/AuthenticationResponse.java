@@ -18,13 +18,11 @@ import java.util.UUID;
 @Builder
 public class AuthenticationResponse {
      UUID id;
-     String fullName;
      String username;
      String email;
      @Enumerated(value = EnumType.STRING)
      RoleEnum role;
      String token;
      String refreshToken;
-
 }
 
