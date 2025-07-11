@@ -6,7 +6,7 @@ import com.BE.model.response.AuthenResponse;
 import com.BE.model.response.AuthenticationResponse;
 
 public interface IAuthenticationService {
-    AuthUser register(AuthenticationRequest request);
+    AuthenticationResponse register(AuthenticationRequest request);
     AuthenticationResponse authenticate(LoginRequestDTO request);
     AuthenticationResponse loginGoogle(LoginGoogleRequest loginGoogleRequest);
     void forgotPasswordRequest(String email);

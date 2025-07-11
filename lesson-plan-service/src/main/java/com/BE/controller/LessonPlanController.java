@@ -1,7 +1,6 @@
 package com.BE.controller;
 
 import com.BE.enums.Status;
-import com.BE.feign.UserServiceClient;
 import com.BE.model.response.LessonPlanDTO;
 import com.BE.model.request.CreateLessonPlanRequest;
 import com.BE.model.request.UpdateLessonPlanRequest;
@@ -37,8 +36,6 @@ public class LessonPlanController {
 
     private final LessonPlanService lessonPlanService;
     private final ResponseHandler responseHandler;
-
-    private final UserServiceClient userServiceClient;
 
     @PostMapping
     @Operation(summary = "Tạo giáo án mới", description = "Tạo một giáo án mới")
@@ -137,15 +134,6 @@ public class LessonPlanController {
         } catch (Exception e) {
             return responseHandler.response(500, "Lỗi khi lấy danh sách giáo án: " + e.getMessage(), null);
         }
-    }
-
-
-
-
-
-    @GetMapping("/sendMessage")
-    public String sendMessage(@RequestParam String message) {
-        return userServiceClient.sendMessageToKafka(message);
     }
 
 

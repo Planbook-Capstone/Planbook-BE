@@ -27,16 +27,17 @@ import java.util.UUID;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class UserProfileController {
 
+
     IUserProfileService userProfileService;
     ResponseHandler responseHandler;
 
-    @GetMapping("/{id}")
+    @GetMapping("{id}")
     @Operation(summary = "Lấy hồ sơ người dùng", description = "Trả về thông tin hồ sơ người dùng dựa trên ID.")
     public ResponseEntity<?> getById(@PathVariable UUID id) {
         return responseHandler.response(200, "Lấy thông tin thành công", userProfileService.getById(id));
     }
 
-    @PostMapping("/{id}")
+    @PostMapping("{id}")
     @Operation(
             summary = "Tạo hồ sơ người dùng",
             description = "Tạo thông tin hồ sơ người dùng dựa trên ID (trùng với user trong hệ thống auth)"
@@ -75,7 +76,7 @@ public class UserProfileController {
     }
 
 
-    @PutMapping("/{id}")
+    @PutMapping("{id}")
     @Operation(
             summary = "Cập nhật hồ sơ người dùng",
             description = "Cập nhật thông tin hồ sơ của người dùng dựa trên ID"
@@ -115,7 +116,7 @@ public class UserProfileController {
     }
 
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("{id}")
     @Operation(summary = "Xóa hồ sơ người dùng", description = "Xóa hồ sơ người dùng dựa trên ID.")
     public ResponseEntity<?> delete(@PathVariable UUID id) {
         userProfileService.delete(id);

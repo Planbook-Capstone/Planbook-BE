@@ -40,12 +40,11 @@ public class DataLoaderConfig implements CommandLineRunner {
     private void createUserIfNotExist(String username, String email, RoleEnum role) {
         Optional<AuthUser> existingUser = authenRepository.findByUsername(username);
         if (existingUser.isEmpty()) {
-            AuthUser newUser = AuthUser.builder()
-                    .username(username)
-                    .password(passwordEncoder.encode(username)) // It's a bad practice to use the username as a password, consider using a more secure password.
-                    .email(email)
-                    .role(role)
-                    .build();
+            AuthUser newUser = new AuthUser();
+            newUser.setUsername(username);
+            newUser.setPassword(passwordEncoder.encode(username)); // Cảnh báo: không nên dùng username làm password
+            newUser.setEmail(email);
+            newUser.setRole(role);
             authenRepository.save(newUser);
             log.info("Created default {} user", username);
         } else {
