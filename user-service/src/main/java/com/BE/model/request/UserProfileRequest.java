@@ -42,4 +42,6 @@ public class UserProfileRequest {
     @Pattern(regexp = "^(Nam|Nữ|Khác)?$", message = "Giới tính phải là Nam, Nữ hoặc Khác")
     @Schema(example = "Nam", allowableValues = {"Nam", "Nữ", "Khác"})
     String gender;
+
+
 }
