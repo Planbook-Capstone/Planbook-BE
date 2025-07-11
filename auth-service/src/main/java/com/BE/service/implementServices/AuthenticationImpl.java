@@ -73,7 +73,7 @@ public class AuthenticationImpl implements IAuthenticationService {
     private String supabaseJwtSecret;
 
 
-    public AuthUser register(AuthenticationRequest request) {
+    public AuthenticationResponse register(AuthenticationRequest request) {
         AuthUser auth = authMapper.toAuth(request);
         auth.setPassword(passwordEncoder.encode(request.getPassword()));
         auth.setRole(RoleEnum.TEACHER);
@@ -85,7 +85,7 @@ public class AuthenticationImpl implements IAuthenticationService {
                 authenRepository.save(auth);
                 workSpaceService.save(ws);
             }
-            return auth;
+            return authMapper.toAuthenticationResponse(auth);
         } catch (DataIntegrityViolationException e) {
             System.out.println(e.getMessage());
             throw new DataIntegrityViolationException("Đã có username này!");

@@ -18,7 +18,6 @@ import java.util.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class AuthUser implements UserDetails {
 
@@ -43,7 +42,7 @@ public class AuthUser implements UserDetails {
     Set<RefreshToken> refreshTokens = new HashSet<>();
 
     @OneToMany(mappedBy = "auth")
-    private Set<WorkSpace> workSpaces = new HashSet<>();
+    Set<WorkSpace> workSpaces = new HashSet<>();
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
