@@ -10,9 +10,8 @@ import java.util.UUID;
 public class AccountUtils {
 
 
-    public String getCurrentUserId(){
-        String userId =  SecurityContextHolder.getContext().getAuthentication().getName();
-//        User user = userRepository.findByUsername(userName).orElseThrow();
+    public UUID getCurrentUserId(){
+        UUID userId = (UUID)  SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         return userId;
         }

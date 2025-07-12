@@ -1,5 +1,7 @@
 package com.BE.service.implementServices;
 
+import com.BE.enums.ExecutionStatus;
+import com.BE.enums.ToolTypeEnum;
 import com.BE.mapper.ToolExecutionLogMapper;
 import com.BE.model.entity.ToolExecutionLog;
 import com.BE.model.request.KafkaData;
@@ -47,33 +49,37 @@ public class ToolExecutionLogServiceImpl implements IToolExecutionLogService {
     public ToolExecutionLogResponse save(ToolExecutionLogRequest request) {
         ToolExecutionLog log = mapper.toEntity(request);
         log.setCreatedAt(dateNowUtils.getCurrentDateTimeHCM());
-
+        log.setStatus(ExecutionStatus.PENDING);
         ToolExecutionLog saved = repository.save(log);
         ToolExecutionLogResponse response = mapper.toResponse(saved);
+        if (request.getToolType().equals(ToolTypeEnum.EXTERNAL)) {
 
-        try {
-            // Serialize log response thành JSON
-            Object lessonPlanJson = objectMapper.readValue(request.getInputJson(), Object.class); // parse string -> object
+        } else {
+            try {
+                // Serialize log response thành JSON
+                Object lessonPlanJson = objectMapper.readValue(request.getInputJson(), Object.class); // parse string -> object
 
-            ToolKafkaPayload payload = ToolKafkaPayload.builder()
-                    .type(request.getToolName())
-                    .data(
-                            KafkaData.builder()
-                                    .user_id(request.getUserId().toString())
-                                    .lesson_id(request.getLessonId().toString())
-                                    .lesson_plan_json(lessonPlanJson)
-                                    .timestamp(Instant.now().toString())
-                                    .build()
-                    )
-                    .build();
+                ToolKafkaPayload payload = ToolKafkaPayload.builder()
+                        .type(request.getToolName())
+                        .data(
+                                KafkaData.builder()
+                                        .user_id(request.getUserId().toString())
+                                        .lesson_id(request.getLessonId())
+                                        .lesson_plan_json(lessonPlanJson)
+                                        .timestamp(Instant.now().toString())
+                                        .build()
+                        )
+                        .build();
 
-            String jsonToSend = objectMapper.writeValueAsString(payload);
+                String jsonToSend = objectMapper.writeValueAsString(payload);
 
-            iOutboxService.saveOutbox(requestTopic, jsonToSend, response.getToolName());
+                iOutboxService.saveOutbox(requestTopic, jsonToSend, response.getToolName());
 
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException("Lỗi serialize ToolExecutionLog khi ghi outbox", e);
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException("Lỗi serialize ToolExecutionLog khi ghi outbox", e);
+            }
         }
+
 
         return response;
     }
