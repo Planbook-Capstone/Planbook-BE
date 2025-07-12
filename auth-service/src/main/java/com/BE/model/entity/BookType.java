@@ -42,8 +42,6 @@ public class BookType {
     @Column(nullable = false) // Đảm bảo không null và có giá trị mặc định
     Integer tokenCostPerQuery;
 
-
-
     @Enumerated(EnumType.STRING)
     StatusEnum status;
 

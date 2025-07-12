@@ -26,6 +26,12 @@ public class ToolExecutionLogResponse {
     @Schema(description = "ID công cụ được gọi", example = "2")
     Long toolId;
 
+    @Schema(description = "ID của bài được gọi", example = "3")
+    Long lessonId;
+
+    @Schema(description = "Tên của công cụ", example = "Lesson Plan Generator")
+    String toolName;
+
     @Schema(description = "Loại công cụ", example = "EXTERNAL")
     ToolTypeEnum toolType;
 

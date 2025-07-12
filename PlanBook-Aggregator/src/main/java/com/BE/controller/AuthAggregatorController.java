@@ -1,7 +1,7 @@
 package com.BE.controller;
 
 import com.BE.model.request.RegisterAggregatorRequest;
-import com.BE.service.implementServices.AggregatorServiceImpl;
+import com.BE.service.implementServices.AuthAggregatorServiceImpl;
 import com.BE.utils.ResponseHandler;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -26,9 +26,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @SecurityRequirement(name = "api")
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class AggregatorController {
+public class AuthAggregatorController {
 
-    AggregatorServiceImpl aggregatorService;
+    AuthAggregatorServiceImpl aggregatorService;
     ResponseHandler responseHandler;
 
     @PostMapping("/register")
