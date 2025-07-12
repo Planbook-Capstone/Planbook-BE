@@ -1,6 +1,7 @@
 package com.BE.model.entity;
 
 
+import com.BE.enums.ExecutionStatus;
 import com.BE.enums.ToolTypeEnum;
 import jakarta.persistence.*;
 import lombok.*;
@@ -29,7 +30,13 @@ public class ToolExecutionLog {
     UUID userId;
 
     @Column(nullable = false)
-    Long toolId; // Có thể là ID của ExternalToolConfig hoặc BookType
+    UUID toolId; // Có thể là ID của ExternalToolConfig hoặc BookType
+
+    Long lessonId;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    ExecutionStatus status;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

@@ -2,7 +2,7 @@ package com.BE.service.implementServices;
 
 import com.BE.feign.AuthServiceClient;
 import com.BE.feign.UserServiceClient;
-import com.BE.mapper.AggregatorMapper;
+import com.BE.mapper.AuthAggregatorMapper;
 import com.BE.model.request.AuthenticationRequest;
 import com.BE.model.request.RegisterAggregatorRequest;
 import com.BE.model.request.UserProfileRequest;
@@ -19,7 +19,7 @@ public class AuthAggregatorServiceImpl implements IAuthAggregatorService {
 
     private final AuthServiceClient authClient;
     private final UserServiceClient userClient;
-    private final AggregatorMapper mapper;
+    private final AuthAggregatorMapper mapper;
 
     @Override
     public AuthenticationResponse register(RegisterAggregatorRequest req) {
