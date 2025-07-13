@@ -27,7 +27,6 @@ public class OutboxServiceImpl implements IOutboxService {
                 .topic(topic)
                 .payload(payload)
                 .eventType(eventType)
-                .createdAt(dateNowUtils.getCurrentDateTimeHCM())
                 .kafkaSent(false)
                 .build();
 

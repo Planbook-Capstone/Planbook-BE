@@ -11,7 +11,7 @@ public class KafkaMessageProducer {
     private final KafkaTemplate<String, String> kafkaTemplate;
 
     // Tên topic có thể được lấy từ application.properties
-    @Value("${kafka.topic.name:my-default-topic}") // Sử dụng cùng biến này
+    @Value("${kafka.topic.name.request:my-default-topic}") // Sử dụng cùng biến này
     private String topicName;
 
     @Autowired

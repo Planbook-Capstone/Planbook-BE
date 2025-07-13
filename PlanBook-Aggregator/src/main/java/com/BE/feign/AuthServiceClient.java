@@ -21,7 +21,7 @@ public interface AuthServiceClient {
     @PostMapping("/api/register")
     DataResponseDTO<AuthenticationResponse> register(@RequestBody AuthenticationRequest request);
 
-    @GetMapping("/{id}")
+    @GetMapping("/api/book-types/{id}")
     DataResponseDTO<BookTypeResponse> getBookTypeById(@PathVariable("id") UUID id);
 
 //    @PostMapping("/auth/login-google")

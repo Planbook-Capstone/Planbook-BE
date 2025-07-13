@@ -7,6 +7,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.UUID;
 
 @Getter
@@ -38,12 +39,18 @@ public class ToolExecutionLogResponse {
     @Schema(description = "Loại công cụ", example = "EXTERNAL")
     ToolTypeEnum toolType;
 
+    @Schema(description = "Số lượng token bị trừ mỗi khi người dùng gọi một truy vấn", example = "10")
+    Integer tokenUsed;
+
     @Schema(description = "Input JSON gửi đi", example = "{\"text\": \"Xin chào\"}")
-    String inputJson;
+    Map<String, Object> input;
 
     @Schema(description = "Output JSON trả về", example = "{\"translated\": \"Hello\"}")
-    String outputJson;
+    Map<String, Object> output;
 
     @Schema(description = "Thời gian tạo", example = "2025-07-10T15:04:23")
     LocalDateTime createdAt;
+
+    @Schema(description = "Thời gian chỉnh sữa", example = "2025-07-10T15:04:23")
+    LocalDateTime updatedAt;
 }

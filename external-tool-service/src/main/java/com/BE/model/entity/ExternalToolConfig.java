@@ -1,5 +1,6 @@
 package com.BE.model.entity;
 
+import com.BE.config.MapToJsonConverter;
 import com.BE.enums.StatusEnum;
 import com.BE.enums.ToolTypeEnum;
 import jakarta.persistence.*;
@@ -10,6 +11,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.UUID;
 
 @Entity
@@ -44,7 +46,8 @@ public class ExternalToolConfig {
     String description;
 
     @Column(columnDefinition = "json")
-    String inputJson;
+    @Convert(converter = MapToJsonConverter.class)
+    Map<String, Object> inputJson;
 
     @Enumerated(EnumType.STRING)
     StatusEnum status;

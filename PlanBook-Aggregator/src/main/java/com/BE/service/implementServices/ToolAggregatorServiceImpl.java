@@ -11,7 +11,9 @@ import com.BE.model.response.ExternalToolConfigResponse;
 import com.BE.model.response.ToolExecutionLogResponse;
 import com.BE.service.interfaceServices.IToolAggregatorService;
 import com.BE.utils.AccountUtils;
+import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
 
@@ -19,10 +21,10 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 public class ToolAggregatorServiceImpl implements IToolAggregatorService {
 
     ToolExternalServiceClient toolExternalServiceClient;
-//    ToolInternalServiceClient toolInternalServiceClient;
     AuthServiceClient toolInternalServiceClient;
 
     ToolLogServiceClient toolLogServiceClient;
@@ -38,8 +40,9 @@ public class ToolAggregatorServiceImpl implements IToolAggregatorService {
                 .toolId(request.getToolId())
                 .toolType(request.getToolType())
                 .toolName(internalToolConfigResponse.getData().getName())
-                .inputJson(request.getLesson_plan_json())
+                .input(request.getLesson_plan_json())
                 .lessonId(request.getLesson_id())
+                .tokenUsed(internalToolConfigResponse.getData().getTokenCostPerQuery())
                 .build();
         DataResponseDTO<ToolExecutionLogResponse> response = toolLogServiceClient.toolExecutionLog(toolExecutionLogRequest);
 
@@ -55,7 +58,7 @@ public class ToolAggregatorServiceImpl implements IToolAggregatorService {
                 .toolId(request.getToolId())
                 .toolType(request.getToolType())
                 .toolName(externalToolConfigResponse.getData().getName())
-                .inputJson(request.getLesson_plan_json())
+                .input(request.getLesson_plan_json())
                 .lessonId(request.getLesson_id())
                 .build();
 

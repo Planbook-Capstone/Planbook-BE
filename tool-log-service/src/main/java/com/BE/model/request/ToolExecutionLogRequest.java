@@ -2,11 +2,14 @@ package com.BE.model.request;
 
 import com.BE.enums.ToolTypeEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.util.Map;
 import java.util.UUID;
 
 @Getter
@@ -38,10 +41,15 @@ public class ToolExecutionLogRequest {
     @Schema(description = "Loại công cụ", example = "EXTERNAL", required = true)
     ToolTypeEnum toolType;
 
-    @NotBlank(message = "InputJson không được để trống")
+    @NotNull(message = "Số lượng token bị trừ mỗi khi người dùng gọi một truy vấn (query).")
+    @Min(value = 1, message = "Giá trị tối thiểu: 1.")
+    @Max(value = 1000, message = "Giá trị tối đa đề xuất: 1000.")
+    Integer tokenUsed;
+
+    @NotNull(message = "Input không được để trống")
     @Schema(description = "Input gốc gửi đến tool", example = "{\"text\": \"Xin chào\"}")
-    String inputJson;
+    Map<String, Object> input;
 
     @Schema(description = "Output tool trả về", example = "{\"translated\": \"Hello\"}")
-    String outputJson;
+    Map<String, Object> output;
 }
