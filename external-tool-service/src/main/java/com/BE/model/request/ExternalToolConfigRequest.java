@@ -7,6 +7,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
+import java.util.Map;
+
 @Schema(description = "Dữ liệu gửi lên để cấu hình công cụ bên thứ ba (External Tool)")
 @Getter
 @Setter
@@ -56,9 +58,9 @@ public class ExternalToolConfigRequest {
     String clientSecret;
 
 
-    @NotBlank(message = "Trường inputJson không được để trống")
-    @Schema(description = "Dữ liệu JSON đầu vào cho tool", example = "{\"query\": \"...\"}")
-    String inputJson;
+    @Schema(description = "Dữ liệu JSON đầu vào cho tool", example = "{\"query\": \"hello\"}")
+    @NotNull(message = "Trường inputJson không được để trống")
+    Map<String, Object> inputJson;
 
     @NotNull(message = "Số lượng token bị trừ mỗi khi người dùng gọi một truy vấn (query).")
     @Min(value = 1, message = "Giá trị tối thiểu: 1.")

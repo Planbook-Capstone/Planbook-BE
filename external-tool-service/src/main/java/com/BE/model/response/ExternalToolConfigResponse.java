@@ -6,6 +6,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.UUID;
 
 @Data
@@ -14,7 +15,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ExternalToolConfigResponse {
-    Long id;
+    UUID id;
     String name;
     String apiUrl;
     String tokenUrl;
@@ -22,7 +23,7 @@ public class ExternalToolConfigResponse {
     String clientSecret;
     Integer tokenCostPerQuery;
     ToolTypeEnum toolType;
-    String inputJson;
+    Map<String, Object> inputJson;
     String description;
     StatusEnum status;
     UUID createdBy;

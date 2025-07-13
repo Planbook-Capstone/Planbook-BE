@@ -2,6 +2,9 @@ package com.BE.model.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -31,5 +34,9 @@ public class OutboxMessage {
     boolean kafkaSent = false;
 
     @Column(nullable = false)
+    @CreationTimestamp
     LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    LocalDateTime updatedAt;
 }

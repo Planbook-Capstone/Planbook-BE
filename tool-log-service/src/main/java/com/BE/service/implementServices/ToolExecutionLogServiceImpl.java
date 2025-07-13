@@ -27,6 +27,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -48,6 +49,7 @@ public class ToolExecutionLogServiceImpl implements IToolExecutionLogService {
     @Transactional
     public ToolExecutionLogResponse save(ToolExecutionLogRequest request) {
         ToolExecutionLog log = mapper.toEntity(request);
+        log.setUpdatedAt(dateNowUtils.getCurrentDateTimeHCM());
         log.setCreatedAt(dateNowUtils.getCurrentDateTimeHCM());
         log.setStatus(ExecutionStatus.PENDING);
         ToolExecutionLog saved = repository.save(log);
@@ -57,18 +59,16 @@ public class ToolExecutionLogServiceImpl implements IToolExecutionLogService {
         } else {
             try {
                 // Serialize log response thành JSON
-                Object lessonPlanJson = objectMapper.readValue(request.getInputJson(), Object.class); // parse string -> object
+                Map<String, Object> input = request.getInput();
 
                 ToolKafkaPayload payload = ToolKafkaPayload.builder()
                         .type(request.getToolName())
-                        .data(
-                                KafkaData.builder()
-                                        .user_id(request.getUserId().toString())
-                                        .lesson_id(request.getLessonId())
-                                        .lesson_plan_json(lessonPlanJson)
-                                        .timestamp(Instant.now().toString())
-                                        .build()
-                        )
+                        .data(KafkaData.builder()
+                                .user_id(request.getUserId().toString())
+                                .lesson_id(request.getLessonId())
+                                .lesson_plan_json(input)
+                                .timestamp(Instant.now().toString())
+                                .build())
                         .build();
 
                 String jsonToSend = objectMapper.writeValueAsString(payload);
@@ -84,17 +84,56 @@ public class ToolExecutionLogServiceImpl implements IToolExecutionLogService {
         return response;
     }
 
+//    @Override
+//    public Page<ToolExecutionLogResponse> getAll(ToolExecutionLogSearchRequest request) {
+//        pageUtil.checkOffset(request.getOffset());
+//        Pageable pageable = pageUtil.getPageable(request.getOffset() - 1, request.getPageSize(), request.getSortBy(), request.getSortDirection());
+//
+//        Specification<ToolExecutionLog> spec = Specification.where(null);
+//
+//        if (request.getSearch() != null && !request.getSearch().isBlank()) {
+//            spec = spec.and((root, query, cb) -> cb.or(
+//                    cb.like(cb.lower(root.get("input")), "%" + request.getSearch().toLowerCase() + "%"),
+//                    cb.like(cb.lower(root.get("output")), "%" + request.getSearch().toLowerCase() + "%")
+//            ));
+//        }
+//
+//        if (request.getToolType() != null) {
+//            spec = spec.and((root, query, cb) -> cb.equal(root.get("toolType"), request.getToolType()));
+//        }
+//
+//        if (request.getUserId() != null) {
+//            spec = spec.and((root, query, cb) -> cb.equal(root.get("userId"), request.getUserId()));
+//        }
+//
+//        return repository.findAll(spec, pageable).map(mapper::toResponse);
+//    }
+
+
     @Override
     public Page<ToolExecutionLogResponse> getAll(ToolExecutionLogSearchRequest request) {
-        pageUtil.checkOffset(request.getOffset());
-        Pageable pageable = pageUtil.getPageable(request.getOffset() - 1, request.getPageSize(), request.getSortBy(), request.getSortDirection());
+        Pageable pageable = pageUtil.getPageable(
+                Math.max(request.getOffset(), 1) - 1,
+                request.getPageSize(),
+                request.getSortBy(),
+                request.getSortDirection()
+        );
 
+        Specification<ToolExecutionLog> spec = buildSpecification(request);
+
+        return repository.findAll(spec, pageable)
+                .map(mapper::toResponse);
+    }
+
+    private Specification<ToolExecutionLog> buildSpecification(ToolExecutionLogSearchRequest request) {
         Specification<ToolExecutionLog> spec = Specification.where(null);
 
         if (request.getSearch() != null && !request.getSearch().isBlank()) {
+            String keyword = "%" + request.getSearch().toLowerCase() + "%";
+
             spec = spec.and((root, query, cb) -> cb.or(
-                    cb.like(cb.lower(root.get("input")), "%" + request.getSearch().toLowerCase() + "%"),
-                    cb.like(cb.lower(root.get("output")), "%" + request.getSearch().toLowerCase() + "%")
+                    cb.like(cb.lower(cb.function("JSON_UNQUOTE", String.class, root.get("input"))), keyword),
+                    cb.like(cb.lower(cb.function("JSON_UNQUOTE", String.class, root.get("output"))), keyword)
             ));
         }
 
@@ -106,6 +145,7 @@ public class ToolExecutionLogServiceImpl implements IToolExecutionLogService {
             spec = spec.and((root, query, cb) -> cb.equal(root.get("userId"), request.getUserId()));
         }
 
-        return repository.findAll(spec, pageable).map(mapper::toResponse);
+        return spec;
     }
+
 }

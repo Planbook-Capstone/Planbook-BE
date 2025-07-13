@@ -38,8 +38,11 @@ public class ToolExecuteRequest {
     private Long lesson_id;
 
 
-    @NotBlank(message = "lesson_plan_json không được để trống")
-    @Schema(description = "lesson_plan_json gốc gửi đến tool", example = "{\"text\": \"Xin chào\"}")
-    private String lesson_plan_json;
+    @NotNull(message = "lesson_plan_json không được để trống")
+    @Schema(
+            description = "lesson_plan_json gốc gửi đến tool",
+            example = "{\"text\": \"Xin chào\"}"
+    )
+    private Map<String, Object> lesson_plan_json;
 }
 

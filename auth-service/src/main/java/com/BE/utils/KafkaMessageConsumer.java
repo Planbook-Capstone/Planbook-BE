@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class KafkaMessageConsumer {
-    @KafkaListener(topics = "${kafka.topic.name:my-default-topic}", groupId = "my-consumer-group")
+    @KafkaListener(topics = "${kafka.topic.name.response:my-default-topic}", groupId = "my-consumer-group")
     public void listen(ConsumerRecord<String, String> record) {
         System.out.println("Received message: " + record);
         // Xử lý message ở đây
