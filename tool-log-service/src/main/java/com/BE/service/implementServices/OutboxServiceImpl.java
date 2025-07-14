@@ -22,15 +22,17 @@ public class OutboxServiceImpl implements IOutboxService {
 
 
 
-    public void saveOutbox(String topic, String payload, String eventType) {
+    public void saveOutbox(String topic, String payload, String eventType, String aggregateId) {
         OutboxMessage message = OutboxMessage.builder()
                 .topic(topic)
                 .payload(payload)
                 .eventType(eventType)
+                .aggregateId(aggregateId)
                 .kafkaSent(false)
                 .build();
 
         outboxRepository.save(message);
     }
+
 }
 
