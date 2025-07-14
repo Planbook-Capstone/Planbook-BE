@@ -2,6 +2,7 @@ package com.BE.service.implementServices;
 
 import com.BE.enums.ExecutionStatus;
 import com.BE.enums.ToolTypeEnum;
+import com.BE.exception.exceptions.NotFoundException;
 import com.BE.mapper.ToolExecutionLogMapper;
 import com.BE.model.entity.ToolExecutionLog;
 import com.BE.model.request.KafkaData;
@@ -28,6 +29,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.Map;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -60,7 +62,7 @@ public class ToolExecutionLogServiceImpl implements IToolExecutionLogService {
             try {
                 // Serialize log response thành JSON
                 Map<String, Object> input = request.getInput();
-
+                input.put("tool_log_id",response.getId());
                 ToolKafkaPayload payload = ToolKafkaPayload.builder()
                         .type(request.getToolName())
                         .data(KafkaData.builder()
@@ -73,7 +75,7 @@ public class ToolExecutionLogServiceImpl implements IToolExecutionLogService {
 
                 String jsonToSend = objectMapper.writeValueAsString(payload);
 
-                iOutboxService.saveOutbox(requestTopic, jsonToSend, response.getToolName());
+                iOutboxService.saveOutbox(requestTopic, jsonToSend, response.getToolName(), request.getUserId() + ":" + request.getToolId());
 
             } catch (JsonProcessingException e) {
                 throw new RuntimeException("Lỗi serialize ToolExecutionLog khi ghi outbox", e);
@@ -146,6 +148,21 @@ public class ToolExecutionLogServiceImpl implements IToolExecutionLogService {
         }
 
         return spec;
+    }
+
+
+    @Override
+    public void updateOutputByLogId(Long toolLogId, boolean success, Map<String, Object> output) {
+        ToolExecutionLog log = repository.findById(toolLogId)
+                .orElseThrow(() -> new NotFoundException("Không tìm thấy log với ID: " + toolLogId));
+
+        // Cập nhật output và status
+        log.setOutput(output);
+        log.setStatus(success ? ExecutionStatus.SUCCESS : ExecutionStatus.FAILED);
+
+        repository.save(log);
+
+        
     }
 
 }

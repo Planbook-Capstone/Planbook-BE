@@ -27,8 +27,11 @@ public class OutboxMessage {
     @Column(nullable = false, columnDefinition = "TEXT")
     String payload;
 
-    @Column(nullable = false)
+    @Column(name = "event_type", nullable = false)
     String eventType;
+
+    @Column(name = "aggregate_id", nullable = false)
+    String aggregateId;
 
     @Column(name = "kafka_sent", nullable = false)
     boolean kafkaSent = false;
