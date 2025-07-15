@@ -30,9 +30,10 @@ public class HeaderHandshakeHandler extends DefaultHandshakeHandler {
                 String token = query.substring("token=".length());
                 SignedJWT jwt = SignedJWT.parse(token);
                 if (jwt.verify(new RSASSAVerifier(publicKey))) {
-                    String username = jwt.getJWTClaimsSet().getSubject();
-                    System.out.println("✅ WebSocket Principal: " + username);
-                    return () -> username; // Principal đơn giản
+//                    String username = jwt.getJWTClaimsSet().getSubject();
+                    String userId = jwt.getJWTClaimsSet().getStringClaim("userId");
+                    System.out.println("✅ WebSocket Principal: " + userId);
+                    return () -> userId; // Principal đơn giản
                 }
             }
         } catch (Exception e) {
