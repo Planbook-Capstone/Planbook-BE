@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class KafkaData {
     private String user_id;
-    private Long lesson_id;
+    private String lesson_id;
     private Object lesson_plan_json;  // chính là parsed inputJson
     private String timestamp;
 }
