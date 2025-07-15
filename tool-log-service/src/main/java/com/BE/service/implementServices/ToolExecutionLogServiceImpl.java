@@ -66,7 +66,7 @@ public class ToolExecutionLogServiceImpl implements IToolExecutionLogService {
                         .type(request.getToolName())
                         .data(KafkaData.builder()
                                 .user_id(request.getUserId().toString())
-                                .lesson_id(request.getLessonId())
+                                .lesson_id(request.getLessonId().toString())
                                 .lesson_plan_json(input)
                                 .timestamp(Instant.now().toString())
                                 .build())
