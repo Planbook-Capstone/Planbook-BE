@@ -3,12 +3,10 @@ package com.BE.service.implementServices;
 import com.BE.enums.ExecutionStatus;
 import com.BE.enums.ToolTypeEnum;
 import com.BE.exception.exceptions.NotFoundException;
+import com.BE.feign.WebSocketServiceClient;
 import com.BE.mapper.ToolExecutionLogMapper;
 import com.BE.model.entity.ToolExecutionLog;
-import com.BE.model.request.KafkaData;
-import com.BE.model.request.ToolExecutionLogRequest;
-import com.BE.model.request.ToolExecutionLogSearchRequest;
-import com.BE.model.request.ToolKafkaPayload;
+import com.BE.model.request.*;
 import com.BE.model.response.ToolExecutionLogResponse;
 import com.BE.repository.ToolExecutionLogRepository;
 import com.BE.service.interfaceServices.IOutboxService;
@@ -42,6 +40,7 @@ public class ToolExecutionLogServiceImpl implements IToolExecutionLogService {
     final PageUtil pageUtil;
     final ObjectMapper objectMapper;
     final IOutboxService iOutboxService;
+    final WebSocketServiceClient webSocketServiceClient;
 
     @Value("${kafka.topic.name.request}")
     String requestTopic;
@@ -127,6 +126,12 @@ public class ToolExecutionLogServiceImpl implements IToolExecutionLogService {
                 .map(mapper::toResponse);
     }
 
+    @Override
+    public ToolExecutionLogResponse getById(Long id) {
+        ToolExecutionLog toolExecutionLog = repository.findById(id).orElseThrow(() -> new NotFoundException("Không tìm thấy tool-log "));
+        return mapper.toResponse(toolExecutionLog);
+    }
+
     private Specification<ToolExecutionLog> buildSpecification(ToolExecutionLogSearchRequest request) {
         Specification<ToolExecutionLog> spec = Specification.where(null);
 
@@ -160,9 +165,21 @@ public class ToolExecutionLogServiceImpl implements IToolExecutionLogService {
         log.setOutput(output);
         log.setStatus(success ? ExecutionStatus.SUCCESS : ExecutionStatus.FAILED);
 
-        repository.save(log);
+        log = repository.save(log);
 
-        
+        WebSocketMessageRequest webSocketMessageRequest =  WebSocketMessageRequest.builder()
+                .userId(log.getUserId().toString())
+                .destination("/queue/notifications")
+                .payload(output)
+                .build();
+
+        sendWebSocket(webSocketMessageRequest);
+
+    }
+
+    @Override
+    public void sendWebSocket(WebSocketMessageRequest request) {
+        webSocketServiceClient.pushToClient(request);
     }
 
 }
