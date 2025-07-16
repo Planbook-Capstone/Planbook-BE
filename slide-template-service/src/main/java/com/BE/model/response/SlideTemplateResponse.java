@@ -1,11 +1,10 @@
 package com.BE.model.response;
 
-import com.BE.enums.FormStatusEnum;
+import com.BE.enums.StatusEnum;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.time.LocalDateTime;
 import java.util.Map;
 
 @Data
@@ -13,12 +12,13 @@ import java.util.Map;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class FormResponse {
+public class SlideTemplateResponse {
     long id;
     String name;
     String description;
-    FormStatusEnum status;
-    JsonNode formData;
+    StatusEnum status;
+    Map<String, Object> textBlocks;
+    Map<String, Object> imageBlocks;
     String createdAt;
     String updatedAt;
 }
