@@ -1,5 +1,6 @@
 package com.BE.service.implementServices;
 
+import com.BE.model.request.ToolLogUpdateRequest;
 import com.BE.model.request.WebSocketMessageRequest;
 import com.BE.model.response.ToolExecutionLogResponse;
 import com.BE.service.interfaceServices.IKafkaProcessingService;
@@ -55,11 +56,13 @@ public class KafkaProcessingServiceImpl implements IKafkaProcessingService {
 
             if (success) {
                 Map<String, Object> lessonPlanMap = mapper.convertValue(lessonPlanNode, new TypeReference<>() {});
-                logService.updateOutputByLogId(toolLogId, true, lessonPlanMap);
+                ToolLogUpdateRequest request = new ToolLogUpdateRequest(true, lessonPlanMap);
+                logService.updateOutputByLogId(toolLogId, request);
                 log.info("✅ Cập nhật output SUCCESS cho tool_log_id: {}", toolLogId);
             } else {
                 String errorMessage = resultNode.path("error").asText("Không rõ lỗi");
-                logService.updateOutputByLogId(toolLogId, false, Map.of("error", errorMessage));
+                ToolLogUpdateRequest request = new ToolLogUpdateRequest(false, Map.of("error", errorMessage));
+                logService.updateOutputByLogId(toolLogId, request);
                 log.info("❌ Cập nhật output FAILED với lỗi: {}", errorMessage);
             }
 

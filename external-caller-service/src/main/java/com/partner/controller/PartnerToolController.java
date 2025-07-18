@@ -22,24 +22,25 @@ public class PartnerToolController {
     IPartnerToolService service;
 
     @PostMapping("/execute")
-    public Mono<ResponseEntity<DataResponseDTO<String>>> executeExternalTool(
-             @RequestBody ToolExecuteRequest request) {
+    public Mono<ResponseEntity<DataResponseDTO<Map<String, Object>>>> executeExternalTool(
+            @RequestBody ToolExecuteRequest request) {
         return service.execute(request)
                 .map(output -> ResponseEntity.ok(
-                        DataResponseDTO.<String>builder()
+                        DataResponseDTO.<Map<String, Object>>builder()
                                 .statusCode(200)
                                 .message("Thực thi công cụ thành công.")
                                 .data(output)
                                 .build()
                 ))
                 .onErrorResume(e -> Mono.just(ResponseEntity.status(500).body(
-                        DataResponseDTO.<String>builder()
+                        DataResponseDTO.<Map<String, Object>>builder()
                                 .statusCode(500)
                                 .message("Lỗi khi gọi công cụ: " + e.getMessage())
                                 .data(null)
                                 .build()
                 )));
     }
+
 
 
 }

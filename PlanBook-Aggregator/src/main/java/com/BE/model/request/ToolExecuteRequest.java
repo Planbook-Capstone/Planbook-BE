@@ -3,7 +3,6 @@ package com.BE.model.request;
 
 import com.BE.enums.ToolTypeEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
@@ -38,11 +37,11 @@ public class ToolExecuteRequest {
     private Long lesson_id;
 
 
-    @NotNull(message = "lesson_plan_json không được để trống")
+    @NotNull(message = "Input không được để trống")
     @Schema(
-            description = "lesson_plan_json gốc gửi đến tool",
+            description = "Input gốc gửi đến tool",
             example = "{\"text\": \"Xin chào\"}"
     )
-    private Map<String, Object> lesson_plan_json;
+    private Map<String, Object> input;
 }
 

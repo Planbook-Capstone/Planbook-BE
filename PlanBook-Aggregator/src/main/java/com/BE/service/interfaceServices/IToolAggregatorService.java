@@ -2,8 +2,10 @@ package com.BE.service.interfaceServices;
 
 import com.BE.model.request.ToolExecuteRequest;
 
+import java.util.Map;
+
 public interface IToolAggregatorService {
-    String executeExternalTool(ToolExecuteRequest request);
+    Map<String,Object>  executeExternalTool(ToolExecuteRequest request);
 
     String executeInternalTool(ToolExecuteRequest request);
 }

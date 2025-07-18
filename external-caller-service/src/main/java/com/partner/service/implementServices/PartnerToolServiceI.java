@@ -6,11 +6,12 @@ import com.partner.service.interfaceServices.IPartnerToolService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
-
+import java.util.Map;
 
 
 @Service
@@ -22,9 +23,8 @@ public class PartnerToolServiceI implements IPartnerToolService {
      WebClient.Builder webClient;
 
 
-
     @Override
-    public Mono<String> execute(ToolExecuteRequest input) {
+    public Mono<Map<String, Object>> execute(ToolExecuteRequest input) {
         return tokenService.getAccessToken(
                         input.getToolName(),
                         input.getTokenUrl(),
@@ -37,8 +37,10 @@ public class PartnerToolServiceI implements IPartnerToolService {
                         .headers(h -> h.setBearerAuth(token))
                         .bodyValue(input.getPayload())
                         .retrieve()
-                        .bodyToMono(String.class));
+                        .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
+                );
     }
+
 
 }
 

@@ -2,6 +2,7 @@ package com.BE.controller;
 
 import com.BE.model.request.ToolExecutionLogRequest;
 import com.BE.model.request.ToolExecutionLogSearchRequest;
+import com.BE.model.request.ToolLogUpdateRequest;
 import com.BE.model.response.ToolExecutionLogResponse;
 import com.BE.service.interfaceServices.IToolExecutionLogService;
 import com.BE.utils.ResponseHandler;
@@ -53,4 +54,23 @@ public class ToolExecutionLogController {
     public ResponseEntity<?> getAll(@ParameterObject ToolExecutionLogSearchRequest request) {
         return responseHandler.response(200, "Lấy danh sách log thành công", service.getAll(request));
     }
+
+    @PutMapping("/{id}/output")
+    @Operation(
+            summary = "Cập nhật output và trạng thái log theo ID",
+            description = "API này cho phép cập nhật kết quả đầu ra (output) và trạng thái thực thi (success/failed) của một log theo ID."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Cập nhật thành công"),
+            @ApiResponse(responseCode = "404", description = "Không tìm thấy log với ID tương ứng"),
+            @ApiResponse(responseCode = "400", description = "Dữ liệu không hợp lệ")
+    })
+    public ResponseEntity<?> updateOutput(
+            @PathVariable Long toolLogId,
+            @Valid @RequestBody ToolLogUpdateRequest request
+    ) {
+        service.updateOutputByLogId(toolLogId, request);
+        return responseHandler.response(200, "Cập nhật output thành công", null);
+    }
+
 }
