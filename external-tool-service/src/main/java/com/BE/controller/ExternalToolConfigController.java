@@ -17,6 +17,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -50,17 +51,18 @@ public class ExternalToolConfigController {
                                     name = "Ví dụ cấu hình AI Tool",
                                     summary = "Công cụ AI nội bộ",
                                     value = """
-                                    {
-                                      "name": "AI-Writer",
-                                      "apiUrl": "https://api.aiwriter.com/generate",
-                                      "tokenUrl": "https://api.aiwriter.com/token",
-                                      "clientId": "ai-client",
-                                      "clientSecret": "super-secret",
-                                      "description": "Tích hợp AI để tạo văn bản",
-                                      "tokenCostPerQuery": 8,
-                                      "inputJson": "{\\"className\\": \\"SE1705\\"}"
-                                    }
-                                    """
+                                            {
+                                              "name": "AI-Writer",
+                                              "apiUrl": "https://api.aiwriter.com/generate",
+                                              "tokenUrl": "https://api.aiwriter.com/token",
+                                              "clientId": "ai-client",
+                                              "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==",
+                                              "clientSecret": "super-secret",
+                                              "description": "Tích hợp AI để tạo văn bản",
+                                              "tokenCostPerQuery": 8,
+                                              "inputJson": {"className": "SE1705"}
+                                            }
+                                            """
                             )
                     }
             )
@@ -87,7 +89,8 @@ public class ExternalToolConfigController {
     public ResponseEntity<?> getAll(
             @ParameterObject ExternalToolSearchRequest request
     ) {
-        return responseHandler.response(200, "Lấy tất cả tool thành công",service.getAll(request));
+        Page<ExternalToolConfigResponse> externalToolConfigResponses = service.getAll(request);
+        return responseHandler.response(200, "Lấy tất cả tool thành công", externalToolConfigResponses);
     }
 
     @GetMapping("/{id}")
@@ -101,7 +104,6 @@ public class ExternalToolConfigController {
     public ResponseEntity<?> getById(@PathVariable Long id) {
         return responseHandler.response(200, "Lấy chi tiết thành công", service.getById(id));
     }
-
 
 
     @PutMapping("/{id}")
@@ -124,17 +126,18 @@ public class ExternalToolConfigController {
                                     name = "Ví dụ cấu hình AI Tool",
                                     summary = "Công cụ AI nội bộ",
                                     value = """
-                                    {
-                                      "name": "Tạo slide bài giảng",
-                                      "apiUrl": "https://api.aiwriter.com/generate",
-                                      "tokenUrl": "https://api.aiwriter.com/token",
-                                      "clientId": "ai-client",
-                                      "clientSecret": "super-secret",
-                                      "description": "Tích hợp AI để tạo văn bản",
-                                      "tokenCostPerQuery": 10,
-                                      "inputJson": "{\\"className\\": \\"SE1705\\"}"
-                                    }
-                                    """
+                                            {
+                                              "name": "Tạo slide bài giảng",
+                                              "apiUrl": "https://api.aiwriter.com/generate",
+                                              "tokenUrl": "https://api.aiwriter.com/token",
+                                              "clientId": "ai-client",
+                                              "clientSecret": "super-secret",
+                                              "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==",
+                                              "description": "Tích hợp AI để tạo văn bản",
+                                              "tokenCostPerQuery": 10,
+                                              "inputJson": {"className": "SE1705"}
+                                            }
+                                            """
                             )
                     }
             )

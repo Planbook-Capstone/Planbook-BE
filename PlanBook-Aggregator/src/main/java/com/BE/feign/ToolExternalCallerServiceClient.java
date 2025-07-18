@@ -5,6 +5,7 @@ import com.BE.model.response.DataResponseDTO;
 import com.BE.model.response.ExternalToolConfigResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.Map;
 
@@ -12,6 +13,6 @@ import java.util.Map;
 public interface ToolExternalCallerServiceClient {
 
     @PostMapping("/api/partner-tools")
-    DataResponseDTO<Map<String, Object>> executeExternalTool(ToolExecuteExternalRequest toolExecuteExternalRequest);
+    DataResponseDTO<Map<String, Object>> executeExternalTool(@RequestBody ToolExecuteExternalRequest toolExecuteExternalRequest);
 
 }

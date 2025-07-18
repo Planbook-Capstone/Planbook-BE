@@ -15,20 +15,15 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class ExternalToolConfigResponse {
+public class ExternalToolConfigPublicResponse {
     UUID id;
     String name;
     String icon;
-    String apiUrl;
-    String tokenUrl;
-    String clientId;
-    String clientSecret;
     Integer tokenCostPerQuery;
     ToolTypeEnum toolType;
     Map<String, Object> inputJson;
     String description;
     ToolStatusEnum status;
-    UUID createdBy;
     LocalDateTime createdAt;
     LocalDateTime updatedAt;
 }

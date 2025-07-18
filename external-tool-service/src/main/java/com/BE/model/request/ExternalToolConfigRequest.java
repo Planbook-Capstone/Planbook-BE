@@ -57,6 +57,14 @@ public class ExternalToolConfigRequest {
     )
     String clientSecret;
 
+    @Schema(
+            description = "Icon đại diện cho công cụ hỗ trợ, có thể là base64 encoded string", // ĐÃ THAY ĐỔI MÔ TẢ
+            example = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==",
+            type = "string",
+            nullable = true
+    )
+    String icon;
+
 
     @Schema(description = "Dữ liệu JSON đầu vào cho tool", example = "{\"query\": \"hello\"}")
     @NotNull(message = "Trường inputJson không được để trống")
