@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("api/tool")
 @RequiredArgsConstructor
@@ -27,20 +29,15 @@ public class ToolAggregatorController {
 
     @PostMapping("/execute")
     public ResponseEntity executeTool(@Valid @RequestBody ToolExecuteRequest request) {
-        Object result;
-
         switch (request.getToolType()) {
             case EXTERNAL:
-                result = iToolAggregatorService.executeExternalTool(request);
-                break;
+                return responseHandler.response(200, "Thực thi thành công", iToolAggregatorService.executeExternalTool(request));
             case INTERNAL:
-                result = iToolAggregatorService.executeInternalTool(request);
-                break;
+                return responseHandler.response(200, "Thực thi thành công", iToolAggregatorService.executeInternalTool(request));
             default:
                 return responseHandler.response(404, "ToolType không được hỗ trợ: " + request.getToolType(), null);
         }
 
-        return responseHandler.response(200, "Thực thi thành công", result);
     }
 
 

@@ -50,12 +50,15 @@ public class ToolExecutionLogServiceImpl implements IToolExecutionLogService {
     @Transactional
     public ToolExecutionLogResponse save(ToolExecutionLogRequest request) {
         ToolExecutionLog log = mapper.toEntity(request);
-        log.setUpdatedAt(dateNowUtils.getCurrentDateTimeHCM());
-        log.setCreatedAt(dateNowUtils.getCurrentDateTimeHCM());
         log.setStatus(ExecutionStatus.PENDING);
         ToolExecutionLog saved = repository.save(log);
         ToolExecutionLogResponse response = mapper.toResponse(saved);
+
         if (request.getToolType().equals(ToolTypeEnum.EXTERNAL)) {
+
+
+
+
 
         } else {
             try {
@@ -157,20 +160,20 @@ public class ToolExecutionLogServiceImpl implements IToolExecutionLogService {
 
 
     @Override
-    public void updateOutputByLogId(Long toolLogId, boolean success, Map<String, Object> output) {
+    public void updateOutputByLogId(Long toolLogId, ToolLogUpdateRequest output) {
         ToolExecutionLog log = repository.findById(toolLogId)
                 .orElseThrow(() -> new NotFoundException("Không tìm thấy log với ID: " + toolLogId));
 
         // Cập nhật output và status
-        log.setOutput(output);
-        log.setStatus(success ? ExecutionStatus.SUCCESS : ExecutionStatus.FAILED);
+        log.setOutput(output.getOutput());
+        log.setStatus(output.getSuccess() ? ExecutionStatus.SUCCESS : ExecutionStatus.FAILED);
 
         log = repository.save(log);
 
         WebSocketMessageRequest webSocketMessageRequest =  WebSocketMessageRequest.builder()
                 .userId(log.getUserId().toString())
                 .destination("/queue/notifications")
-                .payload(output)
+                .payload(output.getOutput())
                 .build();
 
         sendWebSocket(webSocketMessageRequest);

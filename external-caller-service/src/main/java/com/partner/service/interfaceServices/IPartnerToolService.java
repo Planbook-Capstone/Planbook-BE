@@ -6,5 +6,5 @@ import reactor.core.publisher.Mono;
 import java.util.Map;
 
 public interface IPartnerToolService {
-     Mono<String> execute(ToolExecuteRequest input);
+     Mono<Map<String, Object>> execute(ToolExecuteRequest input);
 }
