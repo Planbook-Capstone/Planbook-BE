@@ -1,24 +1,24 @@
 package com.BE.service.implementServices;
 
+import com.BE.enums.ToolStatusEnum;
+import com.BE.enums.ToolTypeEnum;
 import com.BE.feign.AuthServiceClient;
 import com.BE.feign.ToolExternalCallerServiceClient;
 import com.BE.feign.ToolExternalServiceClient;
 import com.BE.feign.ToolLogServiceClient;
-import com.BE.model.request.ToolExecuteExternalRequest;
-import com.BE.model.request.ToolExecuteRequest;
-import com.BE.model.request.ToolExecutionLogRequest;
-import com.BE.model.request.ToolLogUpdateRequest;
-import com.BE.model.response.BookTypeResponse;
-import com.BE.model.response.DataResponseDTO;
-import com.BE.model.response.ExternalToolConfigResponse;
-import com.BE.model.response.ToolExecutionLogResponse;
+import com.BE.mapper.ToolAggregatorMapper;
+import com.BE.model.request.*;
+import com.BE.model.response.*;
 import com.BE.service.interfaceServices.IToolAggregatorService;
 import com.BE.utils.AccountUtils;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -29,9 +29,9 @@ public class ToolAggregatorServiceImpl implements IToolAggregatorService {
     ToolExternalServiceClient toolExternalServiceClient;
     ToolExternalCallerServiceClient toolExternalCallerServiceClient;
     AuthServiceClient toolInternalServiceClient;
-
     ToolLogServiceClient toolLogServiceClient;
 
+    ToolAggregatorMapper toolAggregatorMapper;
 
     AccountUtils accountUtils;
 
@@ -53,6 +53,64 @@ public class ToolAggregatorServiceImpl implements IToolAggregatorService {
 
         return response.getMessage();
     }
+
+    @Override
+    public AggregatedToolResponse getAggregatedToolInfo(ToolSearchPageRequest request) {
+        Map<String, Object> externalToolParams = new HashMap<>();
+        Map<String, Object> bookTypeParams = new HashMap<>();
+
+        ToolStatusEnum status = request.getStatus();
+        ToolTypeEnum toolType = request.getToolType();
+
+
+        if (request.getCreatedBy() != null) externalToolParams.put("createdBy", request.getCreatedBy());
+        if (request.getOffset() != null) {
+            externalToolParams.put("offset", request.getOffset());
+            bookTypeParams.put("page", request.getOffset());
+        }
+        if (request.getPageSize() != null) {
+            externalToolParams.put("pageSize", request.getPageSize());
+            bookTypeParams.put("size", request.getPageSize());
+        }
+        if (request.getSearch() != null && !request.getSearch().isBlank()) {
+            externalToolParams.put("search", request.getSearch());
+            bookTypeParams.put("search", request.getSearch());
+        }
+        if (request.getSortBy() != null) {
+            externalToolParams.put("sortBy", request.getSortBy().name());
+            bookTypeParams.put("sortBy", request.getSortBy().name());
+        }
+        if (request.getSortDirection() != null) {
+            externalToolParams.put("sortDirection", request.getSortDirection().name());
+            bookTypeParams.put("sortDirection", request.getSortDirection().name());
+        }
+        if (status != null) {
+            externalToolParams.put("status", status.name());
+            if (status == ToolStatusEnum.ACTIVE || status == ToolStatusEnum.INACTIVE) {
+                bookTypeParams.put("status", status.name());
+            }
+        }
+
+        DataResponseDTO<Page<ExternalToolConfigResponse>> externalTools = new DataResponseDTO<>();
+        if (toolType == null || toolType == ToolTypeEnum.EXTERNAL) {
+            externalTools = toolExternalServiceClient.getAll(externalToolParams);
+        }
+
+        DataResponseDTO<Page<BookTypeResponse>> internalToool = new DataResponseDTO<>();
+        if (toolType == null || toolType == ToolTypeEnum.INTERNAL) {
+            internalToool = toolInternalServiceClient.getBookTypes(bookTypeParams);
+        }
+
+
+        Page<ExternalToolConfigPublicResponse> externalToolPage = externalTools.getData()
+                .map(toolAggregatorMapper::toPublicResponse);
+
+        return AggregatedToolResponse.builder()
+                .externalTools(externalToolPage)
+                .internalTools(internalToool.getData())
+                .build();
+    }
+
 
     @Override
     public Map<String, Object> executeExternalTool(ToolExecuteRequest request) {

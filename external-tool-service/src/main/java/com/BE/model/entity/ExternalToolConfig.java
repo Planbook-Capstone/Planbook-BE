@@ -38,6 +38,10 @@ public class ExternalToolConfig {
 
     Integer tokenCostPerQuery;
 
+    @Lob
+    @Column(columnDefinition = "LONGTEXT")
+    String icon;
+
     @Enumerated(EnumType.STRING)
     ToolTypeEnum toolType;
 

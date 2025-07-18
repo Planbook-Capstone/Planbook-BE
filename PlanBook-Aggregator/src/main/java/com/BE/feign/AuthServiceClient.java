@@ -5,11 +5,10 @@ import com.BE.model.response.AuthenticationResponse;
 import com.BE.model.response.BookTypeResponse;
 import com.BE.model.response.DataResponseDTO;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.data.domain.Page;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
 import java.util.UUID;
 
 @FeignClient(name = "auth-service")
@@ -23,6 +22,12 @@ public interface AuthServiceClient {
 
     @GetMapping("/api/book-types/{id}")
     DataResponseDTO<BookTypeResponse> getBookTypeById(@PathVariable("id") UUID id);
+
+
+    @GetMapping("/api/book-types")
+    DataResponseDTO<Page<BookTypeResponse>> getBookTypes(
+            @RequestParam Map<String, Object> params
+    );
 
 //    @PostMapping("/auth/login-google")
 //    AuthenticationResponse loginGoogle(@RequestBody LoginGoogleRequest request);
