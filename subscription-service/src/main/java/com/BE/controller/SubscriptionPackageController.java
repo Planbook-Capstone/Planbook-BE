@@ -23,9 +23,9 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/subscription-packages")
 //@SecurityRequirement(name = "api")
-@RequiredArgsConstructor
 public class SubscriptionPackageController {
 
     private final ISubscriptionPackageService service;
