@@ -19,6 +19,7 @@ public class ExamSubmissionResponse {
     private Float score;
     private Integer correctCount;
     private Integer totalQuestions;
+    private Float maxScore;
     private Map<String, Object> answersJson;
     private LocalDateTime submittedAt;
 }

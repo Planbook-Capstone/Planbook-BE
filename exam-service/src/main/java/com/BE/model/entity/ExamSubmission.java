@@ -45,7 +45,10 @@ public class ExamSubmission {
     
     @Column(name = "total_questions", nullable = false)
     private Integer totalQuestions;
-    
+
+    @Column(name = "max_score", nullable = false)
+    private Float maxScore;
+
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "answers_json", columnDefinition = "JSON", nullable = false)
     private Map<String, Object> answersJson;

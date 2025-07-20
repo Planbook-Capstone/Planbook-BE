@@ -210,7 +210,7 @@ public class ExamInstanceServiceImpl implements IExamInstanceService {
             log.info("Original student answers: {}", request.getAnswers());
 
             // Store the answers directly as a Map with "answers" key
-            answersJson = new HashMap<>();
+                answersJson = new HashMap<>();
             answersJson.put("answers", request.getAnswers());
 
             // Log the converted JSON for debugging

@@ -17,6 +17,7 @@ public class SubmitExamResponse {
     private Float score;
     private Integer correctCount;
     private Integer totalQuestions;
+    private Float maxScore;
     private LocalDateTime submittedAt;
     private String message;
 }

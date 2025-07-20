@@ -80,9 +80,20 @@ public class ExamGradingUtils {
                 throw new BadRequestException("No questions were found to grade. Please check your answer format.");
             }
 
-            float score = (float) correctCount / totalQuestions * 100;
+            // Calculate score using custom grading config if provided
+            float score;
+            float maxScore;
+            if (customGradingConfig != null && !customGradingConfig.isEmpty()) {
+                WeightedScoreResult result = calculateWeightedScoreWithMax(details, customGradingConfig, customTotalScore);
+                score = result.score;
+                maxScore = result.maxScore;
+            } else {
+                // Return raw correct count without any conversion
+                score = (float) correctCount;
+                maxScore = (float) totalQuestions;
+            }
 
-            return new ExamGradingResult(score, correctCount, totalQuestions, details);
+            return new ExamGradingResult(score, correctCount, totalQuestions, maxScore, details);
 
         } catch (BadRequestException e) {
             throw e;
@@ -186,8 +197,9 @@ public class ExamGradingUtils {
             }
 
             float score = (float) correctCount / totalQuestions * 100;
+            float maxScore = 100f; // Standard grading uses 100 as max
 
-            return new ExamGradingResult(score, correctCount, totalQuestions, details);
+            return new ExamGradingResult(score, correctCount, totalQuestions, maxScore, details);
 
         } catch (BadRequestException e) {
             // Re-throw BadRequestException as-is
@@ -205,7 +217,7 @@ public class ExamGradingUtils {
                                                   List<Map<String, Object>> studentQuestions,
                                                   String partName) {
         if (templateQuestions == null || templateQuestions.isEmpty()) {
-            return new ExamGradingResult(0f, 0, 0, new ArrayList<>());
+            return new ExamGradingResult(0f, 0, 0, 0f, new ArrayList<>());
         }
 
         if (studentQuestions == null) {
@@ -240,45 +252,58 @@ public class ExamGradingUtils {
                 if (studentQuestion == null) {
                     log.info("Student didn't answer question ID: {} in part: {}", templateQuestionId, partName);
                     // Still count as a question but mark as incorrect
-                    if (templateQuestion.containsKey("statements")) {
+                    if (templateQuestion.containsKey("subQuestions")) {
                         @SuppressWarnings("unchecked")
-                        Map<String, Object> templateStatements = (Map<String, Object>) templateQuestion.get("statements");
-                        if (templateStatements != null) {
-                            for (String statementKey : templateStatements.keySet()) {
-                                String fullQuestionId = partName + "_Q" + templateQuestionId + "_" + statementKey;
-                                details.add(new ExamResultDetailData(fullQuestionId, null, "N/A", false));
+                        List<Map<String, Object>> templateSubQuestions = (List<Map<String, Object>>) templateQuestion.get("subQuestions");
+                        if (templateSubQuestions != null) {
+                            for (Map<String, Object> templateSubQuestion : templateSubQuestions) {
+                                String subQuestionId = (String) templateSubQuestion.get("id");
+                                Object correctAnswerObj = templateSubQuestion.get("answer");
+                                String correctAnswer = String.valueOf(correctAnswerObj);
+                                String fullQuestionId = partName + "_Q" + templateQuestionId + "_" + subQuestionId;
+                                details.add(new ExamResultDetailData(fullQuestionId, null, correctAnswer, false));
                             }
-                            // Count as ONE question regardless of number of statements
+                            // Count as ONE question regardless of number of sub-questions
                             totalQuestions++;
                         }
                     } else {
+                        String correctAnswer = getCorrectAnswer(templateQuestion);
                         String fullQuestionId = partName + "_Q" + templateQuestionId;
-                        details.add(new ExamResultDetailData(fullQuestionId, null, "N/A", false));
+                        details.add(new ExamResultDetailData(fullQuestionId, null, correctAnswer != null ? correctAnswer : "N/A", false));
                         totalQuestions++;
                     }
                     continue;
                 }
 
                 // Handle different question types
-                if (templateQuestion.containsKey("statements")) {
-                    // True/False questions with multiple statements - count as ONE question
+                if (templateQuestion.containsKey("subQuestions")) {
+                    // True/False questions with multiple sub-questions - count as ONE question
                     @SuppressWarnings("unchecked")
-                    Map<String, Object> templateStatements = (Map<String, Object>) templateQuestion.get("statements");
+                    List<Map<String, Object>> templateSubQuestions = (List<Map<String, Object>>) templateQuestion.get("subQuestions");
                     @SuppressWarnings("unchecked")
-                    Map<String, Object> studentStatements = (Map<String, Object>) studentQuestion.get("statements");
+                    List<Map<String, Object>> studentSubAnswers = studentQuestion != null ?
+                        (List<Map<String, Object>>) studentQuestion.get("subAnswers") : new ArrayList<>();
 
-                    if (templateStatements != null) {
+                    if (templateSubQuestions != null) {
                         int statementCorrectCount = 0;
                         int statementTotalCount = 0;
 
-                        for (String statementKey : templateStatements.keySet()) {
-                            @SuppressWarnings("unchecked")
-                            Map<String, Object> templateStatement = (Map<String, Object>) templateStatements.get(statementKey);
-                            String correctAnswer = String.valueOf(templateStatement.get("answer"));
+                        for (Map<String, Object> templateSubQuestion : templateSubQuestions) {
+                            String subQuestionId = (String) templateSubQuestion.get("id");
+                            Object correctAnswerObj = templateSubQuestion.get("answer");
+                            String correctAnswer = String.valueOf(correctAnswerObj);
                             String studentAnswer = null;
 
-                            if (studentStatements != null) {
-                                studentAnswer = (String) studentStatements.get(statementKey);
+                            // Find corresponding student sub-answer
+                            if (studentSubAnswers != null) {
+                                for (Map<String, Object> studentSubAnswer : studentSubAnswers) {
+                                    String studentSubId = (String) studentSubAnswer.get("id");
+                                    if (subQuestionId != null && subQuestionId.equals(studentSubId)) {
+                                        Object studentAnswerObj = studentSubAnswer.get("answer");
+                                        studentAnswer = String.valueOf(studentAnswerObj);
+                                        break;
+                                    }
+                                }
                             }
 
                             boolean isCorrect = correctAnswer.equals(studentAnswer);
@@ -286,16 +311,16 @@ public class ExamGradingUtils {
                                 statementCorrectCount++;
                             }
 
-                            String fullQuestionId = partName + "_Q" + templateQuestionId + "_" + statementKey;
+                            String fullQuestionId = partName + "_Q" + templateQuestionId + "_" + subQuestionId;
                             details.add(new ExamResultDetailData(fullQuestionId, studentAnswer, correctAnswer, isCorrect));
                             statementTotalCount++;
                         }
 
-                        // Count the whole question as correct only if ALL statements are correct
+                        // Count the whole question as correct only if ALL sub-questions are correct
                         if (statementCorrectCount == statementTotalCount && statementTotalCount > 0) {
                             correctCount++;
                         }
-                        totalQuestions++; // Count as ONE question regardless of number of statements
+                        totalQuestions++; // Count as ONE question regardless of number of sub-questions
                     }
                 } else {
                     // Regular questions (multiple choice, short answer)
@@ -314,15 +339,211 @@ public class ExamGradingUtils {
             }
 
             if (totalQuestions == 0) {
-                return new ExamGradingResult(0f, 0, 0, new ArrayList<>());
+                return new ExamGradingResult(0f, 0, 0, 0f, new ArrayList<>());
             }
 
-            return new ExamGradingResult((float) correctCount / totalQuestions * 100, correctCount, totalQuestions, details);
+            return new ExamGradingResult((float) correctCount / totalQuestions * 100, correctCount, totalQuestions, 100f, details);
 
         } catch (Exception e) {
             log.error("Error grading questions in part {}: {}", partName, e.getMessage(), e);
             throw new BadRequestException("Error grading questions in part: " + partName);
         }
+    }
+
+    /**
+     * Calculate weighted score based on grading config
+     */
+    private float calculateWeightedScore(List<ExamResultDetailData> details,
+                                       Map<String, Double> gradingConfig,
+                                       Double totalScore) {
+        if (details == null || details.isEmpty()) {
+            return 0f;
+        }
+
+        double earnedScore = 0.0;
+        double maxPossibleScore = 0.0;
+
+        // Group details by part and main question
+        Map<String, Map<String, List<ExamResultDetailData>>> detailsByPartAndQuestion = new HashMap<>();
+        for (ExamResultDetailData detail : details) {
+            String questionId = detail.getQuestionId();
+            String partName = extractPartName(questionId);
+            String mainQuestionId = extractMainQuestionId(questionId);
+
+            detailsByPartAndQuestion
+                .computeIfAbsent(partName, k -> new HashMap<>())
+                .computeIfAbsent(mainQuestionId, k -> new ArrayList<>())
+                .add(detail);
+        }
+
+        // Calculate score for each part
+        for (Map.Entry<String, Map<String, List<ExamResultDetailData>>> partEntry : detailsByPartAndQuestion.entrySet()) {
+            String partName = partEntry.getKey();
+            Map<String, List<ExamResultDetailData>> questionsInPart = partEntry.getValue();
+
+            Double partWeight = gradingConfig.get(partName);
+            if (partWeight == null) {
+                log.warn("No grading config found for part: {}, using default weight 1.0", partName);
+                partWeight = 1.0;
+            }
+
+            int correctQuestionsInPart = 0;
+            int totalQuestionsInPart = questionsInPart.size();
+
+            // For each main question in this part
+            for (Map.Entry<String, List<ExamResultDetailData>> questionEntry : questionsInPart.entrySet()) {
+                List<ExamResultDetailData> questionDetails = questionEntry.getValue();
+
+                // Check if this main question is correct
+                // For sub-questions (true/false), ALL must be correct
+                // For single questions, just check the one answer
+                boolean isMainQuestionCorrect = questionDetails.stream()
+                    .allMatch(detail -> detail.getIsCorrect());
+
+                if (isMainQuestionCorrect) {
+                    correctQuestionsInPart++;
+                }
+            }
+
+            // Calculate part score
+            double partScore = correctQuestionsInPart * partWeight;
+            earnedScore += partScore;
+
+            // Calculate max possible score for this part
+            double maxPartScore = totalQuestionsInPart * partWeight;
+            maxPossibleScore += maxPartScore;
+
+            log.info("Part {}: {}/{} questions correct, weight={}, score={}/{}",
+                partName, correctQuestionsInPart, totalQuestionsInPart, partWeight, partScore, maxPartScore);
+        }
+
+        // Return raw earned score without any conversion
+        return (float) earnedScore;
+    }
+
+    /**
+     * Calculate weighted score with max score information
+     */
+    private WeightedScoreResult calculateWeightedScoreWithMax(List<ExamResultDetailData> details,
+                                                            Map<String, Double> gradingConfig,
+                                                            Double totalScore) {
+        if (details == null || details.isEmpty()) {
+            return new WeightedScoreResult(0f, 0f);
+        }
+
+        double earnedScore = 0.0;
+        double maxPossibleScore = 0.0;
+
+        // Group details by part and main question
+        Map<String, Map<String, List<ExamResultDetailData>>> detailsByPartAndQuestion = new HashMap<>();
+        for (ExamResultDetailData detail : details) {
+            String questionId = detail.getQuestionId();
+            String partName = extractPartName(questionId);
+            String mainQuestionId = extractMainQuestionId(questionId);
+
+            detailsByPartAndQuestion
+                .computeIfAbsent(partName, k -> new HashMap<>())
+                .computeIfAbsent(mainQuestionId, k -> new ArrayList<>())
+                .add(detail);
+        }
+
+        // Calculate score for each part
+        for (Map.Entry<String, Map<String, List<ExamResultDetailData>>> partEntry : detailsByPartAndQuestion.entrySet()) {
+            String partName = partEntry.getKey();
+            Map<String, List<ExamResultDetailData>> questionsInPart = partEntry.getValue();
+
+            Double partWeight = gradingConfig.get(partName);
+            if (partWeight == null) {
+                log.warn("No grading config found for part: {}, using default weight 1.0", partName);
+                partWeight = 1.0;
+            }
+
+            int correctQuestionsInPart = 0;
+            int totalQuestionsInPart = questionsInPart.size();
+
+            // For each main question in this part
+            for (Map.Entry<String, List<ExamResultDetailData>> questionEntry : questionsInPart.entrySet()) {
+                List<ExamResultDetailData> questionDetails = questionEntry.getValue();
+
+                // Check if this main question is correct
+                // For sub-questions (true/false), ALL must be correct
+                // For single questions, just check the one answer
+                boolean isMainQuestionCorrect = questionDetails.stream()
+                    .allMatch(detail -> detail.getIsCorrect());
+
+                if (isMainQuestionCorrect) {
+                    correctQuestionsInPart++;
+                }
+            }
+
+            // Calculate part score
+            double partScore = correctQuestionsInPart * partWeight;
+            earnedScore += partScore;
+
+            // Calculate max possible score for this part
+            double maxPartScore = totalQuestionsInPart * partWeight;
+            maxPossibleScore += maxPartScore;
+
+            log.info("Part {}: {}/{} questions correct, weight={}, score={}/{}",
+                partName, correctQuestionsInPart, totalQuestionsInPart, partWeight, partScore, maxPartScore);
+        }
+
+        return new WeightedScoreResult((float) earnedScore, (float) maxPossibleScore);
+    }
+
+    /**
+     * Result class for weighted score calculation
+     */
+    private static class WeightedScoreResult {
+        final float score;
+        final float maxScore;
+
+        WeightedScoreResult(float score, float maxScore) {
+            this.score = score;
+            this.maxScore = maxScore;
+        }
+    }
+
+    /**
+     * Extract part name from question ID
+     */
+    private String extractPartName(String questionId) {
+        if (questionId == null) {
+            return "UNKNOWN";
+        }
+
+        // Question ID format: "PHẦN I_Q1" or "PHẦN II_Q7_7a"
+        int underscoreIndex = questionId.indexOf("_");
+        if (underscoreIndex > 0) {
+            return questionId.substring(0, underscoreIndex);
+        }
+
+        return "UNKNOWN";
+    }
+
+    /**
+     * Extract main question ID from question ID
+     */
+    private String extractMainQuestionId(String questionId) {
+        if (questionId == null) {
+            return "UNKNOWN";
+        }
+
+        // Question ID format: "PHẦN I_Q1" or "PHẦN II_Q7_7a"
+        // We want to extract "Q1" or "Q7" (the main question part)
+        int underscoreIndex = questionId.indexOf("_");
+        if (underscoreIndex > 0) {
+            String remaining = questionId.substring(underscoreIndex + 1);
+            // Check if there's another underscore (for sub-questions)
+            int secondUnderscoreIndex = remaining.indexOf("_");
+            if (secondUnderscoreIndex > 0) {
+                return remaining.substring(0, secondUnderscoreIndex); // "Q7"
+            } else {
+                return remaining; // "Q1"
+            }
+        }
+
+        return "UNKNOWN";
     }
 
     /**
@@ -345,18 +566,21 @@ public class ExamGradingUtils {
         private final Float score;
         private final Integer correctCount;
         private final Integer totalQuestions;
+        private final Float maxScore;
         private final List<ExamResultDetailData> details;
 
-        public ExamGradingResult(Float score, Integer correctCount, Integer totalQuestions, List<ExamResultDetailData> details) {
+        public ExamGradingResult(Float score, Integer correctCount, Integer totalQuestions, Float maxScore, List<ExamResultDetailData> details) {
             this.score = score;
             this.correctCount = correctCount;
             this.totalQuestions = totalQuestions;
+            this.maxScore = maxScore;
             this.details = details;
         }
 
         public Float getScore() { return score; }
         public Integer getCorrectCount() { return correctCount; }
         public Integer getTotalQuestions() { return totalQuestions; }
+        public Float getMaxScore() { return maxScore; }
         public List<ExamResultDetailData> getDetails() { return details; }
     }
 }

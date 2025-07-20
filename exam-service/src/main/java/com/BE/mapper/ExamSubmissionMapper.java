@@ -24,6 +24,7 @@ public interface ExamSubmissionMapper {
     @Mapping(target = "score", source = "gradingResult.score")
     @Mapping(target = "correctCount", source = "gradingResult.correctCount")
     @Mapping(target = "totalQuestions", source = "gradingResult.totalQuestions")
+    @Mapping(target = "maxScore", source = "gradingResult.maxScore")
     @Mapping(target = "answersJson", source = "answersJson")
     @Mapping(target = "submittedAt", ignore = true)
     @Mapping(target = "resultDetails", ignore = true)
