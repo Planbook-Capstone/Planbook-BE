@@ -1,11 +1,11 @@
 package com.BE.model.entity;
 
+import com.BE.config.TimestampEntityListener;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
@@ -17,6 +17,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "exam_templates")
+@EntityListeners(TimestampEntityListener.class)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -58,7 +59,6 @@ public class ExamTemplate {
     @Column(name = "version", nullable = false)
     private Integer version = 1;
     
-    @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
     

@@ -21,6 +21,7 @@ import com.BE.repository.ExamSubmissionRepository;
 import com.BE.repository.ExamTemplateRepository;
 import com.BE.service.interfaceService.IExamInstanceService;
 import com.BE.service.interfaceService.IExcelService;
+import com.BE.utils.DateNowUtils;
 import com.BE.utils.ExamGradingUtils;
 import com.BE.utils.ExamUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -51,6 +52,7 @@ public class ExamInstanceServiceImpl implements IExamInstanceService {
     private final ExamResultDetailRepository examResultDetailRepository;
     private final IExcelService excelService;
     private final ObjectMapper objectMapper;
+    private final DateNowUtils dateNowUtils;
     private final ExamUtils examUtils;
     private final ExamGradingUtils examGradingUtils;
     private final ExamInstanceMapper examInstanceMapper;
@@ -157,7 +159,7 @@ public class ExamInstanceServiceImpl implements IExamInstanceService {
         }
 
         // Additional time-based check for ACTIVE status
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = dateNowUtils.getCurrentDateTimeHCM();
         if (instance.getStatus() == ExamInstanceStatus.ACTIVE) {
             if (now.isBefore(instance.getStartAt()) || now.isAfter(instance.getEndAt())) {
                 throw new BadRequestException("Exam is not available at this time");
@@ -184,7 +186,7 @@ public class ExamInstanceServiceImpl implements IExamInstanceService {
         }
 
         // Additional time-based check for ACTIVE status
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = dateNowUtils.getCurrentDateTimeHCM();
         if (instance.getStatus() == ExamInstanceStatus.ACTIVE) {
             if (now.isBefore(instance.getStartAt()) || now.isAfter(instance.getEndAt())) {
                 throw new BadRequestException("Exam submission is not available at this time");
@@ -278,15 +280,15 @@ public class ExamInstanceServiceImpl implements IExamInstanceService {
         ExamInstanceStatus newStatus = request.getStatus();
 
         // Validate status transition using enum method
-        newStatus.validateTransitionFrom(currentStatus, instance);
+        newStatus.validateTransitionFrom(currentStatus, instance, dateNowUtils);
 
         // Update status
         instance.setStatus(newStatus);
-        instance.setStatusChangedAt(LocalDateTime.now());
+        instance.setStatusChangedAt(dateNowUtils.getCurrentDateTimeHCM());
         instance.setStatusChangeReason(request.getReason());
 
         // Handle special status changes using enum method
-        newStatus.handleStatusChange(instance, currentStatus);
+        newStatus.handleStatusChange(instance, currentStatus, dateNowUtils);
 
         ExamInstance savedInstance = examInstanceRepository.save(instance);
         log.info("Changed exam instance {} status from {} to {} by teacher {}",

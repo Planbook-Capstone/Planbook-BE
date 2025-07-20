@@ -2,6 +2,7 @@ package com.BE.enums;
 
 import com.BE.exception.BadRequestException;
 import com.BE.model.entity.ExamInstance;
+import com.BE.utils.DateNowUtils;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -96,8 +97,8 @@ public enum ExamInstanceStatus {
     /**
      * Validate status transition from current status to this status
      */
-    public void validateTransitionFrom(ExamInstanceStatus currentStatus, ExamInstance instance) {
-        LocalDateTime now = LocalDateTime.now();
+    public void validateTransitionFrom(ExamInstanceStatus currentStatus, ExamInstance instance, DateNowUtils dateNowUtils) {
+        LocalDateTime now = dateNowUtils.getCurrentDateTimeHCM();
 
         switch (this) {
             case ACTIVE:
@@ -155,11 +156,11 @@ public enum ExamInstanceStatus {
     /**
      * Handle special logic when transitioning to this status
      */
-    public void handleStatusChange(ExamInstance instance, ExamInstanceStatus oldStatus) {
+    public void handleStatusChange(ExamInstance instance, ExamInstanceStatus oldStatus, DateNowUtils dateNowUtils) {
         switch (this) {
             case ACTIVE:
                 // When starting exam, always update start time to current time
-                LocalDateTime now = LocalDateTime.now();
+                LocalDateTime now = dateNowUtils.getCurrentDateTimeHCM();
                 LocalDateTime originalStartTime = instance.getStartAt();
                 instance.setStartAt(now);
                 log.info("Starting exam {}. Original start time: {}, Actual start time: {}",
@@ -168,9 +169,10 @@ public enum ExamInstanceStatus {
 
             case COMPLETED:
                 // When completing exam, update end time if ending early
-                if (LocalDateTime.now().isBefore(instance.getEndAt())) {
+                LocalDateTime currentTime = dateNowUtils.getCurrentDateTimeHCM();
+                if (currentTime.isBefore(instance.getEndAt())) {
                     log.info("Completing exam {} early. Original end time: {}, Actual end time: {}",
-                            instance.getId(), instance.getEndAt(), LocalDateTime.now());
+                            instance.getId(), instance.getEndAt(), currentTime);
                 }
                 break;
 

@@ -1,12 +1,12 @@
 package com.BE.model.entity;
 
+import com.BE.config.TimestampEntityListener;
 import com.BE.enums.ExamInstanceStatus;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
 
 import java.time.LocalDateTime;
@@ -15,6 +15,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "exam_instances")
+@EntityListeners(TimestampEntityListener.class)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -56,7 +57,6 @@ public class ExamInstance {
     @Column(name = "status_change_reason")
     private String statusChangeReason;
 
-    @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
     
