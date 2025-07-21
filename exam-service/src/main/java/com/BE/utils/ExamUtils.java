@@ -40,7 +40,7 @@ public class ExamUtils {
     }
 
     /**
-     * Remove correct answers from exam content for students
+     * Remove correct answers from exam content for students and randomize question order
      */
     public Map<String, Object> removeCorrectAnswers(Map<String, Object> contentJson) {
         try {
@@ -52,6 +52,8 @@ public class ExamUtils {
                 @SuppressWarnings("unchecked")
                 List<Map<String, Object>> questions = (List<Map<String, Object>>) studentContent.get("questions");
                 List<Map<String, Object>> studentQuestions = removeAnswersFromQuestions(questions);
+                // Randomize question order
+                studentQuestions = randomizeQuestions(studentQuestions);
                 studentContent.put("questions", studentQuestions);
             }
 
@@ -68,6 +70,8 @@ public class ExamUtils {
                         @SuppressWarnings("unchecked")
                         List<Map<String, Object>> questions = (List<Map<String, Object>>) studentPart.get("questions");
                         List<Map<String, Object>> studentQuestions = removeAnswersFromQuestions(questions);
+                        // Randomize question order within each part
+                        studentQuestions = randomizeQuestions(studentQuestions);
                         studentPart.put("questions", studentQuestions);
                     }
 
@@ -118,6 +122,47 @@ public class ExamUtils {
         }
 
         return studentQuestions;
+    }
+
+    /**
+     * Randomize the order of questions while preserving their original question numbers
+     * This helps prevent students from copying answers from each other
+     */
+    private List<Map<String, Object>> randomizeQuestions(List<Map<String, Object>> questions) {
+        if (questions == null || questions.isEmpty()) {
+            return questions;
+        }
+
+        try {
+            // Create a copy of the questions list to avoid modifying the original
+            List<Map<String, Object>> randomizedQuestions = new ArrayList<>(questions);
+
+            // Add original index to each question for tracking
+            for (int i = 0; i < randomizedQuestions.size(); i++) {
+                Map<String, Object> question = randomizedQuestions.get(i);
+                // Store original question number (1-based) for reference
+                question.put("originalQuestionNumber", i + 1);
+            }
+
+            // Shuffle the questions randomly (only if more than 1 question)
+            if (randomizedQuestions.size() > 1) {
+                Collections.shuffle(randomizedQuestions);
+            }
+
+            // Update question numbers to reflect new order (1-based)
+            for (int i = 0; i < randomizedQuestions.size(); i++) {
+                Map<String, Object> question = randomizedQuestions.get(i);
+                question.put("questionNumber", i + 1);
+            }
+
+            log.debug("Randomized {} questions", randomizedQuestions.size());
+            return randomizedQuestions;
+
+        } catch (Exception e) {
+            log.error("Error randomizing questions: {}", e.getMessage());
+            // Return original list if randomization fails
+            return questions;
+        }
     }
 
     /**
