@@ -2,6 +2,7 @@ package com.BE.exception.handler;
 
 import com.BE.exception.exceptions.EnumValidationException;
 import com.BE.exception.exceptions.InvalidRefreshTokenException;
+import com.BE.exception.exceptions.InvalidSignatureException;
 import com.BE.exception.exceptions.NotFoundException;
 import com.BE.utils.EnumUtils;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -99,6 +100,25 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(InvalidRefreshTokenException.class)
     public ResponseEntity<String> handleInvalidRefreshTokenException(InvalidRefreshTokenException ex) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
+    }
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<String> handleRuntimeExceptionException(RuntimeException ex) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ex.getMessage());
+    }
+
+
+    @ExceptionHandler(InvalidSignatureException.class)
+    public ResponseEntity<Map<String, String>> handleInvalidSignatureException(InvalidSignatureException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", "Invalid Signature");
+        error.put("message", ex.getMessage());
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+    }
+
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity handleIllegalStateException(IllegalStateException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
     }
 
 }

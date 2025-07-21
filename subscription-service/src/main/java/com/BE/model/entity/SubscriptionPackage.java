@@ -32,7 +32,7 @@ public class SubscriptionPackage {
     Integer tokenAmount;
 
     @Column(nullable = false)
-    BigDecimal price;
+    BigDecimal price = BigDecimal.ZERO;;
 
     @Lob
     @Column(columnDefinition = "LONGTEXT")
