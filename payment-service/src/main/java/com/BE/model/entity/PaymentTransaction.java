@@ -4,6 +4,8 @@ package com.BE.model.entity;
 import com.BE.config.MapToJsonConverter;
 import com.BE.enums.GatewayEnum;
 import com.BE.enums.PaymentStatusEnum;
+import com.BE.enums.StatusEnum;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -17,7 +19,8 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "payment_transaction")
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -27,18 +30,17 @@ public class PaymentTransaction {
     @GeneratedValue(strategy = GenerationType.UUID)
     UUID id;
 
-    @Column(nullable = false)
-    UUID userId;
-
-    @Column(nullable = false)
-    UUID orderId;
+    @ManyToOne
+    @JoinColumn(name = "order_id")
+    @JsonIgnore
+    Order order;
 
     @Column(nullable = false)
     BigDecimal amount = BigDecimal.ZERO;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    PaymentStatusEnum status;
+    StatusEnum status;
 
     @Lob
     @Column(columnDefinition = "LONGTEXT")

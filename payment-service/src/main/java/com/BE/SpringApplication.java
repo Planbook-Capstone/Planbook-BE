@@ -16,10 +16,10 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 //@OpenAPIDefinition(info = @Info(title = "Do Minh API", version = "2.0", description = "Information"))
 @SecurityScheme(name = "api", scheme = "bearer", type = SecuritySchemeType.HTTP, in = SecuritySchemeIn.HEADER)
 @OpenAPIDefinition(
-		info = @Info(title = "Do Minh API", version = "2.0"),
-		servers = {
-				@Server(url = "https://biolab.life", description = "Production Server")
-		}
+		info = @Info(title = "Do Minh API", version = "2.0")
+//		,servers = {
+//				@Server(url = "https://biolab.life", description = "Production Server")
+//		}
 )
 public class SpringApplication {
 

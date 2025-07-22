@@ -1,5 +1,6 @@
 package com.BE.service.interfaceServices;
 
+import com.BE.model.entity.PaymentTransaction;
 import com.BE.model.request.CancelPaymentRequestDTO;
 import com.BE.model.request.CreatePaymentRequestDTO;
 import com.BE.model.request.RetryPaymentRequestDTO;
@@ -16,9 +17,9 @@ import java.util.Map;
 import java.util.UUID;
 
 public interface IPaymentService {
-    PaymentLinkResponseDTO createPaymentLink(CreatePaymentRequestDTO request);
-    PaymentLinkResponseDTO retryPayment(RetryPaymentRequestDTO request);
-    ObjectNode handlePayosWebhook(ObjectNode body) throws JsonProcessingException;
+    PaymentTransaction createPaymentLink(CreatePaymentRequestDTO request);
+    PaymentTransaction retryPayment(RetryPaymentRequestDTO request);
+    PaymentTransaction handlePayosWebhook(ObjectNode body) throws Exception;
 
     List<PaymentTransactionResponse> getTransactionsByOrderId(UUID orderId);
 

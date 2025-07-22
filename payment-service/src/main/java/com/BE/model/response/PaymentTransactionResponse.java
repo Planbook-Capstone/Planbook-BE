@@ -2,7 +2,7 @@ package com.BE.model.response;
 
 
 import com.BE.enums.GatewayEnum;
-import com.BE.enums.PaymentStatusEnum;
+import com.BE.enums.StatusEnum;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -19,9 +19,8 @@ import java.util.UUID;
 public class PaymentTransactionResponse {
     UUID id;
     UUID orderId;
-    UUID userId;
     BigDecimal amount;
-    PaymentStatusEnum status;
+    StatusEnum status;
     UUID parentTransactionId;
     Long payosOrderCode;
     GatewayEnum gateway;
