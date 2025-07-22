@@ -667,12 +667,19 @@ public class ExamInstanceController {
                 "studentName": "John Doe",
                 "answers": [
                     {
-                        "questionId": "1",
-                        "selectedAnswer": "B"
+                        "questionId": "be06dfd5-e0dc-43ee-9ce1-d8f34607dc8a",
+                        "answer": "A",
+                        "questionType": "multiple_choice"
                     },
                     {
-                        "questionId": "2",
-                        "selectedAnswer": "True"
+                        "questionId": "7992fce2-658a-4ed7-8883-e76fa60c7037",
+                        "answer": "A",
+                        "questionType": "true_false"
+                    },
+                    {
+                        "questionId": "0a45811d-42b1-4a2e-8382-21987cfdeac5",
+                        "answer": "1",
+                        "questionType": "short_answer"
                     }
                 ]
             }
@@ -766,13 +773,19 @@ public class ExamInstanceController {
                                 "studentName": "Nguyen Van A",
                                 "answers": [
                                     {
-                                        "part": "PHẦN I",
-                                        "questions": [
-                                            {
-                                                "id": 1,
-                                                "answer": "C"
-                                            }
-                                        ]
+                                        "questionId": "be06dfd5-e0dc-43ee-9ce1-d8f34607dc8a",
+                                        "answer": "A",
+                                        "questionType": "multiple_choice"
+                                    },
+                                    {
+                                        "questionId": "7992fce2-658a-4ed7-8883-e76fa60c7037",
+                                        "answer": "A",
+                                        "questionType": "true_false"
+                                    },
+                                    {
+                                        "questionId": "0a45811d-42b1-4a2e-8382-21987cfdeac5",
+                                        "answer": "1",
+                                        "questionType": "short_answer"
                                     }
                                 ]
                             }
