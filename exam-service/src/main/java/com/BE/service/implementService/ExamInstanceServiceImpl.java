@@ -196,7 +196,7 @@ public class ExamInstanceServiceImpl implements IExamInstanceService {
         
 
         // Grade the exam using new flat answer format
-        ExamGradingUtils.ExamGradingResult gradingResult = examGradingUtils.gradeExamWithFlatAnswersAndCustomConfig(
+        ExamGradingResult gradingResult = examGradingUtils.gradeExamWithFlatAnswersAndCustomConfig(
             instance.getTemplate().getContentJson(),
             request.getAnswers(),
             instance.getTemplate().getGradingConfig(),

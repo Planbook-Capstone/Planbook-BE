@@ -1,6 +1,8 @@
 package com.BE.utils;
 
 import com.BE.model.response.ExamResultDetailData;
+import com.BE.model.response.ExamGradingResult;
+import com.BE.model.response.WeightedScoreResult;
 import com.BE.exception.BadRequestException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -29,13 +31,14 @@ public class ExamGradingUtils {
         List<ExamResultDetailData> details = new ArrayList<>();
 
         try {
-            // Create a map of questionId -> student answer for quick lookup
+            // Create a map of questionId -> student answer for quick lookup (only for non-statement questions)
             Map<String, String> studentAnswerMap = new HashMap<>();
             for (Map<String, Object> studentAnswer : studentAnswers) {
                 String questionId = (String) studentAnswer.get("questionId");
-                String answer = (String) studentAnswer.get("answer");
-                if (questionId != null && answer != null) {
-                    studentAnswerMap.put(questionId, answer);
+                Object answerObj = studentAnswer.get("answer");
+                // Only add to map if answer is a String (not a Map for statement questions)
+                if (questionId != null && answerObj instanceof String) {
+                    studentAnswerMap.put(questionId, (String) answerObj);
                 }
             }
 
@@ -66,18 +69,29 @@ public class ExamGradingUtils {
                                 continue;
                             }
 
-                            String correctAnswer = getCorrectAnswer(templateQuestion);
-                            String studentAnswer = studentAnswerMap.get(questionId);
+                            // Handle different question types
+                            if (templateQuestion.containsKey("statements")) {
+                                // True/False questions with statements
+                                boolean isCorrect = gradeStatementQuestion(templateQuestion, studentAnswers, partName, details);
+                                if (isCorrect) {
+                                    correctCount++;
+                                }
+                                totalQuestions++;
+                            } else {
+                                // Regular questions (multiple choice, short answer)
+                                String correctAnswer = getCorrectAnswer(templateQuestion);
+                                String studentAnswer = studentAnswerMap.get(questionId);
 
-                            boolean isCorrect = correctAnswer != null && correctAnswer.equals(studentAnswer);
-                            if (isCorrect) {
-                                correctCount++;
+                                boolean isCorrect = correctAnswer != null && correctAnswer.equals(studentAnswer);
+                                if (isCorrect) {
+                                    correctCount++;
+                                }
+
+                                String fullQuestionId = partName + "_Q" + questionId;
+                                details.add(new ExamResultDetailData(fullQuestionId, studentAnswer,
+                                    correctAnswer != null ? correctAnswer : "N/A", isCorrect));
+                                totalQuestions++;
                             }
-
-                            String fullQuestionId = partName + "_Q" + questionId;
-                            details.add(new ExamResultDetailData(fullQuestionId, studentAnswer,
-                                correctAnswer != null ? correctAnswer : "N/A", isCorrect));
-                            totalQuestions++;
                         }
                     }
                 }
@@ -122,13 +136,14 @@ public class ExamGradingUtils {
         List<ExamResultDetailData> details = new ArrayList<>();
 
         try {
-            // Create a map of questionId -> student answer for quick lookup
+            // Create a map of questionId -> student answer for quick lookup (only for non-statement questions)
             Map<String, String> studentAnswerMap = new HashMap<>();
             for (Map<String, Object> studentAnswer : studentAnswers) {
                 String questionId = (String) studentAnswer.get("questionId");
-                String answer = (String) studentAnswer.get("answer");
-                if (questionId != null && answer != null) {
-                    studentAnswerMap.put(questionId, answer);
+                Object answerObj = studentAnswer.get("answer");
+                // Only add to map if answer is a String (not a Map for statement questions)
+                if (questionId != null && answerObj instanceof String) {
+                    studentAnswerMap.put(questionId, (String) answerObj);
                 }
             }
 
@@ -159,18 +174,29 @@ public class ExamGradingUtils {
                                 continue;
                             }
 
-                            String correctAnswer = getCorrectAnswer(templateQuestion);
-                            String studentAnswer = studentAnswerMap.get(questionId);
+                            // Handle different question types
+                            if (templateQuestion.containsKey("statements")) {
+                                // True/False questions with statements
+                                boolean isCorrect = gradeStatementQuestion(templateQuestion, studentAnswers, partName, details);
+                                if (isCorrect) {
+                                    correctCount++;
+                                }
+                                totalQuestions++;
+                            } else {
+                                // Regular questions (multiple choice, short answer)
+                                String correctAnswer = getCorrectAnswer(templateQuestion);
+                                String studentAnswer = studentAnswerMap.get(questionId);
 
-                            boolean isCorrect = correctAnswer != null && correctAnswer.equals(studentAnswer);
-                            if (isCorrect) {
-                                correctCount++;
+                                boolean isCorrect = correctAnswer != null && correctAnswer.equals(studentAnswer);
+                                if (isCorrect) {
+                                    correctCount++;
+                                }
+
+                                String fullQuestionId = partName + "_Q" + questionId;
+                                details.add(new ExamResultDetailData(fullQuestionId, studentAnswer,
+                                    correctAnswer != null ? correctAnswer : "N/A", isCorrect));
+                                totalQuestions++;
                             }
-
-                            String fullQuestionId = partName + "_Q" + questionId;
-                            details.add(new ExamResultDetailData(fullQuestionId, studentAnswer,
-                                correctAnswer != null ? correctAnswer : "N/A", isCorrect));
-                            totalQuestions++;
                         }
                     }
                 }
@@ -187,8 +213,8 @@ public class ExamGradingUtils {
             float maxScore;
             if (customGradingConfig != null && !customGradingConfig.isEmpty()) {
                 WeightedScoreResult result = calculateWeightedScoreWithMax(details, customGradingConfig, customTotalScore);
-                score = result.score;
-                maxScore = result.maxScore;
+                score = result.getScore();
+                maxScore = result.getMaxScore();
             } else {
                 // Return raw correct count without any conversion
                 score = (float) correctCount;
@@ -212,6 +238,72 @@ public class ExamGradingUtils {
 
 
 
+
+    /**
+     * Grade statement-based questions (True/False with multiple statements)
+     */
+    private boolean gradeStatementQuestion(Map<String, Object> templateQuestion,
+                                         List<Map<String, Object>> studentAnswers,
+                                         String partName,
+                                         List<ExamResultDetailData> details) {
+        String questionId = (String) templateQuestion.get("id");
+
+        // Find student answer for this question
+        Map<String, Object> studentAnswerObj = null;
+        for (Map<String, Object> studentAnswer : studentAnswers) {
+            if (questionId.equals(studentAnswer.get("questionId"))) {
+                studentAnswerObj = studentAnswer;
+                break;
+            }
+        }
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> templateStatements = (Map<String, Object>) templateQuestion.get("statements");
+
+        if (templateStatements == null || templateStatements.isEmpty()) {
+            log.warn("Template question {} has no statements", questionId);
+            return false;
+        }
+
+        // Get student answers for statements
+        @SuppressWarnings("unchecked")
+        Map<String, Object> studentStatementAnswers = studentAnswerObj != null ?
+            (Map<String, Object>) studentAnswerObj.get("answer") : new HashMap<>();
+
+        if (studentStatementAnswers == null) {
+            studentStatementAnswers = new HashMap<>();
+        }
+
+        int correctStatements = 0;
+        int totalStatements = 0;
+
+        // Check each statement
+        for (Map.Entry<String, Object> statementEntry : templateStatements.entrySet()) {
+            String statementKey = statementEntry.getKey(); // a, b, c, d
+            @SuppressWarnings("unchecked")
+            Map<String, Object> statementData = (Map<String, Object>) statementEntry.getValue();
+
+            Boolean correctAnswer = (Boolean) statementData.get("answer");
+            Object studentAnswerObj2 = studentStatementAnswers.get(statementKey);
+            Boolean studentAnswer = studentAnswerObj2 instanceof Boolean ? (Boolean) studentAnswerObj2 : null;
+
+            boolean isStatementCorrect = correctAnswer != null && correctAnswer.equals(studentAnswer);
+            if (isStatementCorrect) {
+                correctStatements++;
+            }
+
+            // Add detail for each statement
+            String fullQuestionId = partName + "_Q" + questionId + "_" + statementKey;
+            String studentAnswerStr = studentAnswer != null ? studentAnswer.toString() : "null";
+            String correctAnswerStr = correctAnswer != null ? correctAnswer.toString() : "null";
+
+            details.add(new ExamResultDetailData(fullQuestionId, studentAnswerStr, correctAnswerStr, isStatementCorrect));
+            totalStatements++;
+        }
+
+        // Question is correct only if ALL statements are correct
+        return correctStatements == totalStatements && totalStatements > 0;
+    }
 
     /**
      * Calculate weighted score with max score information
@@ -284,19 +376,6 @@ public class ExamGradingUtils {
     }
 
     /**
-     * Result class for weighted score calculation
-     */
-    private static class WeightedScoreResult {
-        final float score;
-        final float maxScore;
-
-        WeightedScoreResult(float score, float maxScore) {
-            this.score = score;
-            this.maxScore = maxScore;
-        }
-    }
-
-    /**
      * Extract part name from question ID
      */
     private String extractPartName(String questionId) {
@@ -304,7 +383,7 @@ public class ExamGradingUtils {
             return "UNKNOWN";
         }
 
-        // Question ID format: "PHẦN I_Q1" or "PHẦN II_Q7_7a"
+        // Question ID format: "PHẦN I_Q{uuid}" or "PHẦN II_Q{uuid}_a" (for statements)
         int underscoreIndex = questionId.indexOf("_");
         if (underscoreIndex > 0) {
             return questionId.substring(0, underscoreIndex);
@@ -321,17 +400,17 @@ public class ExamGradingUtils {
             return "UNKNOWN";
         }
 
-        // Question ID format: "PHẦN I_Q1" or "PHẦN II_Q7_7a"
-        // We want to extract "Q1" or "Q7" (the main question part)
+        // Question ID format: "PHẦN I_Q{uuid}" or "PHẦN II_Q{uuid}_a" (for statements)
+        // We want to extract "Q{uuid}" (the main question part)
         int underscoreIndex = questionId.indexOf("_");
         if (underscoreIndex > 0) {
             String remaining = questionId.substring(underscoreIndex + 1);
-            // Check if there's another underscore (for sub-questions)
+            // Check if there's another underscore (for statement sub-questions)
             int secondUnderscoreIndex = remaining.indexOf("_");
             if (secondUnderscoreIndex > 0) {
-                return remaining.substring(0, secondUnderscoreIndex); // "Q7"
+                return remaining.substring(0, secondUnderscoreIndex); // "Q{uuid}"
             } else {
-                return remaining; // "Q1"
+                return remaining; // "Q{uuid}"
             }
         }
 
@@ -351,28 +430,4 @@ public class ExamGradingUtils {
         return null;
     }
 
-    /**
-     * Exam grading result class
-     */
-    public static class ExamGradingResult {
-        private final Float score;
-        private final Integer correctCount;
-        private final Integer totalQuestions;
-        private final Float maxScore;
-        private final List<ExamResultDetailData> details;
-
-        public ExamGradingResult(Float score, Integer correctCount, Integer totalQuestions, Float maxScore, List<ExamResultDetailData> details) {
-            this.score = score;
-            this.correctCount = correctCount;
-            this.totalQuestions = totalQuestions;
-            this.maxScore = maxScore;
-            this.details = details;
-        }
-
-        public Float getScore() { return score; }
-        public Integer getCorrectCount() { return correctCount; }
-        public Integer getTotalQuestions() { return totalQuestions; }
-        public Float getMaxScore() { return maxScore; }
-        public List<ExamResultDetailData> getDetails() { return details; }
-    }
 }

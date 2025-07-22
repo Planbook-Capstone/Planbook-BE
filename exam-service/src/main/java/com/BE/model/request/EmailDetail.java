@@ -1,4 +1,4 @@
-package com.BE.model;
+package com.BE.model.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

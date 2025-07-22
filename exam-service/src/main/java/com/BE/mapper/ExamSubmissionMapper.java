@@ -5,7 +5,7 @@ import com.BE.model.entity.ExamSubmission;
 import com.BE.model.request.SubmitExamRequest;
 import com.BE.model.response.ExamSubmissionResponse;
 import com.BE.model.response.SubmitExamResponse;
-import com.BE.utils.ExamGradingUtils.ExamGradingResult;
+import com.BE.model.response.ExamGradingResult;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.NullValuePropertyMappingStrategy;
