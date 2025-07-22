@@ -1,9 +1,6 @@
 package com.BE.exception.handler;
 
-import com.BE.exception.exceptions.EnumValidationException;
-import com.BE.exception.exceptions.InvalidRefreshTokenException;
-import com.BE.exception.exceptions.InvalidSignatureException;
-import com.BE.exception.exceptions.NotFoundException;
+import com.BE.exception.exceptions.*;
 import com.BE.utils.EnumUtils;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
@@ -101,6 +98,13 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleInvalidRefreshTokenException(InvalidRefreshTokenException ex) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
     }
+
+    @ExceptionHandler(BusinessException.class)
+    public ResponseEntity<String> handleBusinessException(BusinessException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
+
+
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<String> handleRuntimeExceptionException(RuntimeException ex) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ex.getMessage());

@@ -1,6 +1,7 @@
 package com.BE.model.request;
 
 
+import com.BE.model.entity.Order;
 import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Data;
@@ -13,6 +14,6 @@ import java.util.UUID;
 public class RetryPaymentRequestDTO {
 
     @NotNull(message = "Mã đơn hàng không được để trống")
-    UUID orderId;
+    Order order;
 
 }

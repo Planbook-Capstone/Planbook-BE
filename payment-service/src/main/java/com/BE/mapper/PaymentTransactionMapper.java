@@ -9,8 +9,4 @@ import org.mapstruct.*;
 public interface PaymentTransactionMapper {
     PaymentTransactionResponse toResponse(PaymentTransaction entity);
 
-    @Mapping(source = "id", target = "paymentId")
-    @Mapping(source = "checkoutUrl", target = "checkoutUrl")
-    @Mapping(target = "orderCode", ignore = true) // Sẽ được set trong service
-    PaymentLinkResponseDTO toPaymentLinkResponseDTO(PaymentTransaction entity);
 }
