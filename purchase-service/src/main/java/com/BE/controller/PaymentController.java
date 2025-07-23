@@ -45,7 +45,7 @@ public class PaymentController {
     private String webhookUrl;
 
 
-
+    @Hidden
     @PostMapping("/confirm-webhook")
     public ResponseEntity<String> confirmWebhook() {
         String confirmedUrl = "";

@@ -19,6 +19,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -32,11 +33,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-@RestController
-@RequestMapping("/api/orders")
-@CrossOrigin("*")
-@RequiredArgsConstructor
 @Tag(name = "Order API", description = "API quản lý đơn hàng: tạo, xem chi tiết và lịch sử trạng thái.")
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/api/orders")
+@SecurityRequirement(name = "api")
+@CrossOrigin("*")
 public class OrderController {
 
     private final IOrderService orderService;
@@ -55,8 +57,7 @@ public class OrderController {
                                     name = "Example request",
                                     value = """
                                             {
-                                              "packageId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-                                              "amount": 10000
+                                              "packageId": "dd49ce4c-9d7b-4e05-b4d4-baaa2b38da35"
                                             }
                                             """
                             )

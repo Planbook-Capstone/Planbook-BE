@@ -1,27 +1,27 @@
 package com.BE.service.implementServices;
 
-import com.BE.enums.OrderStatusEnum;
 import com.BE.enums.StatusEnum;
 import com.BE.exception.exceptions.NotFoundException;
 import com.BE.mapper.OrderMapper;
 import com.BE.model.entity.Order;
 import com.BE.model.entity.OrderHistory;
 import com.BE.model.entity.PaymentTransaction;
+import com.BE.model.entity.SubscriptionPackage;
 import com.BE.model.request.CancelPaymentRequestDTO;
 import com.BE.model.request.CreateOrderRequestDTO;
 import com.BE.model.request.CreatePaymentRequestDTO;
 import com.BE.model.request.RetryPaymentRequestDTO;
 import com.BE.model.response.OrderHistoryResponseDTO;
 import com.BE.model.response.OrderResponseDTO;
-import com.BE.model.response.PaymentLinkResponseDTO;
 import com.BE.repository.OrderHistoryRepository;
 import com.BE.repository.OrderRepository;
 import com.BE.repository.PaymentTransactionRepository;
+import com.BE.repository.SubscriptionPackageRepository;
 import com.BE.service.interfaceServices.IOrderService;
 import com.BE.service.interfaceServices.IPaymentService;
+import com.BE.service.interfaceServices.ISubscriptionPackageService;
 import com.BE.utils.AccountUtils;
 import com.BE.utils.PageUtil;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -51,19 +51,24 @@ public class OrderServiceImpl implements IOrderService {
     private final TaskScheduler taskScheduler;
     private final PaymentTransactionRepository paymentTransactionRepository;
     private final PageUtil pageUtil;
+    private final SubscriptionPackageRepository subscriptionPackageRepository;
 
 
     @Override
     @Transactional
     public OrderResponseDTO createOrder(CreateOrderRequestDTO request) {
+        SubscriptionPackage subscriptionPackage = subscriptionPackageRepository.findById(request.getPackageId())
+                .orElseThrow(() -> new NotFoundException("Gói dịch vụ này không tồn tại"));
+
         // Tạo Order mới
         Order order = Order.builder()
                 .userId(accountUtils.getCurrentUserId())
 //                .userId(UUID.randomUUID())
-                .packageId(request.getPackageId())
-                .amount(request.getAmount())
+                .amount(subscriptionPackage.getPrice())
                 .status(StatusEnum.PENDING)
                 .build();
+        order.addSubcriptionPackage(subscriptionPackage);
+
 
         Order savedOrder = orderRepository.save(order);
 
@@ -72,7 +77,7 @@ public class OrderServiceImpl implements IOrderService {
         // Tự động tạo Payment sau khi Order được tạo
         CreatePaymentRequestDTO paymentRequest = new CreatePaymentRequestDTO();
         paymentRequest.setOrder(savedOrder);
-        paymentRequest.setAmount(request.getAmount());
+        paymentRequest.setAmount(savedOrder.getAmount());
         paymentRequest.setDescription("Thanh toán PlanBookAI");
 
         PaymentTransaction paymentLink = paymentService.createPaymentLink(paymentRequest);

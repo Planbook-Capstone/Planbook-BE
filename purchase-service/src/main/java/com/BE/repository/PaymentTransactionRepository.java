@@ -3,7 +3,6 @@ package com.BE.repository;
 
 
 import com.BE.enums.GatewayEnum;
-import com.BE.enums.PaymentStatusEnum;
 import com.BE.enums.StatusEnum;
 import com.BE.model.entity.PaymentTransaction;
 import org.springframework.data.jpa.repository.JpaRepository;

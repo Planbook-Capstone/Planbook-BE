@@ -1,26 +1,19 @@
 package com.BE.service.implementServices;
 
 import com.BE.enums.GatewayEnum;
-import com.BE.enums.PaymentStatusEnum;
 import com.BE.enums.StatusEnum;
-import com.BE.exception.exceptions.BusinessException;
 import com.BE.exception.exceptions.InvalidSignatureException;
 import com.BE.exception.exceptions.NotFoundException;
 import com.BE.mapper.PaymentTransactionMapper;
-import com.BE.model.entity.Order;
 import com.BE.model.entity.PaymentTransaction;
 import com.BE.model.request.CancelPaymentRequestDTO;
 import com.BE.model.request.CreatePaymentRequestDTO;
 import com.BE.model.request.RetryPaymentRequestDTO;
 import com.BE.model.response.CancelPaymentResponseDTO;
-import com.BE.model.response.PaymentLinkResponseDTO;
 import com.BE.model.response.PaymentTransactionResponse;
-import com.BE.repository.OrderRepository;
 import com.BE.repository.PaymentTransactionRepository;
-import com.BE.service.interfaceServices.IOrderService;
 import com.BE.service.interfaceServices.IPaymentService;
 import com.BE.utils.AccountUtils;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -28,7 +21,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 import vn.payos.PayOS;
 import vn.payos.type.*;
@@ -124,7 +116,7 @@ public class PaymentServiceImpl implements IPaymentService {
         PaymentTransaction latest = getLatestInRetryChain(root);
 
         // 3. Kiểm tra trạng thái
-        if (StatusEnum.PAID.equals(latest.getStatus()) || PaymentStatusEnum.PENDING.equals(latest.getStatus())) {
+        if (StatusEnum.PAID.equals(latest.getStatus()) || StatusEnum.PENDING.equals(latest.getStatus())) {
             throw new RuntimeException("Không thể retry khi giao dịch cuối cùng đang PENDING hoặc đã PAID.");
         }
 
