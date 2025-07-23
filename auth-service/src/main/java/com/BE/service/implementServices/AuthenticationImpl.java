@@ -1,6 +1,8 @@
 package com.BE.service.implementServices;
 
 import com.BE.enums.RoleEnum;
+import com.BE.enums.StatusEnum;
+import com.BE.exception.exceptions.AuthenException;
 import com.BE.exception.exceptions.BadRequestException;
 import com.BE.exception.exceptions.InvalidRefreshTokenException;
 import com.BE.mapper.AuthMapper;
@@ -76,6 +78,7 @@ public class AuthenticationImpl implements IAuthenticationService {
     public AuthenticationResponse register(AuthenticationRequest request) {
         User user = authMapper.toAuth(request);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setStatus(StatusEnum.ACTIVE);
         user.setRole(RoleEnum.TEACHER);
         try {
             // Create workspace for new auth
@@ -105,6 +108,7 @@ public class AuthenticationImpl implements IAuthenticationService {
         }
 
         User user = (User) authentication.getPrincipal();
+        validateUserStatusForLogin(user);
         AuthenticationResponse authenticationResponse = authMapper.toAuthenticationResponse(user);
         String refresh = UUID.randomUUID().toString();
         authenticationResponse.setToken(jwtService.generateToken(user, refresh, false));
@@ -152,19 +156,18 @@ public class AuthenticationImpl implements IAuthenticationService {
                 user.setEmail(email);
                 user.setUsername(email);
                 user.setRole(RoleEnum.TEACHER); // Hoặc kiểm tra quyền nếu cần
-
+                user.setStatus(StatusEnum.ACTIVE);
                 // Tạo workspace nếu là auth mới
                 WorkSpace ws = academicYearService.createWorkspaceForNewUser(user);
                 if (ws != null) {
                     user.getWorkSpaces().add(ws);
                     authenRepository.save(user);
                 }
-
                 user = authenRepository.save(user);
 
 
             }
-
+            validateUserStatusForLogin(user);
             // Sinh token JWT như cũ
             AuthenticationResponse authenticationResponse = authMapper.toAuthenticationResponse(user);
             String refresh = UUID.randomUUID().toString();
@@ -177,6 +180,12 @@ public class AuthenticationImpl implements IAuthenticationService {
             return null;
         }
 
+    }
+
+    private void validateUserStatusForLogin(User user){
+        if(StatusEnum.INACTIVE.equals(user.getStatus())){
+            throw new AuthenException("Tài khoản của bạn đã bị dừng hoạt động, vui lòng liên hệ ADMIN");
+        }
     }
 
     public void forgotPasswordRequest(String email) {

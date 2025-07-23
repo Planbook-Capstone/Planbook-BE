@@ -2,6 +2,7 @@ package com.BE.model.entity;
 
 import com.BE.enums.GenderEnum;
 import com.BE.enums.RoleEnum;
+import com.BE.enums.StatusEnum;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
@@ -42,6 +43,9 @@ public class User implements UserDetails {
 
     @Enumerated(value = EnumType.STRING)
     RoleEnum role;
+
+    @Enumerated(value = EnumType.STRING)
+    StatusEnum status;
 
     String fullName;
 
