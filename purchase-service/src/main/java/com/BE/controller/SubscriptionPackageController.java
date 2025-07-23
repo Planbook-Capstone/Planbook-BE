@@ -48,13 +48,14 @@ public class SubscriptionPackageController {
                                     {
                                       "name": "Starter Pack",
                                       "tokenAmount": 100,
-                                      "price": 9.99,
-                                      "description": "Basic access for new users",
-                                      "features": [
-                                        "Access to AI chat",
-                                        "Limited history storage",
-                                        "Community support"
-                                      ]
+                                      "price": 5000,
+                                      "description": "Truy cập cơ bản cho người dùng mới",
+                                      "highlight": false,
+                                      "features": {
+                                        "1": "Truy cập ưu tiên vào AI",
+                                        "2": "Hỗ trợ khách hàng qua email",
+                                        "3": "Lịch sử trò chuyện giới hạn"
+                                      }
                                     }
                                     """
                     )
@@ -63,6 +64,7 @@ public class SubscriptionPackageController {
     public ResponseEntity<?> create(@Valid @RequestBody SubscriptionPackageRequest request) {
         return responseHandler.response(200, "Tạo gói thành công", service.create(request));
     }
+
 
     @PutMapping("/{id}")
     @Operation(summary = "Cập nhật gói token", description = "Cập nhật thông tin một gói token đã có theo ID.")
@@ -81,13 +83,14 @@ public class SubscriptionPackageController {
                                     {
                                       "name": "Pro Pack",
                                       "tokenAmount": 500,
-                                      "price": 49.99,
+                                      "price": 10000,
                                       "description": "Gói nâng cao với nhiều quyền lợi",
-                                      "features": [
-                                        "Full access to all tools",
-                                        "Priority support",
-                                        "Increased API limits"
-                                      ]
+                                      "highlight": true,
+                                      "features": {
+                                        "1": "Truy cập không giới hạn",
+                                        "2": "Hỗ trợ ưu tiên",
+                                        "3": "Tăng giới hạn API"
+                                      }
                                     }
                                     """
                     )

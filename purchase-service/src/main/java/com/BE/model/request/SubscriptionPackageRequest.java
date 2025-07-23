@@ -1,5 +1,7 @@
 package com.BE.model.request;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -7,6 +9,7 @@ import lombok.experimental.FieldDefaults;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Data
 @Builder
@@ -31,8 +34,16 @@ public class SubscriptionPackageRequest {
 
     boolean highlight;
 
-    @NotNull(message = "Danh sách tính năng không được để trống")
-    @Size(min = 1, message = "Phải có ít nhất một tính năng")
-    @Builder.Default
-    List<@NotBlank(message = "Mô tả tính năng không được để trống") String> features = new ArrayList<>();
+    @Schema(
+            description = "Danh sách các chức năng theo thứ tự",
+            example = """
+                    {
+                      "1": "Truy cập ưu tiên vào AI",
+                      "2": "Hỗ trợ khách hàng qua email",
+                      "3": "Lịch sử trò chuyện giới hạn"
+                    }
+                    """
+    )
+    @NotNull(message = "Trường features không được để trống")
+    Map<String, String> features;
 }

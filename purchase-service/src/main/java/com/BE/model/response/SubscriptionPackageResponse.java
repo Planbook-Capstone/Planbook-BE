@@ -7,6 +7,8 @@ import lombok.experimental.FieldDefaults;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 @Data
@@ -24,5 +26,5 @@ public class SubscriptionPackageResponse {
     boolean highlight;
     LocalDateTime createdAt;
     LocalDateTime updatedAt;
-    List<String> features;
+    Map<String, Object> features;
 }
