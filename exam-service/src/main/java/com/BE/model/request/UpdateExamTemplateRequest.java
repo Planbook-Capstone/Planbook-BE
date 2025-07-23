@@ -31,9 +31,9 @@ public class UpdateExamTemplateRequest {
     @Schema(description = "Updated exam content with questions and answers")
     private Map<String, Object> contentJson;
 
-    @Schema(description = "Updated grading configuration for each part",
-            example = "{\"PHẦN I\": 0.25, \"PHẦN II\": 0.5, \"PHẦN III\": 1.0}")
-    private Map<String, Double> gradingConfig;
+    @Schema(description = "Updated scoring configuration for the exam",
+            example = "{\"useStandardScoring\": false, \"part1Score\": 0.25, \"part2ScoringType\": \"manual\", \"part2CustomScore\": 4, \"part2ManualScores\": {\"1\": 0.1, \"2\": 0.25, \"3\": 3, \"4\": 10}, \"part3Score\": 0.25}")
+    private Map<String, Object> scoringConfig;
 
     @Schema(description = "Updated total exam score", example = "10.0")
     private Double totalScore;

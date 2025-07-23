@@ -50,8 +50,8 @@ public class ExamTemplate {
     private Map<String, Object> contentJson;
 
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "grading_config", columnDefinition = "JSON")
-    private Map<String, Double> gradingConfig;
+    @Column(name = "scoring_config", columnDefinition = "JSON")
+    private Map<String, Object> scoringConfig;
 
     @Column(name = "total_score")
     private Double totalScore = 10.0;

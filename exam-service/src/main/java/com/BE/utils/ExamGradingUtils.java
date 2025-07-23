@@ -2,22 +2,28 @@ package com.BE.utils;
 
 import com.BE.model.response.ExamResultDetailData;
 import com.BE.model.response.ExamGradingResult;
-import com.BE.model.response.WeightedScoreResult;
+import com.BE.model.dto.ScoringConfig;
 import com.BE.exception.BadRequestException;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
 
 @Component
+@RequiredArgsConstructor
 @Slf4j
 public class ExamGradingUtils {
 
+    private final ScoringConfigUtils scoringConfigUtils;
+
     /**
-     * Grade exam with new flat answer format
+     * Grade exam with new scoring configuration using flat answer format
      */
-    public ExamGradingResult gradeExamWithFlatAnswers(Map<String, Object> templateContent,
-                                                     List<Map<String, Object>> studentAnswers) {
+    public ExamGradingResult gradeExamWithScoringConfig(Map<String, Object> templateContent,
+                                                       List<Map<String, Object>> studentAnswers,
+                                                       Map<String, Object> scoringConfigMap,
+                                                       Double totalScore) {
         if (templateContent == null) {
             throw new BadRequestException("Template content is null");
         }
@@ -26,9 +32,17 @@ public class ExamGradingUtils {
             throw new BadRequestException("Student answers are null or empty");
         }
 
+        // Convert scoring config map to object
+        ScoringConfig scoringConfig = scoringConfigUtils.mapToScoringConfig(scoringConfigMap);
+
         int totalQuestions = 0;
         int correctCount = 0;
         List<ExamResultDetailData> details = new ArrayList<>();
+
+        // Track scores by part for new scoring system
+        double part1Score = 0.0;
+        double part2Score = 0.0;
+        double part3Score = 0.0;
 
         try {
             // Create a map of questionId -> student answer for quick lookup (only for non-statement questions)
@@ -71,11 +85,19 @@ public class ExamGradingUtils {
 
                             // Handle different question types
                             if (templateQuestion.containsKey("statements")) {
-                                // True/False questions with statements
-                                boolean isCorrect = gradeStatementQuestion(templateQuestion, studentAnswers, partName, details);
+                                // True/False questions with statements (Part II)
+                                Map<String, Integer> statementResult = gradeStatementQuestionWithCounts(templateQuestion, studentAnswers, partName, details);
+                                boolean isCorrect = statementResult.get("isCorrect") == 1;
+                                int correctStatements = statementResult.get("correctStatements");
+                                int totalStatements = statementResult.get("totalStatements");
+
                                 if (isCorrect) {
                                     correctCount++;
                                 }
+
+                                // Calculate Part II score using new scoring system
+                                double questionScore = scoringConfigUtils.calculatePart2Score(correctStatements, totalStatements, scoringConfig);
+                                part2Score += questionScore;
                                 totalQuestions++;
                             } else {
                                 // Regular questions (multiple choice, short answer)
@@ -90,6 +112,19 @@ public class ExamGradingUtils {
                                 String fullQuestionId = partName + "_Q" + questionId;
                                 details.add(new ExamResultDetailData(fullQuestionId, studentAnswer,
                                     correctAnswer != null ? correctAnswer : "N/A", isCorrect));
+
+                                // Determine part and calculate score
+                                if (partName.contains("I") && !partName.contains("II") && !partName.contains("III")) {
+                                    // Part I
+                                    if (isCorrect) {
+                                        part1Score += scoringConfig.getPart1Score() != null ? scoringConfig.getPart1Score() : 0.25;
+                                    }
+                                } else if (partName.contains("III")) {
+                                    // Part III
+                                    if (isCorrect) {
+                                        part3Score += scoringConfig.getPart3Score() != null ? scoringConfig.getPart3Score() : 0.25;
+                                    }
+                                }
                                 totalQuestions++;
                             }
                         }
@@ -103,8 +138,13 @@ public class ExamGradingUtils {
                 throw new BadRequestException("No questions were found to grade. Please check your answer format.");
             }
 
-            float score = (float) correctCount / totalQuestions * 100;
-            float maxScore = 100f;
+            // Calculate final score
+            double finalScore = part1Score + part2Score + part3Score;
+            float score = scoringConfigUtils.roundToTwoDecimalsFloat(finalScore);
+            float maxScore = totalScore != null ? totalScore.floatValue() : 10.0f;
+
+            log.info("Grading completed - Part I: {}, Part II: {}, Part III: {}, Total: {}",
+                     part1Score, part2Score, part3Score, finalScore);
 
             return new ExamGradingResult(score, correctCount, totalQuestions, maxScore, details);
 
@@ -115,137 +155,15 @@ public class ExamGradingUtils {
             throw new BadRequestException("Error processing exam answers. Please check your answer format and try again.");
         }
     }
-
-    /**
-     * Grade exam with custom configuration using flat answer format
-     */
-    public ExamGradingResult gradeExamWithFlatAnswersAndCustomConfig(Map<String, Object> templateContent,
-                                                                   List<Map<String, Object>> studentAnswers,
-                                                                   Map<String, Double> customGradingConfig,
-                                                                   Double customTotalScore) {
-        if (templateContent == null) {
-            throw new BadRequestException("Template content is null");
-        }
-
-        if (studentAnswers == null || studentAnswers.isEmpty()) {
-            throw new BadRequestException("Student answers are null or empty");
-        }
-
-        int totalQuestions = 0;
-        int correctCount = 0;
-        List<ExamResultDetailData> details = new ArrayList<>();
-
-        try {
-            // Create a map of questionId -> student answer for quick lookup (only for non-statement questions)
-            Map<String, String> studentAnswerMap = new HashMap<>();
-            for (Map<String, Object> studentAnswer : studentAnswers) {
-                String questionId = (String) studentAnswer.get("questionId");
-                Object answerObj = studentAnswer.get("answer");
-                // Only add to map if answer is a String (not a Map for statement questions)
-                if (questionId != null && answerObj instanceof String) {
-                    studentAnswerMap.put(questionId, (String) answerObj);
-                }
-            }
-
-            // Process template content
-            if (templateContent.containsKey("parts")) {
-                @SuppressWarnings("unchecked")
-                List<Map<String, Object>> templateParts = (List<Map<String, Object>>) templateContent.get("parts");
-
-                if (templateParts == null || templateParts.isEmpty()) {
-                    throw new BadRequestException("No parts found in template");
-                }
-
-                // Process each part
-                for (Map<String, Object> templatePart : templateParts) {
-                    String partName = (String) templatePart.get("part");
-                    if (partName == null) {
-                        partName = "UNKNOWN_PART";
-                    }
-
-                    @SuppressWarnings("unchecked")
-                    List<Map<String, Object>> templateQuestions = (List<Map<String, Object>>) templatePart.get("questions");
-
-                    if (templateQuestions != null && !templateQuestions.isEmpty()) {
-                        for (Map<String, Object> templateQuestion : templateQuestions) {
-                            String questionId = (String) templateQuestion.get("id");
-                            if (questionId == null) {
-                                log.warn("Template question has no id, skipping");
-                                continue;
-                            }
-
-                            // Handle different question types
-                            if (templateQuestion.containsKey("statements")) {
-                                // True/False questions with statements
-                                boolean isCorrect = gradeStatementQuestion(templateQuestion, studentAnswers, partName, details);
-                                if (isCorrect) {
-                                    correctCount++;
-                                }
-                                totalQuestions++;
-                            } else {
-                                // Regular questions (multiple choice, short answer)
-                                String correctAnswer = getCorrectAnswer(templateQuestion);
-                                String studentAnswer = studentAnswerMap.get(questionId);
-
-                                boolean isCorrect = correctAnswer != null && correctAnswer.equals(studentAnswer);
-                                if (isCorrect) {
-                                    correctCount++;
-                                }
-
-                                String fullQuestionId = partName + "_Q" + questionId;
-                                details.add(new ExamResultDetailData(fullQuestionId, studentAnswer,
-                                    correctAnswer != null ? correctAnswer : "N/A", isCorrect));
-                                totalQuestions++;
-                            }
-                        }
-                    }
-                }
-            } else {
-                throw new BadRequestException("Template format is invalid - must contain 'parts'");
-            }
-
-            if (totalQuestions == 0) {
-                throw new BadRequestException("No questions were found to grade. Please check your answer format.");
-            }
-
-            // Calculate score using custom grading config if provided
-            float score;
-            float maxScore;
-            if (customGradingConfig != null && !customGradingConfig.isEmpty()) {
-                WeightedScoreResult result = calculateWeightedScoreWithMax(details, customGradingConfig, customTotalScore);
-                score = result.getScore();
-                maxScore = result.getMaxScore();
-            } else {
-                // Return raw correct count without any conversion
-                score = (float) correctCount;
-                maxScore = (float) totalQuestions;
-            }
-
-            return new ExamGradingResult(score, correctCount, totalQuestions, maxScore, details);
-
-        } catch (BadRequestException e) {
-            throw e;
-        } catch (Exception e) {
-            log.error("Unexpected error grading exam: {}", e.getMessage(), e);
-            throw new BadRequestException("Error processing exam answers. Please check your answer format and try again.");
-        }
-    }
-
-
-
-
-
-
-
-
 
     /**
      * Grade statement-based questions (True/False with multiple statements)
+     * Returns map with correctStatements, totalStatements, and isCorrect (1 if all correct, 0 otherwise)
      */
-    private boolean gradeStatementQuestion(Map<String, Object> templateQuestion,
-                                         List<Map<String, Object>> studentAnswers,
-                                         String partName,
-                                         List<ExamResultDetailData> details) {
+    private Map<String, Integer> gradeStatementQuestionWithCounts(Map<String, Object> templateQuestion,
+                                                                List<Map<String, Object>> studentAnswers,
+                                                                String partName,
+                                                                List<ExamResultDetailData> details) {
         String questionId = (String) templateQuestion.get("id");
 
         // Find student answer for this question
@@ -262,7 +180,11 @@ public class ExamGradingUtils {
 
         if (templateStatements == null || templateStatements.isEmpty()) {
             log.warn("Template question {} has no statements", questionId);
-            return false;
+            Map<String, Integer> emptyResult = new HashMap<>();
+            emptyResult.put("correctStatements", 0);
+            emptyResult.put("totalStatements", 0);
+            emptyResult.put("isCorrect", 0);
+            return emptyResult;
         }
 
         // Get student answers for statements
@@ -302,119 +224,14 @@ public class ExamGradingUtils {
         }
 
         // Question is correct only if ALL statements are correct
-        return correctStatements == totalStatements && totalStatements > 0;
-    }
+        boolean isAllCorrect = correctStatements == totalStatements && totalStatements > 0;
 
-    /**
-     * Calculate weighted score with max score information
-     */
-    private WeightedScoreResult calculateWeightedScoreWithMax(List<ExamResultDetailData> details,
-                                                            Map<String, Double> gradingConfig,
-                                                            Double totalScore) {
-        if (details == null || details.isEmpty()) {
-            return new WeightedScoreResult(0f, 0f);
-        }
+        Map<String, Integer> result = new HashMap<>();
+        result.put("correctStatements", correctStatements);
+        result.put("totalStatements", totalStatements);
+        result.put("isCorrect", isAllCorrect ? 1 : 0);
 
-        double earnedScore = 0.0;
-        double maxPossibleScore = 0.0;
-
-        // Group details by part and main question
-        Map<String, Map<String, List<ExamResultDetailData>>> detailsByPartAndQuestion = new HashMap<>();
-        for (ExamResultDetailData detail : details) {
-            String questionId = detail.getQuestionId();
-            String partName = extractPartName(questionId);
-            String mainQuestionId = extractMainQuestionId(questionId);
-
-            detailsByPartAndQuestion
-                .computeIfAbsent(partName, k -> new HashMap<>())
-                .computeIfAbsent(mainQuestionId, k -> new ArrayList<>())
-                .add(detail);
-        }
-
-        // Calculate score for each part
-        for (Map.Entry<String, Map<String, List<ExamResultDetailData>>> partEntry : detailsByPartAndQuestion.entrySet()) {
-            String partName = partEntry.getKey();
-            Map<String, List<ExamResultDetailData>> questionsInPart = partEntry.getValue();
-
-            Double partWeight = gradingConfig.get(partName);
-            if (partWeight == null) {
-                log.warn("No grading config found for part: {}, using default weight 1.0", partName);
-                partWeight = 1.0;
-            }
-
-            int correctQuestionsInPart = 0;
-            int totalQuestionsInPart = questionsInPart.size();
-
-            // For each main question in this part
-            for (Map.Entry<String, List<ExamResultDetailData>> questionEntry : questionsInPart.entrySet()) {
-                List<ExamResultDetailData> questionDetails = questionEntry.getValue();
-
-                // Check if this main question is correct
-                // For sub-questions (true/false), ALL must be correct
-                // For single questions, just check the one answer
-                boolean isMainQuestionCorrect = questionDetails.stream()
-                    .allMatch(detail -> detail.getIsCorrect());
-
-                if (isMainQuestionCorrect) {
-                    correctQuestionsInPart++;
-                }
-            }
-
-            // Calculate part score
-            double partScore = correctQuestionsInPart * partWeight;
-            earnedScore += partScore;
-
-            // Calculate max possible score for this part
-            double maxPartScore = totalQuestionsInPart * partWeight;
-            maxPossibleScore += maxPartScore;
-
-            log.info("Part {}: {}/{} questions correct, weight={}, score={}/{}",
-                partName, correctQuestionsInPart, totalQuestionsInPart, partWeight, partScore, maxPartScore);
-        }
-
-        return new WeightedScoreResult((float) earnedScore, (float) maxPossibleScore);
-    }
-
-    /**
-     * Extract part name from question ID
-     */
-    private String extractPartName(String questionId) {
-        if (questionId == null) {
-            return "UNKNOWN";
-        }
-
-        // Question ID format: "PHẦN I_Q{uuid}" or "PHẦN II_Q{uuid}_a" (for statements)
-        int underscoreIndex = questionId.indexOf("_");
-        if (underscoreIndex > 0) {
-            return questionId.substring(0, underscoreIndex);
-        }
-
-        return "UNKNOWN";
-    }
-
-    /**
-     * Extract main question ID from question ID
-     */
-    private String extractMainQuestionId(String questionId) {
-        if (questionId == null) {
-            return "UNKNOWN";
-        }
-
-        // Question ID format: "PHẦN I_Q{uuid}" or "PHẦN II_Q{uuid}_a" (for statements)
-        // We want to extract "Q{uuid}" (the main question part)
-        int underscoreIndex = questionId.indexOf("_");
-        if (underscoreIndex > 0) {
-            String remaining = questionId.substring(underscoreIndex + 1);
-            // Check if there's another underscore (for statement sub-questions)
-            int secondUnderscoreIndex = remaining.indexOf("_");
-            if (secondUnderscoreIndex > 0) {
-                return remaining.substring(0, secondUnderscoreIndex); // "Q{uuid}"
-            } else {
-                return remaining; // "Q{uuid}"
-            }
-        }
-
-        return "UNKNOWN";
+        return result;
     }
 
     /**

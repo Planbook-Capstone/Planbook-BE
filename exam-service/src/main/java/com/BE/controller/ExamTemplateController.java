@@ -90,10 +90,14 @@ public class ExamTemplateController {
             }
             ```
 
-            ### Grading Configuration:
-            - **Default**: Equal weight for all questions (10.0 total score)
-            - **Custom**: Specify different weights per section
-            - **Example**: `{"PHẦN I": 0.25, "PHẦN II": 0.5, "PHẦN III": 1.0}`
+            ### Scoring Configuration:
+            - **useStandardScoring**: Boolean to use standard scoring for Part II
+            - **part1Score**: Score per question for Part I (multiple choice)
+            - **part2ScoringType**: "standard", "auto", or "manual" for Part II scoring
+            - **part2CustomScore**: Custom total score for Part II (used with "auto" type)
+            - **part2ManualScores**: Manual score mapping for Part II (used with "manual" type)
+            - **part3Score**: Score per question for Part III (essay questions)
+            - **Example**: `{"useStandardScoring": false, "part1Score": 0.25, "part2ScoringType": "manual", "part2CustomScore": 4, "part2ManualScores": {"1": 0.1, "2": 0.25, "3": 3, "4": 10}, "part3Score": 0.25}`
 
             ### Business Rules:
             - Template name must be unique per teacher
@@ -146,11 +150,19 @@ public class ExamTemplateController {
                                 "subject": "Chemistry",
                                 "grade": 10,
                                 "durationMinutes": 90,
-                                "totalScore": 10.0,
-                                "gradingConfig": {
-                                    "PHẦN I": 0.25,
-                                    "PHẦN II": 0.5,
-                                    "PHẦN III": 1.0
+                                "totalScore": 10.5,
+                                "scoringConfig": {
+                                    "useStandardScoring": false,
+                                    "part1Score": 0.25,
+                                    "part2ScoringType": "manual",
+                                    "part2CustomScore": 4,
+                                    "part2ManualScores": {
+                                        "1": 0.1,
+                                        "2": 0.25,
+                                        "3": 3,
+                                        "4": 10
+                                    },
+                                    "part3Score": 0.25
                                 },
                                 "contentJson": {
                                     "parts": [
@@ -330,7 +342,7 @@ public class ExamTemplateController {
             - **grade**: Grade level (1-12)
             - **durationMinutes**: Exam duration in minutes
             - **contentJson**: Complete question structure and content
-            - **gradingConfig**: Custom scoring configuration
+            - **scoringConfig**: Custom scoring configuration
             - **totalScore**: Maximum possible score
 
             ### Update Behavior:

@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -12,7 +13,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ExamSubmissionResponse {
-    
+
     private UUID id;
     private UUID examInstanceId;
     private String studentName;
@@ -22,4 +23,5 @@ public class ExamSubmissionResponse {
     private Float maxScore;
     private Map<String, Object> answersJson;
     private LocalDateTime submittedAt;
+    private List<ExamResultDetailData> resultDetails; // Chi tiết từng câu hỏi
 }

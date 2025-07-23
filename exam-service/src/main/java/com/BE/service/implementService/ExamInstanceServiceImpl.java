@@ -195,11 +195,11 @@ public class ExamInstanceServiceImpl implements IExamInstanceService {
 
         
 
-        // Grade the exam using new flat answer format
-        ExamGradingResult gradingResult = examGradingUtils.gradeExamWithFlatAnswersAndCustomConfig(
+        // Grade the exam using new scoring configuration
+        ExamGradingResult gradingResult = examGradingUtils.gradeExamWithScoringConfig(
             instance.getTemplate().getContentJson(),
             request.getAnswers(),
-            instance.getTemplate().getGradingConfig(),
+            instance.getTemplate().getScoringConfig(),
             instance.getTemplate().getTotalScore()
         );
 
@@ -249,7 +249,8 @@ public class ExamInstanceServiceImpl implements IExamInstanceService {
             throw new BadRequestException("Access denied to this exam instance");
         }
 
-        List<ExamSubmission> submissions = examSubmissionRepository.findByExamInstanceIdOrderBySubmittedAtDesc(instanceId);
+        // Fetch submissions with result details for detailed analysis
+        List<ExamSubmission> submissions = examSubmissionRepository.findByExamInstanceIdWithDetailsOrderBySubmittedAtDesc(instanceId);
         return submissions.stream()
                 .map(examSubmissionMapper::toResponse)
                 .collect(Collectors.toList());

@@ -832,6 +832,8 @@ public class ExamInstanceController {
             - **Student Information**: Name and submission timestamp
             - **Scores**: Total score, percentage, correct/incorrect counts
             - **Answer Details**: Complete answer breakdown per question
+            - **Question-by-Question Results**: Detailed breakdown showing which questions each student got right/wrong
+            - **Result Details**: For each question - student answer, correct answer, and correctness status
             - **Time Analysis**: Time taken to complete exam
             - **Status**: Submission status and validation results
 
@@ -900,6 +902,39 @@ public class ExamInstanceController {
             4. **Prepare Feedback**: Use data to prepare student feedback
             5. **Export Data**: Generate reports for records or sharing
             6. **Plan Instruction**: Use results to plan future instruction
+
+            ### Response Example with Detailed Results:
+            ```json
+            {
+                "code": 200,
+                "message": "Submissions retrieved successfully",
+                "data": [
+                    {
+                        "id": "uuid",
+                        "studentName": "Nguyen Van A",
+                        "score": 8.5,
+                        "correctCount": 17,
+                        "totalQuestions": 20,
+                        "maxScore": 10.0,
+                        "submittedAt": "2024-01-15T10:30:00",
+                        "resultDetails": [
+                            {
+                                "questionId": "PHẦN I_Q1",
+                                "studentAnswer": "A",
+                                "correctAnswer": "B",
+                                "isCorrect": false
+                            },
+                            {
+                                "questionId": "PHẦN II_Q2_a",
+                                "studentAnswer": "true",
+                                "correctAnswer": "true",
+                                "isCorrect": true
+                            }
+                        ]
+                    }
+                ]
+            }
+            ```
             """
     )
     @ApiResponses(value = {

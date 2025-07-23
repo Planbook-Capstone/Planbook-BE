@@ -12,7 +12,9 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 
 import java.util.Map;
 
-@Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+@Mapper(componentModel = "spring",
+        nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
+        uses = {ExamResultDetailMapper.class})
 public interface ExamSubmissionMapper {
 
     /**
@@ -35,6 +37,7 @@ public interface ExamSubmissionMapper {
      * Map ExamSubmission entity to ExamSubmissionResponse
      */
     @Mapping(target = "examInstanceId", source = "examInstance.id")
+    @Mapping(target = "resultDetails", source = "resultDetails")
     ExamSubmissionResponse toResponse(ExamSubmission entity);
 
     /**

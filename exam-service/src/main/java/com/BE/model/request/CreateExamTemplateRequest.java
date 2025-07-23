@@ -38,9 +38,9 @@ public class CreateExamTemplateRequest {
     @NotNull(message = "Content JSON is required")
     private Map<String, Object> contentJson;
 
-    @Schema(description = "Grading configuration for each part",
-            example = "{\"PHẦN I\": 0.25, \"PHẦN II\": 0.5, \"PHẦN III\": 1.0}")
-    private Map<String, Double> gradingConfig;
+    @Schema(description = "Scoring configuration for the exam",
+            example = "{\"useStandardScoring\": false, \"part1Score\": 0.25, \"part2ScoringType\": \"manual\", \"part2CustomScore\": 4, \"part2ManualScores\": {\"1\": 0.1, \"2\": 0.25, \"3\": 3, \"4\": 10}, \"part3Score\": 0.25}")
+    private Map<String, Object> scoringConfig;
 
     @Schema(description = "Total exam score", example = "10.0")
     private Double totalScore = 10.0;

@@ -20,7 +20,7 @@ public class ExamTemplateResponse {
     private Integer durationMinutes;
     private UUID createdBy;
     private Map<String, Object> contentJson;
-    private Map<String, Double> gradingConfig;
+    private Map<String, Object> scoringConfig;
     private Double totalScore;
     private Integer version;
     private LocalDateTime createdAt;
