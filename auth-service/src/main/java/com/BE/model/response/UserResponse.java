@@ -3,6 +3,7 @@ package com.BE.model.response;
 
 import com.BE.enums.GenderEnum;
 import com.BE.enums.RoleEnum;
+import com.BE.enums.StatusEnum;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -26,6 +27,7 @@ public class UserResponse {
     String avatar;
     GenderEnum gender;
     LocalDate birthday;
+    StatusEnum status;
     LocalDateTime createdAt;
     LocalDateTime updatedAt;
 }

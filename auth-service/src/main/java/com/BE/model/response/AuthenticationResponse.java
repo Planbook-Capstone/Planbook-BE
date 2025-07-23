@@ -3,6 +3,7 @@ package com.BE.model.response;
 
 import com.BE.enums.GenderEnum;
 import com.BE.enums.RoleEnum;
+import com.BE.enums.StatusEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -30,6 +31,7 @@ public class AuthenticationResponse {
      String avatar;
      GenderEnum gender;
      LocalDate birthday;
+     StatusEnum status;
      LocalDateTime createdAt;
      LocalDateTime updatedAt;
      String token;

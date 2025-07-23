@@ -126,10 +126,7 @@ public class AuthenticationController {
         return ResponseEntity.ok(iAuthenticationService.admin());
     }
 
-    @PatchMapping("/status")
-    public ResponseEntity status(@Valid @RequestBody StatusRequest statusRequest) {
-        return ResponseEntity.ok(statusRequest.getStatus());
-    }
+
 
 
 }
