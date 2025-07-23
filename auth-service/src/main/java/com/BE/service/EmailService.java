@@ -3,11 +3,10 @@ package com.BE.service;
 
 
 import com.BE.model.EmailDetail;
-import com.BE.model.entity.AuthUser;
+import com.BE.model.entity.User;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -50,7 +49,7 @@ public class EmailService {
         }
     }
 
-    public void sendMail(AuthUser auth, String subject, String description){
+    public void sendMail(User user, String subject, String description){
 
         try{
             // Creating a simple mail message

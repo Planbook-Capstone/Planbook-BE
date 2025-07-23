@@ -1,8 +1,13 @@
 package com.BE.model.request;
 
 
+import com.BE.enums.GenderEnum;
+import com.BE.enums.StatusEnum;
+import com.BE.exception.EnumValidator;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -19,7 +24,7 @@ import java.time.LocalDate;
 public class UserProfileRequest {
 
     @NotBlank(message = "Họ tên không được để trống")
-    @Size(max = 100, message = "Họ tên không vượt quá 100 ký tự")
+    @Size(max = 100, message = "Họ tên không được vượt quá 100 ký tự")
     @Schema(example = "Nguyễn Văn A")
     String fullName;
 
@@ -39,8 +44,9 @@ public class UserProfileRequest {
     @Schema(example = "01-01-2000", description = "Ngày sinh (định dạng dd-MM-yyyy)")
     LocalDate birthday;
 
-    @Pattern(regexp = "^(Nam|Nữ|Khác)?$", message = "Giới tính phải là Nam, Nữ hoặc Khác")
-    @Schema(example = "Nam", allowableValues = {"Nam", "Nữ", "Khác"})
+
+    @Pattern(regexp = "MALE, FEMALE, OTHER", message = "Giới tính phải là Nam, Nữ hoặc Khác")
+    @Schema(example = "MALE", allowableValues = {"MALE, FEMALE, OTHER"})
     String gender;
 
 

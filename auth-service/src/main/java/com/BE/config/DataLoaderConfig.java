@@ -1,7 +1,7 @@
 package com.BE.config;
 
 import com.BE.enums.RoleEnum;
-import com.BE.model.entity.AuthUser;
+import com.BE.model.entity.User;
 import com.BE.repository.AuthenRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -38,9 +38,9 @@ public class DataLoaderConfig implements CommandLineRunner {
     }
 
     private void createUserIfNotExist(String username, String email, RoleEnum role) {
-        Optional<AuthUser> existingUser = authenRepository.findByUsername(username);
+        Optional<User> existingUser = authenRepository.findByUsername(username);
         if (existingUser.isEmpty()) {
-            AuthUser newUser = new AuthUser();
+            User newUser = new User();
             newUser.setUsername(username);
             newUser.setPassword(passwordEncoder.encode(username)); // Cảnh báo: không nên dùng username làm password
             newUser.setEmail(email);

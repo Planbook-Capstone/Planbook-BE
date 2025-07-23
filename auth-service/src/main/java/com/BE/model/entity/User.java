@@ -1,16 +1,21 @@
 package com.BE.model.entity;
 
+import com.BE.enums.GenderEnum;
 import com.BE.enums.RoleEnum;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.annotations.UuidGenerator;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Entity
@@ -18,8 +23,9 @@ import java.util.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "users")
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class AuthUser implements UserDetails {
+public class User implements UserDetails {
 
     @Id
     @UuidGenerator
@@ -37,11 +43,31 @@ public class AuthUser implements UserDetails {
     @Enumerated(value = EnumType.STRING)
     RoleEnum role;
 
-    @OneToMany(mappedBy = "auth")
+    String fullName;
+
+    @Column(unique = true)
+    String phone;
+
+    @Lob
+    @Column(columnDefinition = "LONGTEXT")
+    String avatar;
+
+    LocalDate birthday;
+
+    @Enumerated(value = EnumType.STRING)
+    GenderEnum gender;
+
+    @CreationTimestamp
+    LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    LocalDateTime updatedAt;
+
+    @OneToMany(mappedBy = "user")
     @JsonIgnore
     Set<RefreshToken> refreshTokens = new HashSet<>();
 
-    @OneToMany(mappedBy = "auth")
+    @OneToMany(mappedBy = "user")
     Set<WorkSpace> workSpaces = new HashSet<>();
 
     @Override

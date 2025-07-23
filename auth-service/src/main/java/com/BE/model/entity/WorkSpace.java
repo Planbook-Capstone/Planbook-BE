@@ -29,8 +29,8 @@ public class WorkSpace {
 
     @JsonIgnore
     @ManyToOne
-    @JoinColumn(name = "auth_id")
-    private AuthUser auth;
+    @JoinColumn(name = "user_id")
+    private User user;
 
 
     String createdAt;

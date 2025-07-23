@@ -1,6 +1,6 @@
 package com.BE.utils;
 
-import com.BE.model.entity.AuthUser;
+import com.BE.model.entity.User;
 import com.BE.service.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -10,11 +10,11 @@ public class SendMailUtils {
     @Autowired
     EmailService emailService;
 
-    public void threadSendMail(AuthUser auth, String subject, String description) {
+    public void threadSendMail(User user, String subject, String description) {
         Runnable r = new Runnable() {
             @Override
             public void run() {
-                emailService.sendMail(auth, subject, description);
+                emailService.sendMail(user, subject, description);
             }
 
         };
