@@ -3,7 +3,7 @@ package com.BE.service.implementServices;
 import com.BE.exception.exceptions.BadRequestException;
 import com.BE.mapper.WorkSpaceMapper;
 import com.BE.model.entity.AcademicYear;
-import com.BE.model.entity.AuthUser;
+import com.BE.model.entity.User;
 import com.BE.model.entity.WorkSpace;
 import com.BE.model.request.WorkSpaceRequest;
 import com.BE.model.response.WorkSpaceResponse;
@@ -63,10 +63,10 @@ public class WorkSpaceServiceImpl implements IWorkSpaceService {
         ws.setUpdatedAt(dateNowUtils.dateNow());
         AcademicYear ay = academicYearRepository.findById(request.getAcademicYearId())
                 .orElseThrow(() -> new BadRequestException("Không tìm thấy năm học"));
-        AuthUser auth = authenRepository.findById(request.getUserId())
+        User user = authenRepository.findById(request.getUserId())
                 .orElseThrow(() -> new BadRequestException("Không tìm thấy người dùng"));
         ws.setAcademicYear(ay);
-        ws.setAuth(auth);
+        ws.setUser(user);
         return workSpaceMapper.toResponse(workSpaceRepository.save(ws));
     }
 
@@ -78,10 +78,10 @@ public class WorkSpaceServiceImpl implements IWorkSpaceService {
         ws.setUpdatedAt(dateNowUtils.dateNow());
         AcademicYear ay = academicYearRepository.findById(request.getAcademicYearId())
                 .orElseThrow(() -> new BadRequestException("Không tìm thấy năm học"));
-        AuthUser auth = authenRepository.findById(request.getUserId())
+        User user = authenRepository.findById(request.getUserId())
                 .orElseThrow(() -> new BadRequestException("Không tìm thấy người dùng"));
         ws.setAcademicYear(ay);
-        ws.setAuth(auth);
+        ws.setUser(user);
         return workSpaceMapper.toResponse(workSpaceRepository.save(ws));
     }
 
@@ -97,11 +97,11 @@ public class WorkSpaceServiceImpl implements IWorkSpaceService {
 
     @Override
     public List<WorkSpaceResponse> getCurrentUserWorkspacesInActiveYear() {
-        AuthUser auth = accountUtils.getCurrentUser();
+        User user = accountUtils.getCurrentUser();
         AcademicYear activeYear = academicYearService.getActiveAcademicYear();
         if (activeYear == null)
             return List.of();
-        return auth.getWorkSpaces().stream()
+        return user.getWorkSpaces().stream()
                 .filter(ws -> ws.getAcademicYear() != null
                         && ws.getAcademicYear().getId().equals(activeYear.getId()))
                 .map(workSpaceMapper::toResponse)

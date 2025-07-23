@@ -4,7 +4,7 @@ import com.BE.enums.AcademicYearStatusEnum;
 import com.BE.exception.exceptions.BadRequestException;
 import com.BE.mapper.AcademicYearMapper;
 import com.BE.model.entity.AcademicYear;
-import com.BE.model.entity.AuthUser;
+import com.BE.model.entity.User;
 import com.BE.model.entity.WorkSpace;
 import com.BE.model.request.AcademicYearRequest;
 import com.BE.model.response.AcademicYearResponse;
@@ -56,14 +56,14 @@ public class AcademicYearServiceImpl implements IAcademicYearService {
         academicYear.setStatus(AcademicYearStatusEnum.UPCOMING);
         AcademicYear saved = academicYearRepository.save(academicYear);
         if (saved.getStatus() == AcademicYearStatusEnum.UPCOMING) {
-            List<AuthUser> auths = authenRepository.findAll();
-            for (AuthUser auth : auths) {
-                boolean hasWorkspace = workSpaceRepository.existsByAuthAndAcademicYear(auth, saved);
+            List<User> users = authenRepository.findAll();
+            for (User user : users) {
+                boolean hasWorkspace = workSpaceRepository.existsByUserAndAcademicYear(user, saved);
                 if (!hasWorkspace) {
                     WorkSpace ws = new WorkSpace();
-                    ws.setName(saved.getYearLabel() + " - " + auth.getUsername());
+                    ws.setName(saved.getYearLabel() + " - " + user.getUsername());
                     ws.setAcademicYear(saved);
-                    ws.setAuth(auth);
+                    ws.setUser(user);
                     workSpaceRepository.save(ws);
                 }
             }
@@ -113,13 +113,13 @@ public class AcademicYearServiceImpl implements IAcademicYearService {
 
     @Override
     @Transactional
-    public WorkSpace createWorkspaceForNewUser(AuthUser auth) {
+    public WorkSpace createWorkspaceForNewUser(User user) {
         AcademicYear activeYear = getActiveAcademicYear();
         if (activeYear != null) {
             WorkSpace ws = new WorkSpace();
-            ws.setName(activeYear.getYearLabel() + " - " + auth.getUsername());
+            ws.setName(activeYear.getYearLabel() + " - " + user.getUsername());
             ws.setAcademicYear(activeYear);
-            ws.setAuth(auth);
+            ws.setUser(user);
             return ws;
         }
         return null;

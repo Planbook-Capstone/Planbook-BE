@@ -5,7 +5,7 @@ import com.BE.exception.exceptions.BadRequestException;
 import com.BE.exception.exceptions.InvalidRefreshTokenException;
 import com.BE.mapper.AuthMapper;
 import com.BE.model.EmailDetail;
-import com.BE.model.entity.AuthUser;
+import com.BE.model.entity.User;
 import com.BE.model.request.*;
 import com.BE.model.response.AuthenResponse;
 import com.BE.model.response.AuthenticationResponse;
@@ -74,18 +74,18 @@ public class AuthenticationImpl implements IAuthenticationService {
 
 
     public AuthenticationResponse register(AuthenticationRequest request) {
-        AuthUser auth = authMapper.toAuth(request);
-        auth.setPassword(passwordEncoder.encode(request.getPassword()));
-        auth.setRole(RoleEnum.TEACHER);
+        User user = authMapper.toAuth(request);
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setRole(RoleEnum.TEACHER);
         try {
             // Create workspace for new auth
-            WorkSpace ws = academicYearService.createWorkspaceForNewUser(auth);
+            WorkSpace ws = academicYearService.createWorkspaceForNewUser(user);
             if (ws != null) {
-                auth.getWorkSpaces().add(ws);
-                authenRepository.save(auth);
+                user.getWorkSpaces().add(ws);
+                authenRepository.save(user);
                 workSpaceService.save(ws);
             }
-            return authMapper.toAuthenticationResponse(auth);
+            return authMapper.toAuthenticationResponse(user);
         } catch (DataIntegrityViolationException e) {
             System.out.println(e.getMessage());
             throw new DataIntegrityViolationException("Đã có username này!");
@@ -104,7 +104,7 @@ public class AuthenticationImpl implements IAuthenticationService {
             throw new NullPointerException("Sai ID hoặc mật khẩu!");
         }
 
-        AuthUser user = (AuthUser) authentication.getPrincipal();
+        User user = (User) authentication.getPrincipal();
         AuthenticationResponse authenticationResponse = authMapper.toAuthenticationResponse(user);
         String refresh = UUID.randomUUID().toString();
         authenticationResponse.setToken(jwtService.generateToken(user, refresh, false));
@@ -145,30 +145,30 @@ public class AuthenticationImpl implements IAuthenticationService {
             }
 
             // Tìm hoặc tạo mới User
-            AuthUser auth = authenRepository.findByEmail(email).orElse(null);
-            if (auth == null) {
-                auth = new AuthUser();
-//                auth.setFullName(fullNameFromGoogle);
-                auth.setEmail(email);
-                auth.setUsername(email);
-                auth.setRole(RoleEnum.TEACHER); // Hoặc kiểm tra quyền nếu cần
+            User user = authenRepository.findByEmail(email).orElse(null);
+            if (user == null) {
+                user = new User();
+                user.setFullName(fullNameFromGoogle);
+                user.setEmail(email);
+                user.setUsername(email);
+                user.setRole(RoleEnum.TEACHER); // Hoặc kiểm tra quyền nếu cần
 
                 // Tạo workspace nếu là auth mới
-                WorkSpace ws = academicYearService.createWorkspaceForNewUser(auth);
+                WorkSpace ws = academicYearService.createWorkspaceForNewUser(user);
                 if (ws != null) {
-                    auth.getWorkSpaces().add(ws);
-                    authenRepository.save(auth);
+                    user.getWorkSpaces().add(ws);
+                    authenRepository.save(user);
                 }
 
-                auth = authenRepository.save(auth);
+                user = authenRepository.save(user);
 
 
             }
 
             // Sinh token JWT như cũ
-            AuthenticationResponse authenticationResponse = authMapper.toAuthenticationResponse(auth);
+            AuthenticationResponse authenticationResponse = authMapper.toAuthenticationResponse(user);
             String refresh = UUID.randomUUID().toString();
-            authenticationResponse.setToken(jwtService.generateToken(auth, refresh, false));
+            authenticationResponse.setToken(jwtService.generateToken(user, refresh, false));
             authenticationResponse.setRefreshToken(refresh);
             return authenticationResponse;
 
@@ -180,15 +180,15 @@ public class AuthenticationImpl implements IAuthenticationService {
     }
 
     public void forgotPasswordRequest(String email) {
-        AuthUser auth = authenRepository.findByEmail(email).orElseThrow(() -> new BadRequestException("Không tìm thấy email này!"));
+        User user = authenRepository.findByEmail(email).orElseThrow(() -> new BadRequestException("Không tìm thấy email này!"));
 
         EmailDetail emailDetail = new EmailDetail();
-        emailDetail.setRecipient(auth.getEmail());
-        emailDetail.setSubject("Khôi phục mật khẩu cho: " + auth.getEmail() + "!");
+        emailDetail.setRecipient(user.getEmail());
+        emailDetail.setSubject("Khôi phục mật khẩu cho: " + user.getEmail() + "!");
         emailDetail.setMsgBody("aaa");
         emailDetail.setButtonValue("Reset Password");
 //        emailDetail.setFullName(auth.getFullName());
-        emailDetail.setLink("http://localhost:5173?token=" + jwtService.generateToken(auth));
+        emailDetail.setLink("http://localhost:5173?token=" + jwtService.generateToken(user));
 
         Runnable r = new Runnable() {
             @Override
@@ -201,10 +201,10 @@ public class AuthenticationImpl implements IAuthenticationService {
 
     }
 
-    public AuthUser resetPassword(ResetPasswordRequest resetPasswordRequest) {
-        AuthUser auth = accountUtils.getCurrentUser();
-        auth.setPassword(passwordEncoder.encode(resetPasswordRequest.getPassword()));
-        return authenRepository.save(auth);
+    public User resetPassword(ResetPasswordRequest resetPasswordRequest) {
+        User user = accountUtils.getCurrentUser();
+        user.setPassword(passwordEncoder.encode(resetPasswordRequest.getPassword()));
+        return authenRepository.save(user);
     }
 
     public String admin() {
@@ -218,10 +218,10 @@ public class AuthenticationImpl implements IAuthenticationService {
         // String refresh = jwtService.getRefreshClaim(refreshRequest.getToken());
         if (refreshTokenService.validateRefreshToken(refreshRequest.getRefreshToken())) {
             System.out.println(refreshTokenService.getIdFromRefreshToken(refreshRequest.getRefreshToken()));
-            AuthUser auth = authenRepository
+            User user = authenRepository
                     .findById(refreshTokenService.getIdFromRefreshToken(refreshRequest.getRefreshToken()))
                     .orElseThrow(() -> new BadRequestException("Không tìm thấy người dùng!"));
-            authenResponse.setToken(jwtService.generateToken(auth, refreshRequest.getRefreshToken(), true));
+            authenResponse.setToken(jwtService.generateToken(user, refreshRequest.getRefreshToken(), true));
         } else {
             throw new InvalidRefreshTokenException("Invalid refresh token");
         }

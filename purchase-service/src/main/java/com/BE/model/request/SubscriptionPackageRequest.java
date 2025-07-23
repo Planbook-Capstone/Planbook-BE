@@ -15,22 +15,24 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class SubscriptionPackageRequest {
 
-    @NotBlank(message = "Package name is required")
+    @NotBlank(message = "Tên gói không được để trống")
     String name;
 
-    @NotNull(message = "Token amount is required")
-    @Min(value = 1, message = "Token amount must be at least 1")
+    @NotNull(message = "Số lượng token là bắt buộc")
+    @Min(value = 1, message = "Số lượng token phải lớn hơn hoặc bằng 1")
     Integer tokenAmount;
 
-    @NotNull(message = "Price is required")
-    @DecimalMin(value = "0.0", inclusive = false, message = "Price must be greater than 0")
+    @NotNull(message = "Giá tiền là bắt buộc")
+    @DecimalMin(value = "0.0", inclusive = false, message = "Giá tiền phải lớn hơn 0")
     BigDecimal price;
 
+    @NotBlank(message = "Mô tả không được để trống")
     String description;
 
+    boolean highlight;
 
-    @NotNull(message = "Feature list is required")
-    @Size(min = 1, message = "At least one feature is required")
+    @NotNull(message = "Danh sách tính năng không được để trống")
+    @Size(min = 1, message = "Phải có ít nhất một tính năng")
     @Builder.Default
-    List<@NotBlank(message = "Feature description must not be blank") String> features = new ArrayList<>();
+    List<@NotBlank(message = "Mô tả tính năng không được để trống") String> features = new ArrayList<>();
 }
