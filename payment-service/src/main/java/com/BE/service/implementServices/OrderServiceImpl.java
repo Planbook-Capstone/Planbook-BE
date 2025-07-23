@@ -20,10 +20,16 @@ import com.BE.repository.PaymentTransactionRepository;
 import com.BE.service.interfaceServices.IOrderService;
 import com.BE.service.interfaceServices.IPaymentService;
 import com.BE.utils.AccountUtils;
+import com.BE.utils.PageUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 
@@ -44,6 +50,7 @@ public class OrderServiceImpl implements IOrderService {
     private final IPaymentService paymentService;
     private final TaskScheduler taskScheduler;
     private final PaymentTransactionRepository paymentTransactionRepository;
+    private final PageUtil pageUtil;
 
 
     @Override
@@ -51,8 +58,8 @@ public class OrderServiceImpl implements IOrderService {
     public OrderResponseDTO createOrder(CreateOrderRequestDTO request) {
         // Tạo Order mới
         Order order = Order.builder()
-//                .userId(accountUtils.getCurrentUserId())
-                .userId(UUID.randomUUID())
+                .userId(accountUtils.getCurrentUserId())
+//                .userId(UUID.randomUUID())
                 .packageId(request.getPackageId())
                 .amount(request.getAmount())
                 .status(StatusEnum.PENDING)
@@ -193,5 +200,37 @@ public class OrderServiceImpl implements IOrderService {
                 return "Cập nhật trạng thái tự động qua PayOS: " + status;
         }
     }
+
+
+    @Override
+    public Page<OrderResponseDTO> getOrdersWithFilter(StatusEnum status, UUID userId,
+                                                      int offset, int pageSize,
+                                                      String sortBy, String sortDirection) {
+        // Validate offset (bắt đầu từ 1)
+        pageUtil.checkOffset(offset);
+
+        // Tạo sort
+        Sort sort = Sort.by(Sort.Direction.fromString(sortDirection), sortBy);
+
+        // Tạo pageable (chuyển offset về 0-based index)
+        Pageable pageable = PageRequest.of(offset - 1, pageSize, sort);
+
+        // Xây dựng Specification động
+        Specification<Order> spec = Specification.where(null);
+
+        if (status != null) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("status"), status));
+        }
+
+        if (userId != null) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("userId"), userId));
+        }
+
+        // Trả về kết quả đã map DTO
+        return orderRepository.findAll(spec, pageable)
+                .map(orderMapper::toOrderResponseDTO);
+    }
+
+
 }
 
