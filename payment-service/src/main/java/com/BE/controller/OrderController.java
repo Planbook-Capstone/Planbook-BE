@@ -1,5 +1,6 @@
 package com.BE.controller;
 
+import com.BE.enums.StatusEnum;
 import com.BE.exception.exceptions.BusinessException;
 import com.BE.model.entity.PaymentTransaction;
 import com.BE.model.request.CreateOrderRequestDTO;
@@ -11,7 +12,9 @@ import com.BE.service.interfaceServices.IOrderService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -19,10 +22,12 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.query.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.awt.print.Pageable;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -101,7 +106,6 @@ public class OrderController {
     }
 
 
-
     @Operation(
             summary = "Cập nhật trạng thái đơn hàng",
             description = "API này cho phép cập nhật trạng thái của đơn hàng (`PENDING`, `SUCCESS`, `FAILED`) cùng với ghi chú lý do (tuỳ chọn).",
@@ -114,11 +118,11 @@ public class OrderController {
                             examples = @ExampleObject(
                                     name = "Example update status",
                                     value = """
-                                        {
-                                          "newStatus": "CANCEL",
-                                          "note": "Thanh toán thành công qua PayOS webhook"
-                                        }
-                                        """
+                                            {
+                                              "newStatus": "CANCEL",
+                                              "note": "Thanh toán thành công qua PayOS webhook"
+                                            }
+                                            """
                             )
                     )
             )
@@ -131,8 +135,9 @@ public class OrderController {
         return ResponseEntity.ok(new DataResponseDTO<>(200, "Cập nhật trạng thái đơn hàng thành công", orderService.updateOrderStatus(orderId, request.getStatus(), request.getNote())));
     }
 
+    @Hidden
     @PostMapping("/webhook/payos")
-    public ObjectNode handlePayosWebhook(@RequestBody ObjectNode body) throws JsonProcessingException  {
+    public ObjectNode handlePayosWebhook(@RequestBody ObjectNode body) throws JsonProcessingException {
         ObjectNode response = objectMapper.createObjectNode();
 
         try {
@@ -144,12 +149,38 @@ public class OrderController {
             response.set("data", null);
             return response;
 
-        }   catch (Exception e) {
+        } catch (Exception e) {
             response.put("error", -1);
             response.put("message", "Lỗi hệ thống khi xử lý webhook");
             response.set("data", null);
             return response;
         }
+    }
+
+    @Operation(
+            summary = "Lấy danh sách đơn hàng có lọc và sắp xếp",
+            description = "Lọc theo trạng thái đơn hàng (`StatusEnum`) và `userId` (nếu có), sắp xếp theo `createdAt` hoặc `updatedAt` theo chiều `asc|desc`.",
+            parameters = {
+                    @Parameter(name = "status", description = "Trạng thái đơn hàng", schema = @Schema(implementation = StatusEnum.class, allowableValues = {"PENDING", "PAID", "FAILED", "CANCELLED", "EXPIRED"})),
+                    @Parameter(name = "userId", description = "ID người dùng", schema = @Schema(type = "string", format = "uuid")),
+                    @Parameter(name = "sortBy", description = "Sắp xếp theo", schema = @Schema(allowableValues = {"createdAt", "updatedAt"}), example = "createdAt"),
+                    @Parameter(name = "sortDirection", description = "Chiều sắp xếp", schema = @Schema(allowableValues = {"asc", "desc"}), example = "desc"),
+                    @Parameter(name = "offset", description = "Số trang (bắt đầu từ 1)", schema = @Schema(example = "1")),
+                    @Parameter(name = "pageSize", description = "Số phần tử mỗi trang", schema = @Schema(example = "10"))
+            }
+    )
+    @GetMapping
+    public ResponseEntity getOrders(
+            @RequestParam(required = false) StatusEnum status,
+            @RequestParam(required = false) UUID userId,
+            @RequestParam(required = false, defaultValue = "createdAt") String sortBy,
+            @RequestParam(required = false, defaultValue = "desc") String sortDirection,
+            @RequestParam(defaultValue = "1") int offset,
+            @RequestParam(defaultValue = "10") int pageSize
+    ) {
+        return ResponseEntity.ok(new DataResponseDTO<>(200, "Danh sách đơn hàng", orderService.getOrdersWithFilter(
+                status, userId, offset, pageSize, sortBy, sortDirection
+        )));
     }
 
 
