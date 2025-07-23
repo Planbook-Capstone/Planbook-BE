@@ -1,10 +1,9 @@
 package com.BE.model.entity;
 
-import com.BE.enums.OrderStatusEnum;
 import com.BE.enums.StatusEnum;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -21,20 +20,18 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Order {
     @Id
     @GeneratedValue
-    private UUID id;
+    UUID id;
 
     @Column(nullable = false)
-    private UUID userId;
-
-    @Column(nullable = false)
-    private UUID packageId;
+    UUID userId;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private StatusEnum status;
+    StatusEnum status;
 
     @Column(nullable = false)
     BigDecimal amount = BigDecimal.ZERO;
@@ -53,6 +50,10 @@ public class Order {
     @Builder.Default
     Set<PaymentTransaction> transactions = new HashSet<>();
 
+    @ManyToOne
+    @JoinColumn(name = "package_id", nullable = false)
+    SubscriptionPackage subscriptionPackage;
+
     public void addHistory(OrderHistory history) {
         orderHistories.add(history);
         history.setOrder(this);
@@ -61,5 +62,10 @@ public class Order {
     public void addTransaction(PaymentTransaction txn) {
         transactions.add(txn);
         txn.setOrder(this);
+    }
+
+    public void addSubcriptionPackage(SubscriptionPackage subscriptionPackage) {
+        subscriptionPackage.getOrders().add(this);
+        this.setSubscriptionPackage(subscriptionPackage);
     }
 }

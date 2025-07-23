@@ -2,6 +2,7 @@ package com.BE.model.response;
 
 import com.BE.enums.StatusEnum;
 import com.BE.model.entity.OrderHistory;
+import com.BE.model.entity.SubscriptionPackage;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
@@ -16,12 +17,12 @@ import java.util.UUID;
 public class OrderResponseDTO {
     UUID id;
     UUID userId;
-    UUID packageId;
     BigDecimal amount;
     StatusEnum status;
     String checkoutUrl;
     LocalDateTime createdAt;
     LocalDateTime updatedAt;
+    SubscriptionPackage subscriptionPackage;
     List<OrderHistoryResponseDTO> orderHistories;
     List<PaymentTransactionResponse> transactions;
 

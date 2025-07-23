@@ -11,11 +11,5 @@ import java.util.UUID;
 public class CreateOrderRequestDTO {
     @NotNull(message = "packageId không được null")
     private UUID packageId;
-
-    @NotNull(message = "amount không được null")
-    @DecimalMin(value = "0.0", inclusive = false, message = "Số tiền phải lớn hơn 0")
-    private BigDecimal amount;
-
-
 }
 

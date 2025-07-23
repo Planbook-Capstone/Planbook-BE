@@ -1,6 +1,5 @@
 package com.BE.model.entity;
 
-import com.BE.enums.OrderStatusEnum;
 import com.BE.enums.StatusEnum;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
