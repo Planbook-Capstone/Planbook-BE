@@ -1,5 +1,6 @@
 package com.BE.model.entity;
 
+import com.BE.config.MapToJsonConverter;
 import com.BE.enums.SubscriptionStatus;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -12,6 +13,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -62,11 +64,9 @@ public class SubscriptionPackage {
     @Builder.Default
     Set<Order> orders = new HashSet<>();
 
-    @ElementCollection
-    @CollectionTable(name = "subscription_features", joinColumns = @JoinColumn(name = "subscription_id"))
-    @Column(name = "feature")
-    @Builder.Default
-    Set<String> features = new HashSet<>();
+    @Column(columnDefinition = "json")
+    @Convert(converter = MapToJsonConverter.class)
+    Map<String, Object> features;
 
 
 }
