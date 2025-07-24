@@ -29,8 +29,6 @@ public class Order {
     @Column(nullable = false)
     UUID userId;
 
-    int priority;
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     StatusEnum status;

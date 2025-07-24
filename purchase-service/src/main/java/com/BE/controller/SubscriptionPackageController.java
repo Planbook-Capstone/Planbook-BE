@@ -51,6 +51,7 @@ public class SubscriptionPackageController {
                                       "price": 5000,
                                       "description": "Truy cập cơ bản cho người dùng mới",
                                       "highlight": false,
+                                      "priority": 1,
                                       "features": {
                                         "1": "Truy cập ưu tiên vào AI",
                                         "2": "Hỗ trợ khách hàng qua email",
@@ -86,6 +87,7 @@ public class SubscriptionPackageController {
                                       "price": 10000,
                                       "description": "Gói nâng cao với nhiều quyền lợi",
                                       "highlight": true,
+                                      "priority": 1,
                                       "features": {
                                         "1": "Truy cập không giới hạn",
                                         "2": "Hỗ trợ ưu tiên",

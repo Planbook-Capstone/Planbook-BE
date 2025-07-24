@@ -47,6 +47,8 @@ public class SubscriptionPackage {
     @Column
     boolean highlight = false;
 
+    int priority;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     SubscriptionStatus status;
