@@ -1,6 +1,7 @@
 package com.BE.model.response;
 
 import com.BE.enums.SubscriptionStatus;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -24,6 +25,7 @@ public class SubscriptionPackageResponse {
     String description;
     SubscriptionStatus status;
     boolean highlight;
+    int priority;
     LocalDateTime createdAt;
     LocalDateTime updatedAt;
     Map<String, Object> features;

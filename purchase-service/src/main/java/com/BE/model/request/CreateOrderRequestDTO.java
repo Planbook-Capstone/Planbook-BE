@@ -12,7 +12,6 @@ public class CreateOrderRequestDTO {
     @NotNull(message = "packageId không được null")
     private UUID packageId;
 
-    @NotNull(message = "priority không được null")
-    private int priority;
+
 }
 
