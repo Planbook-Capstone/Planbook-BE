@@ -25,6 +25,7 @@ public class PaymentTransactionResponse {
     Long payosOrderCode;
     GatewayEnum gateway;
     String checkoutUrl;
+    String qrCode;
     String payosTransactionId;
     String description;
     String failureReason;

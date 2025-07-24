@@ -1,24 +1,8 @@
 package com.BE.controller;
 
 
-import com.BE.model.request.CancelPaymentRequestDTO;
-import com.BE.model.request.CreatePaymentRequestDTO;
-import com.BE.model.request.RetryPaymentRequestDTO;
-import com.BE.model.response.CancelPaymentResponseDTO;
-import com.BE.model.response.DataResponseDTO;
-import com.BE.model.response.PaymentLinkResponseDTO;
-import com.BE.model.response.PaymentTransactionResponse;
-import com.BE.service.interfaceServices.IPaymentService;
-import com.BE.utils.ResponseHandler;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.v3.oas.annotations.Hidden;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.ExampleObject;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -26,8 +10,6 @@ import org.springframework.web.bind.annotation.*;
 import vn.payos.PayOS;
 import vn.payos.exception.PayOSException;
 
-import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/payments")

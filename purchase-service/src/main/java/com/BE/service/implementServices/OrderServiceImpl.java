@@ -57,12 +57,26 @@ public class OrderServiceImpl implements IOrderService {
     @Override
     @Transactional
     public OrderResponseDTO createOrder(CreateOrderRequestDTO request) {
+
+        UUID currentUserId = accountUtils.getCurrentUserId();
+
         SubscriptionPackage subscriptionPackage = subscriptionPackageRepository.findById(request.getPackageId())
                 .orElseThrow(() -> new NotFoundException("Gói dịch vụ này không tồn tại"));
 
+        List<StatusEnum> statuses = List.of( StatusEnum.PENDING,  StatusEnum.RETRY);
+        boolean existsPending = orderRepository.existsByUserIdAndSubscriptionPackageIdAndStatusIn(
+                currentUserId,
+                request.getPackageId(),
+                statuses
+        );
+
+        if (existsPending) {
+            throw new IllegalStateException("Bạn đã có đơn hàng đang chờ xử lý cho gói dịch vụ này. Vui lòng hoàn tất hoặc huỷ trước khi tạo mới.");
+        }
         // Tạo Order mới
         Order order = Order.builder()
-                .userId(accountUtils.getCurrentUserId())
+                .userId(currentUserId)
+                .priority(request.getPriority())
 //                .userId(UUID.randomUUID())
                 .amount(subscriptionPackage.getPrice())
                 .status(StatusEnum.PENDING)
@@ -86,7 +100,7 @@ public class OrderServiceImpl implements IOrderService {
 
         OrderResponseDTO responseDTO = orderMapper.toOrderResponseDTO(savedOrder);
         responseDTO.setCheckoutUrl(paymentLink.getCheckoutUrl());
-
+        responseDTO.setQrCode(paymentLink.getQrCode());
         return responseDTO;
     }
 
@@ -154,6 +168,7 @@ public class OrderServiceImpl implements IOrderService {
             retryRequest.setOrder(order);
             PaymentTransaction paymentTransaction = paymentService.retryPayment(retryRequest);
             responseDTO.setCheckoutUrl(paymentTransaction.getCheckoutUrl());
+            responseDTO.setQrCode(paymentTransaction.getQrCode());
         }
         return responseDTO;
     }

@@ -1,7 +1,6 @@
 package com.BE.mapper;
 
 import com.BE.model.entity.PaymentTransaction;
-import com.BE.model.response.PaymentLinkResponseDTO;
 import com.BE.model.response.PaymentTransactionResponse;
 import org.mapstruct.*;
 

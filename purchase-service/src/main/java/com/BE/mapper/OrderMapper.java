@@ -5,13 +5,10 @@ import com.BE.model.entity.OrderHistory;
 import com.BE.model.entity.PaymentTransaction;
 import com.BE.model.response.OrderHistoryResponseDTO;
 import com.BE.model.response.OrderResponseDTO;
-import com.BE.model.response.PaymentLinkResponseDTO;
 import com.BE.model.response.PaymentTransactionResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-import java.util.List;
-import java.util.Set;
 
 @Mapper(componentModel = "spring")
 public interface OrderMapper {
