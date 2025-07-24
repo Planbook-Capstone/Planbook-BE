@@ -34,6 +34,15 @@ public class CreateExamTemplateRequest {
     @Min(value = 1, message = "Duration must be at least 1 minute")
     private Integer durationMinutes;
 
+    @Schema(description = "School name", example = "THPT Nguyen Hue")
+    private String school;
+
+    @Schema(description = "Exam code", example = "1234")
+    private String examCode;
+
+    @Schema(description = "Atomic masses information", example = "H=1, C=12, O=16")
+    private String atomicMasses;
+
     @Schema(description = "Exam content with questions and answers", required = true)
     @NotNull(message = "Content JSON is required")
     private Map<String, Object> contentJson;

@@ -41,7 +41,16 @@ public class ExamTemplate {
     
     @Column(name = "duration_minutes", nullable = false)
     private Integer durationMinutes;
-    
+
+    @Column(name = "school")
+    private String school;
+
+    @Column(name = "exam_code")
+    private String examCode;
+
+    @Column(name = "atomic_masses")
+    private String atomicMasses;
+
     @Column(name = "created_by", nullable = false)
     private UUID createdBy;
     

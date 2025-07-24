@@ -28,6 +28,15 @@ public class UpdateExamTemplateRequest {
     @Min(value = 1, message = "Duration must be at least 1 minute")
     private Integer durationMinutes;
 
+    @Schema(description = "Updated school name", example = "THPT Nguyen Hue")
+    private String school;
+
+    @Schema(description = "Updated exam code", example = "1234")
+    private String examCode;
+
+    @Schema(description = "Updated atomic masses information", example = "H=1, C=12, O=16")
+    private String atomicMasses;
+
     @Schema(description = "Updated exam content with questions and answers")
     private Map<String, Object> contentJson;
 

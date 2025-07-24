@@ -18,6 +18,9 @@ public class ExamTemplateResponse {
     private String subject;
     private Integer grade;
     private Integer durationMinutes;
+    private String school;
+    private String examCode;
+    private String atomicMasses;
     private UUID createdBy;
     private Map<String, Object> contentJson;
     private Map<String, Object> scoringConfig;

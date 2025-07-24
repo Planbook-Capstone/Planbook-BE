@@ -49,6 +49,8 @@ public class ExamTemplateController {
             - **Reusable Design**: One template can create multiple exam instances
             - **Flexible Content**: Supports multiple question types and formats
             - **Custom Grading**: Configure different point values for different sections
+            - **School Information**: Optional school name and exam code for identification
+            - **Chemistry Support**: Atomic masses information for chemistry exams
             - **Version Control**: Templates are versioned for tracking changes
             - **Validation**: Content structure is validated before saving
 
@@ -150,6 +152,9 @@ public class ExamTemplateController {
                                 "subject": "Chemistry",
                                 "grade": 10,
                                 "durationMinutes": 90,
+                                "school": "THPT Hong Thinh",
+                                "examCode": "1234",
+                                "atomicMasses": "H=1, C=12, O=16, N=14",
                                 "totalScore": 10.5,
                                 "scoringConfig": {
                                     "useStandardScoring": false,
@@ -341,6 +346,9 @@ public class ExamTemplateController {
             - **subject**: Subject area of the exam
             - **grade**: Grade level (1-12)
             - **durationMinutes**: Exam duration in minutes
+            - **school**: School name (optional)
+            - **examCode**: Exam identification code (optional)
+            - **atomicMasses**: Atomic masses information for chemistry exams (optional)
             - **contentJson**: Complete question structure and content
             - **scoringConfig**: Custom scoring configuration
             - **totalScore**: Maximum possible score
