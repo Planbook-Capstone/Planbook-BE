@@ -57,7 +57,8 @@ public class OrderController {
                                     name = "Example request",
                                     value = """
                                             {
-                                              "packageId": "dd49ce4c-9d7b-4e05-b4d4-baaa2b38da35"
+                                              "packageId": "dd49ce4c-9d7b-4e05-b4d4-baaa2b38da35",
+                                              "priority": 1
                                             }
                                             """
                             )
@@ -120,7 +121,7 @@ public class OrderController {
                                     name = "Example update status",
                                     value = """
                                             {
-                                              "newStatus": "CANCEL",
+                                              "status": "CANCEL, RETRY",
                                               "note": "Thanh toán thành công qua PayOS webhook"
                                             }
                                             """

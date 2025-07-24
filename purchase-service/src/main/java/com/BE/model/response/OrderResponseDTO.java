@@ -17,9 +17,11 @@ import java.util.UUID;
 public class OrderResponseDTO {
     UUID id;
     UUID userId;
+    int priority;
     BigDecimal amount;
     StatusEnum status;
     String checkoutUrl;
+    String qrCode;
     LocalDateTime createdAt;
     LocalDateTime updatedAt;
     SubscriptionPackage subscriptionPackage;

@@ -57,6 +57,7 @@ public class PaymentTransaction {
     Long payosOrderCode;
 
     String checkoutUrl;
+    String qrCode;
 
     @Column(unique = true)
     String payosTransactionId;

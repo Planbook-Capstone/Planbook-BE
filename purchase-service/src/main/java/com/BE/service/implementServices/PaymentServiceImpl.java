@@ -2,6 +2,7 @@ package com.BE.service.implementServices;
 
 import com.BE.enums.GatewayEnum;
 import com.BE.enums.StatusEnum;
+import com.BE.exception.exceptions.BusinessException;
 import com.BE.exception.exceptions.InvalidSignatureException;
 import com.BE.exception.exceptions.NotFoundException;
 import com.BE.mapper.PaymentTransactionMapper;
@@ -52,15 +53,6 @@ public class PaymentServiceImpl implements IPaymentService {
     @Override
     @Transactional
     public PaymentTransaction createPaymentLink(CreatePaymentRequestDTO request) {
-        // ✅ Kiểm tra trước khi tạo mới
-        boolean existsPending = paymentTransactionRepository.existsByOrderIdAndGatewayAndStatus(
-                request.getOrder().getId(), GatewayEnum.PAYOS, StatusEnum.PENDING
-        );
-
-        if (existsPending) {
-            throw new IllegalStateException("Đã tồn tại một giao dịch thanh toán PAYOS đang chờ xử lý cho đơn hàng này.");
-        }
-
         try {
             long orderCode = System.currentTimeMillis();
             ItemData item = ItemData.builder()
@@ -90,6 +82,7 @@ public class PaymentServiceImpl implements IPaymentService {
                     .payosOrderCode(orderCode)
                     .payosTransactionId(response.getPaymentLinkId())
                     .checkoutUrl(response.getCheckoutUrl())
+                    .qrCode(response.getQrCode())
                     .build();
             request.getOrder().addTransaction(transaction);
 
@@ -107,32 +100,28 @@ public class PaymentServiceImpl implements IPaymentService {
     @Transactional
     public PaymentTransaction retryPayment(RetryPaymentRequestDTO request) {
 
-
-        // 1. Lấy root transaction của order
         PaymentTransaction root = paymentTransactionRepository.findRootTransactionByOrderId(request.getOrder().getId())
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy transaction gốc của orderId: " + request.getOrder().getId()));
+                .orElseThrow(() -> new NotFoundException("Không tìm thấy transaction gốc của orderId: " + request.getOrder().getId()));
 
         // 2. Lấy transaction cuối cùng trong chain
         PaymentTransaction latest = getLatestInRetryChain(root);
 
         // 3. Kiểm tra trạng thái
-        if (StatusEnum.PAID.equals(latest.getStatus()) || StatusEnum.PENDING.equals(latest.getStatus())) {
-            throw new RuntimeException("Không thể retry khi giao dịch cuối cùng đang PENDING hoặc đã PAID.");
+        if (StatusEnum.PAID.equals(latest.getStatus()) || StatusEnum.PENDING.equals(latest.getStatus()) || StatusEnum.RETRY.equals(latest.getStatus())) {
+            throw new BusinessException("Không thể retry khi giao dịch cuối cùng đang PENDING hoặc PAID hoặc đã RETRY.");
         }
 
         // 4. Gọi tạo mới
         CreatePaymentRequestDTO newReq = new CreatePaymentRequestDTO();
         newReq.setOrder(request.getOrder());
-        newReq.setAmount(latest.getAmount());
-        newReq.setDescription("Retry thanh toán cho đơn hàng " + request.getOrder().getId());
+        newReq.setAmount(request.getOrder().getAmount());
+        newReq.setDescription("Retry thanh toán PlanBookAI");
 
         PaymentTransaction response = createPaymentLink(newReq);
 
-        // 5. Gán quan hệ retry
-        PaymentTransaction newTxn = paymentTransactionRepository.findById(response.getId())
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy transaction vừa tạo."));
-        newTxn.setParentTransactionId(latest.getId());
-        response = paymentTransactionRepository.save(newTxn);
+        response.setStatus(StatusEnum.RETRY);
+        response.setParentTransactionId(latest.getId());
+        response = paymentTransactionRepository.save(response);
 
         return response;
     }
@@ -168,7 +157,7 @@ public class PaymentServiceImpl implements IPaymentService {
 
             switch (actualPayosStatus) {
                 case "PAID":
-                    if (paymentTransactionRepository.existsByOrderIdAndStatus(txn.getOrder().getId(), StatusEnum.PAID)) {
+                    if (paymentTransactionRepository.existsByOrderAndGatewayAndStatus(txn.getOrder(), GatewayEnum.PAYOS, StatusEnum.PAID)) {
                         return txn;
                     }
                     newStatus = StatusEnum.PAID;
