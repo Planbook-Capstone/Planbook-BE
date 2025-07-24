@@ -76,7 +76,6 @@ public class OrderServiceImpl implements IOrderService {
         // Tạo Order mới
         Order order = Order.builder()
                 .userId(currentUserId)
-                .priority(request.getPriority())
 //                .userId(UUID.randomUUID())
                 .amount(subscriptionPackage.getPrice())
                 .status(StatusEnum.PENDING)
