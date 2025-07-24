@@ -18,6 +18,10 @@ public class ExamContentResponse {
     private String subject;
     private Integer grade;
     private Integer durationMinutes;
+    private String school;
+    private String examCode;
+    private String atomicMasses;
+    private Double totalScore;
     private Map<String, Object> contentJson; // Content without correct answers for students
     private LocalDateTime startAt;
     private LocalDateTime endAt;

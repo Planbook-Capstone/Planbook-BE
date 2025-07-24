@@ -560,7 +560,9 @@ public class ExamInstanceController {
             - **No Authentication**: Students don't need to log in
 
             ### Response Content:
-            - **Exam Information**: Name, subject, grade level, duration
+            - **Exam Information**: Name, subject, grade level, duration, total score
+            - **School Information**: School name and exam code (if provided)
+            - **Chemistry Support**: Atomic masses information for chemistry exams
             - **Questions**: Complete question structure without answers
             - **Instructions**: Any special instructions for the exam
             - **Timing**: Start time, end time, remaining duration
@@ -618,7 +620,49 @@ public class ExamInstanceController {
             """
     )
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Exam content retrieved successfully"),
+        @ApiResponse(responseCode = "200", description = "Exam content retrieved successfully",
+            content = @Content(mediaType = "application/json",
+                examples = @ExampleObject(value = """
+                    {
+                        "statusCode": 200,
+                        "message": "Exam content retrieved successfully",
+                        "data": {
+                            "examInstanceId": "917e3cc3-6c84-40ba-a9cc-3a86c894e8b7",
+                            "examName": "Template Hóa học - Lớp 10",
+                            "subject": "Hóa học",
+                            "grade": 12,
+                            "durationMinutes": 45,
+                            "school": "THPT Hong Thinh",
+                            "examCode": "1234",
+                            "atomicMasses": "H=1, C=12, O=16, N=14",
+                            "totalScore": 7.75,
+                            "contentJson": {
+                                "parts": [
+                                    {
+                                        "part": "PHẦN I",
+                                        "title": "Câu trắc nghiệm nhiều phương án lựa chọn",
+                                        "questions": [
+                                            {
+                                                "id": "1",
+                                                "questionNumber": 1,
+                                                "question": "Câu hỏi mẫu?",
+                                                "options": {
+                                                    "A": "Đáp án A",
+                                                    "B": "Đáp án B",
+                                                    "C": "Đáp án C",
+                                                    "D": "Đáp án D"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                ]
+                            },
+                            "startAt": "2025-07-24T14:51:01.385105",
+                            "endAt": "2025-07-31T17:00:00",
+                            "code": "DZ99YX"
+                        }
+                    }
+                    """))),
         @ApiResponse(responseCode = "404", description = "Exam not found or not available"),
         @ApiResponse(responseCode = "400", description = "Exam not available (outside time window)")
     })
