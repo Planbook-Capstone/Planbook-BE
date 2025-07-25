@@ -35,7 +35,7 @@ public class SubscriptionPackageRequest {
     boolean highlight;
 
     @NotNull(message = "priority không được null")
-    int priority;
+    Integer priority;
 
     @Schema(
             description = "Danh sách các chức năng theo thứ tự",

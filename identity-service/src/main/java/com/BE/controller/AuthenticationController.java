@@ -84,6 +84,11 @@ public class AuthenticationController {
                                     name = "Ví dụ đăng nhập Nhân viên",
                                     summary = "Đăng nhập với tài khoản Nhân viên",
                                     value = "{\"username\": \"staff\", \"password\": \"staff\"}"
+                            ),
+                            @ExampleObject(
+                                    name = "Ví dụ đăng nhập Nhân viên",
+                                    summary = "Đăng nhập với tài khoản Quản lí tool",
+                                    value = "{\"username\": \"partner\", \"password\": \"partner\"}"
                             )
                     }
             )

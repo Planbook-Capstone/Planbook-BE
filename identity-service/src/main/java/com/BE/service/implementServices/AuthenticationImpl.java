@@ -11,14 +11,12 @@ import com.BE.model.entity.User;
 import com.BE.model.request.*;
 import com.BE.model.response.AuthenResponse;
 import com.BE.model.response.AuthenticationResponse;
-import com.BE.model.entity.WorkSpace;
 import com.BE.repository.AuthenRepository;
 import com.BE.service.EmailService;
 import com.BE.service.JWTService;
 import com.BE.service.RefreshTokenService;
-import com.BE.service.interfaceServices.IAcademicYearService;
 import com.BE.service.interfaceServices.IAuthenticationService;
-import com.BE.service.interfaceServices.IWorkSpaceService;
+import com.BE.service.interfaceServices.IWalletService;
 import com.BE.utils.AccountUtils;
 
 
@@ -66,10 +64,13 @@ public class AuthenticationImpl implements IAuthenticationService {
     RefreshTokenService refreshTokenService;
 
     @Autowired
-    IAcademicYearService academicYearService;
-
-    @Autowired
-    IWorkSpaceService workSpaceService;
+    IWalletService iWalletService;
+//
+//    @Autowired
+//    IAcademicYearService academicYearService;
+//
+//    @Autowired
+//    IWorkSpaceService workSpaceService;
 
     @Value("${supabase.jwt.secret}")
     private String supabaseJwtSecret;
@@ -81,13 +82,15 @@ public class AuthenticationImpl implements IAuthenticationService {
         user.setStatus(StatusEnum.ACTIVE);
         user.setRole(RoleEnum.TEACHER);
         try {
-            // Create workspace for new auth
-            WorkSpace ws = academicYearService.createWorkspaceForNewUser(user);
-            if (ws != null) {
-                user.getWorkSpaces().add(ws);
-                authenRepository.save(user);
-                workSpaceService.save(ws);
-            }
+//            // Create workspace for new auth
+//            WorkSpace ws = academicYearService.createWorkspaceForNewUser(user);
+//            if (ws != null) {
+//                user.getWorkSpaces().add(ws);
+//                authenRepository.save(user);
+//                workSpaceService.save(ws);
+//            }
+            iWalletService.create(user);
+            user = authenRepository.save(user);
             return authMapper.toAuthenticationResponse(user);
         } catch (DataIntegrityViolationException e) {
             System.out.println(e.getMessage());
@@ -158,11 +161,12 @@ public class AuthenticationImpl implements IAuthenticationService {
                 user.setRole(RoleEnum.TEACHER); // Hoặc kiểm tra quyền nếu cần
                 user.setStatus(StatusEnum.ACTIVE);
                 // Tạo workspace nếu là auth mới
-                WorkSpace ws = academicYearService.createWorkspaceForNewUser(user);
-                if (ws != null) {
-                    user.getWorkSpaces().add(ws);
-                    authenRepository.save(user);
-                }
+//                WorkSpace ws = academicYearService.createWorkspaceForNewUser(user);
+//                if (ws != null) {
+//                    user.getWorkSpaces().add(ws);
+//                    authenRepository.save(user);
+//                }
+                iWalletService.create(user);
                 user = authenRepository.save(user);
 
 

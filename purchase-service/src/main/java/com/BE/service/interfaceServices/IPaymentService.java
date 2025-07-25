@@ -21,6 +21,4 @@ public interface IPaymentService {
     CancelPaymentResponseDTO cancelAllPendingTransactions(CancelPaymentRequestDTO request);
 
 
-
-
 }

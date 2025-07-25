@@ -1,7 +1,7 @@
 package com.BE.mapper;
 
+
 import com.BE.model.entity.WorkSpace;
-import com.BE.model.request.WorkSpaceRequest;
 import com.BE.model.response.WorkSpaceResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

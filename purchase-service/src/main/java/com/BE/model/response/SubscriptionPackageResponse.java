@@ -25,7 +25,7 @@ public class SubscriptionPackageResponse {
     String description;
     SubscriptionStatus status;
     boolean highlight;
-    int priority;
+    Integer priority;
     LocalDateTime createdAt;
     LocalDateTime updatedAt;
     Map<String, Object> features;

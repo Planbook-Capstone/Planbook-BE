@@ -47,7 +47,7 @@ public class SubscriptionPackage {
     @Column
     boolean highlight = false;
 
-    int priority;
+    Integer priority = 0;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

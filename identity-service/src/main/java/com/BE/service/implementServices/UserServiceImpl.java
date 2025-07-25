@@ -11,6 +11,7 @@ import com.BE.model.request.UserProfileRequest;
 import com.BE.model.response.UserResponse;
 import com.BE.repository.AuthenRepository;
 import com.BE.service.interfaceServices.IUserService;
+import com.BE.service.interfaceServices.IWalletService;
 import com.BE.utils.PageUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -37,6 +38,7 @@ public class UserServiceImpl implements IUserService {
     UserMapper mapper;
     PasswordEncoder passwordEncoder;
     PageUtil pageUtil;
+    IWalletService iWalletService;;
 
 
     @Override
@@ -52,6 +54,7 @@ public class UserServiceImpl implements IUserService {
         User user = mapper.toEntity(request);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         try{
+            if(RoleEnum.TEACHER.equals(request.getRole()) || RoleEnum.PARTNER.equals(request.getRole())) iWalletService.create(user);
             return mapper.toResponse(repository.save(user));
         } catch (DataIntegrityViolationException e) {
             System.out.println(e.getMessage());

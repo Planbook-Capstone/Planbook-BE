@@ -18,5 +18,4 @@ public class AcademicYearResponse {
     private AcademicYearStatusEnum status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    // Getters and setters
 }

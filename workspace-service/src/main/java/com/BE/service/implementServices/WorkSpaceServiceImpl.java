@@ -3,12 +3,10 @@ package com.BE.service.implementServices;
 import com.BE.exception.exceptions.BadRequestException;
 import com.BE.mapper.WorkSpaceMapper;
 import com.BE.model.entity.AcademicYear;
-import com.BE.model.entity.User;
 import com.BE.model.entity.WorkSpace;
 import com.BE.model.request.WorkSpaceRequest;
 import com.BE.model.response.WorkSpaceResponse;
 import com.BE.repository.AcademicYearRepository;
-import com.BE.repository.AuthenRepository;
 import com.BE.repository.WorkSpaceRepository;
 import com.BE.service.interfaceServices.IWorkSpaceService;
 import com.BE.utils.AccountUtils;
@@ -29,8 +27,8 @@ public class WorkSpaceServiceImpl implements IWorkSpaceService {
     private WorkSpaceRepository workSpaceRepository;
     @Autowired
     private AcademicYearRepository academicYearRepository;
-    @Autowired
-    private AuthenRepository authenRepository;
+//    @Autowired
+//    private AuthenRepository authenRepository;
     @Autowired
     private WorkSpaceMapper workSpaceMapper;
     @Autowired
@@ -63,10 +61,10 @@ public class WorkSpaceServiceImpl implements IWorkSpaceService {
         ws.setUpdatedAt(dateNowUtils.dateNow());
         AcademicYear ay = academicYearRepository.findById(request.getAcademicYearId())
                 .orElseThrow(() -> new BadRequestException("Không tìm thấy năm học"));
-        User user = authenRepository.findById(request.getUserId())
-                .orElseThrow(() -> new BadRequestException("Không tìm thấy người dùng"));
+//        User user = authenRepository.findById(request.getUserId())
+//                .orElseThrow(() -> new BadRequestException("Không tìm thấy người dùng"));
+//        ws.setUser(user);
         ws.setAcademicYear(ay);
-        ws.setUser(user);
         return workSpaceMapper.toResponse(workSpaceRepository.save(ws));
     }
 
@@ -78,10 +76,10 @@ public class WorkSpaceServiceImpl implements IWorkSpaceService {
         ws.setUpdatedAt(dateNowUtils.dateNow());
         AcademicYear ay = academicYearRepository.findById(request.getAcademicYearId())
                 .orElseThrow(() -> new BadRequestException("Không tìm thấy năm học"));
-        User user = authenRepository.findById(request.getUserId())
-                .orElseThrow(() -> new BadRequestException("Không tìm thấy người dùng"));
+//        User user = authenRepository.findById(request.getUserId())
+//                .orElseThrow(() -> new BadRequestException("Không tìm thấy người dùng"));
+//        ws.setUser(user);
         ws.setAcademicYear(ay);
-        ws.setUser(user);
         return workSpaceMapper.toResponse(workSpaceRepository.save(ws));
     }
 
@@ -95,18 +93,18 @@ public class WorkSpaceServiceImpl implements IWorkSpaceService {
         return workSpaceRepository.findAll(pageable).map(workSpaceMapper::toResponse);
     }
 
-    @Override
-    public List<WorkSpaceResponse> getCurrentUserWorkspacesInActiveYear() {
-        User user = accountUtils.getCurrentUser();
-        AcademicYear activeYear = academicYearService.getActiveAcademicYear();
-        if (activeYear == null)
-            return List.of();
-        return user.getWorkSpaces().stream()
-                .filter(ws -> ws.getAcademicYear() != null
-                        && ws.getAcademicYear().getId().equals(activeYear.getId()))
-                .map(workSpaceMapper::toResponse)
-                .toList();
-    }
+//    @Override
+//    public List<WorkSpaceResponse> getCurrentUserWorkspacesInActiveYear() {
+//        User user = accountUtils.getCurrentUser();
+//        AcademicYear activeYear = academicYearService.getActiveAcademicYear();
+//        if (activeYear == null)
+//            return List.of();
+//        return user.getWorkSpaces().stream()
+//                .filter(ws -> ws.getAcademicYear() != null
+//                        && ws.getAcademicYear().getId().equals(activeYear.getId()))
+//                .map(workSpaceMapper::toResponse)
+//                .toList();
+//    }
 
     @Override
     public void save(WorkSpace workSpace) {

@@ -12,13 +12,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class WorkSpaceRequest {
-    @NotBlank(message = "name cannot be blank")
-    private String name;
 
     @NotNull(message = "academicYearId cannot be blank")
     private UUID academicYearId;
 
-    @NotNull(message = "userId cannot be blank")
-    private UUID userId;
-    // Getters and setters
 }
