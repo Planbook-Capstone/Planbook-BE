@@ -10,10 +10,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class WorkSpaceResponse {
     private UUID id;
-    private String name;
-    private UUID academicYearId;
+    private AcademicYearResponse academicYear;
     private UUID userId;
     private String createdAt;
     private String updatedAt;
-    // Getters and setters
 }

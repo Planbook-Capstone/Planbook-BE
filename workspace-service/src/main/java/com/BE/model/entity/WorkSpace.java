@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.annotations.UuidGenerator;
 import java.util.UUID;
 import lombok.Getter;
@@ -20,20 +22,19 @@ public class WorkSpace {
     @UuidGenerator
     private UUID id;
 
-    private String name;
-
     @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "academic_year_id")
     private AcademicYear academicYear;
 
-    @JsonIgnore
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
+    @Column(name = "user_id", nullable = false)
+    private UUID userId;
 
 
+    @CreationTimestamp
     String createdAt;
+
+    @UpdateTimestamp
     String updatedAt;
 
     // Getters and setters

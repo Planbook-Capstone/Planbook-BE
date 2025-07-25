@@ -1,0 +1,21 @@
+package com.BE.model.response;
+
+import com.BE.enums.TransactionType;
+import lombok.*;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class WalletTransactionResponse {
+    UUID id;
+    UUID orderId;
+    Integer tokenBefore;
+    Integer tokenChange;
+    TransactionType type;
+    String description;
+    LocalDateTime createdAt;
+}

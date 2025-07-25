@@ -21,7 +21,7 @@ public interface IWorkSpaceService {
 
     Page<WorkSpaceResponse> getAll(Pageable pageable);
 
-    List<WorkSpaceResponse> getCurrentUserWorkspacesInActiveYear();
+//    List<WorkSpaceResponse> getCurrentUserWorkspacesInActiveYear();
 
     void save(WorkSpace workSpace);
 }

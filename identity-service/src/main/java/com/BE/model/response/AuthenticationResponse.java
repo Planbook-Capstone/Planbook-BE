@@ -34,6 +34,7 @@ public class AuthenticationResponse {
      StatusEnum status;
      LocalDateTime createdAt;
      LocalDateTime updatedAt;
+     WalletResponse wallet;
      String token;
      String refreshToken;
 }

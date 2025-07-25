@@ -1,5 +1,6 @@
 package com.BE.exception.handler;
 
+import com.BE.exception.exceptions.DateException;
 import com.BE.exception.exceptions.EnumValidationException;
 import com.BE.exception.exceptions.InvalidRefreshTokenException;
 import com.BE.exception.exceptions.NotFoundException;
@@ -87,6 +88,13 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<Object> handleNotFoundException(NotFoundException exception) {
         return new ResponseEntity<>(exception.getMessage(), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(DateException.class)
+    public ResponseEntity<Object> handleDateException(DateException ex) {
+        Map<String, String> errors = new HashMap<>();
+        errors.put("message", ex.getMessage());
+        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(EnumValidationException.class)

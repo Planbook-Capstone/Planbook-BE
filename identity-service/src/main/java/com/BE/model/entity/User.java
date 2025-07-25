@@ -71,8 +71,11 @@ public class User implements UserDetails {
     @JsonIgnore
     Set<RefreshToken> refreshTokens = new HashSet<>();
 
-    @OneToMany(mappedBy = "user")
-    Set<WorkSpace> workSpaces = new HashSet<>();
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    Wallet wallet;
+
+//    @OneToMany(mappedBy = "user")
+//    Set<WorkSpace> workSpaces = new HashSet<>();
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

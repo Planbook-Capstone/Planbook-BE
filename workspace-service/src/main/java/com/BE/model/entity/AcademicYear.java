@@ -5,7 +5,9 @@ import jakarta.persistence.*;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import lombok.Getter;
@@ -31,6 +33,6 @@ public class AcademicYear {
     private LocalDateTime updatedAt;
 
     @OneToMany(mappedBy = "academicYear", cascade = CascadeType.ALL)
-    private List<WorkSpace> workSpaces;
+    private Set<WorkSpace> workSpaces = new HashSet<>();
 
 }

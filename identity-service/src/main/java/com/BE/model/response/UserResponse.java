@@ -30,4 +30,5 @@ public class UserResponse {
     StatusEnum status;
     LocalDateTime createdAt;
     LocalDateTime updatedAt;
+    WalletResponse wallet;
 }
