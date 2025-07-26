@@ -115,7 +115,7 @@ public class PaymentServiceImpl implements IPaymentService {
         CreatePaymentRequestDTO newReq = new CreatePaymentRequestDTO();
         newReq.setOrder(request.getOrder());
         newReq.setAmount(request.getOrder().getAmount());
-        newReq.setDescription("Retry thanh toán PlanBookAI");
+        newReq.setDescription("Thanh toán PlanBookAI");
 
         PaymentTransaction response = createPaymentLink(newReq);
 

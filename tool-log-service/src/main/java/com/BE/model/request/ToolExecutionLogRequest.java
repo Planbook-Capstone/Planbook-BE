@@ -52,4 +52,6 @@ public class ToolExecutionLogRequest {
 
     @Schema(description = "Output tool trả về", example = "{\"translated\": \"Hello\"}")
     Map<String, Object> output;
+
+
 }

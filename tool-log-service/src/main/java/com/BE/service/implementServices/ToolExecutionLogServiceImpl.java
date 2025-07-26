@@ -64,13 +64,13 @@ public class ToolExecutionLogServiceImpl implements IToolExecutionLogService {
             try {
                 // Serialize log response thành JSON
                 Map<String, Object> input = request.getInput();
-                input.put("tool_log_id",response.getId());
                 ToolKafkaPayload payload = ToolKafkaPayload.builder()
                         .type(request.getToolName())
                         .data(KafkaData.builder()
                                 .user_id(request.getUserId().toString())
                                 .lesson_id(request.getLessonId().toString())
-                                .lesson_plan_json(input)
+                                .tool_log_id(response.getId())
+                                .input(input)
                                 .timestamp(Instant.now().toString())
                                 .build())
                         .build();
@@ -170,13 +170,16 @@ public class ToolExecutionLogServiceImpl implements IToolExecutionLogService {
 
         log = repository.save(log);
 
-        WebSocketMessageRequest webSocketMessageRequest =  WebSocketMessageRequest.builder()
-                .userId(log.getUserId().toString())
-                .destination("/queue/notifications")
-                .payload(output.getOutput())
-                .build();
+        if(ToolTypeEnum.INTERNAL.equals(log.getToolType())){
 
-        sendWebSocket(webSocketMessageRequest);
+            WebSocketMessageRequest webSocketMessageRequest =  WebSocketMessageRequest.builder()
+                    .userId(log.getUserId().toString())
+                    .destination("/queue/notifications")
+                    .payload(output.getOutput())
+                    .build();
+
+            sendWebSocket(webSocketMessageRequest);
+        }
 
     }
 

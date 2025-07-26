@@ -22,9 +22,10 @@ public class HeaderAuthenticationFilter extends OncePerRequestFilter {
         String username = request.getHeader("X-Username");
         String role = request.getHeader("X-User-Role");
         String userId = request.getHeader("X-User-Id");
+        CustomUserPrincipal customUserPrincipal = new CustomUserPrincipal(userId,username,role);
         if (username != null && !username.isBlank() && userId != null && !userId.isBlank() && role != null && !role.isBlank()) {
             var auth = new UsernamePasswordAuthenticationToken(
-                    userId,
+                    customUserPrincipal,
                     null,
                     Collections.singletonList(new SimpleGrantedAuthority(role))
             );

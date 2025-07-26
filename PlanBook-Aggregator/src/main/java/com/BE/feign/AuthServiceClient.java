@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 import java.util.UUID;
 
-@FeignClient(name = "auth-service")
+@FeignClient(name = "identity-service")
 public interface AuthServiceClient {
 
 //    @PostMapping("/auth/login")

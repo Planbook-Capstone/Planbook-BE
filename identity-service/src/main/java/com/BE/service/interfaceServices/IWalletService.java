@@ -11,10 +11,11 @@ import java.util.List;
 import java.util.UUID;
 
 public interface IWalletService {
-    WalletResponse getByUser();
+    WalletResponse getByUser(UUID id);
     WalletTransactionResponse recharge(WalletTransactionRequest request);
-    List<WalletTransactionResponse> getTransactions();
+    List<WalletTransactionResponse> getTransactions(UUID id);
 
     Wallet create(User user);
+
 }
 

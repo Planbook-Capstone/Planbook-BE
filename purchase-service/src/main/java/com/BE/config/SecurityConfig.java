@@ -27,7 +27,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/**").permitAll()  // Cho qua tất cả
-                        .requestMatchers(CorsUtils::isPreFlightRequest).permitAll()
+//                        .requestMatchers(CorsUtils::isPreFlightRequest).permitAll()
                 )
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(new HeaderAuthenticationFilter(),

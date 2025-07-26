@@ -22,4 +22,5 @@ public interface IOrderService {
     Page<OrderResponseDTO> getOrdersWithFilter(StatusEnum status, UUID userId,
                                                int offset, int pageSize,
                                                String sortBy, String sortDirection);
+
 }

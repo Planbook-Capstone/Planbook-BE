@@ -169,6 +169,13 @@
 			<version>1.0.3</version>
 		</dependency>
 
+		<!-- https://mvnrepository.com/artifact/org.springframework.cloud/spring-cloud-starter-openfeign -->
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-openfeign</artifactId>
+			<version>4.3.0</version>
+		</dependency>
+
 	</dependencies>
 
 	<dependencyManagement>
@@ -185,7 +192,7 @@
 
 
 	<build>
-		<finalName>be</finalName>
+		<finalName>purchase</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
