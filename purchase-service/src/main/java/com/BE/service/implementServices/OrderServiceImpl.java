@@ -1,18 +1,19 @@
 package com.BE.service.implementServices;
 
 import com.BE.enums.StatusEnum;
+import com.BE.enums.TransactionType;
 import com.BE.exception.exceptions.NotFoundException;
+import com.BE.feign.IdentityServiceClient;
 import com.BE.mapper.OrderMapper;
 import com.BE.model.entity.Order;
 import com.BE.model.entity.OrderHistory;
 import com.BE.model.entity.PaymentTransaction;
 import com.BE.model.entity.SubscriptionPackage;
-import com.BE.model.request.CancelPaymentRequestDTO;
-import com.BE.model.request.CreateOrderRequestDTO;
-import com.BE.model.request.CreatePaymentRequestDTO;
-import com.BE.model.request.RetryPaymentRequestDTO;
+import com.BE.model.request.*;
+import com.BE.model.response.DataResponseDTO;
 import com.BE.model.response.OrderHistoryResponseDTO;
 import com.BE.model.response.OrderResponseDTO;
+import com.BE.model.response.WalletTransactionResponse;
 import com.BE.repository.OrderHistoryRepository;
 import com.BE.repository.OrderRepository;
 import com.BE.repository.PaymentTransactionRepository;
@@ -52,6 +53,7 @@ public class OrderServiceImpl implements IOrderService {
     private final PaymentTransactionRepository paymentTransactionRepository;
     private final PageUtil pageUtil;
     private final SubscriptionPackageRepository subscriptionPackageRepository;
+    private final IdentityServiceClient identityServiceClient;
 
 
     @Override
@@ -63,7 +65,7 @@ public class OrderServiceImpl implements IOrderService {
         SubscriptionPackage subscriptionPackage = subscriptionPackageRepository.findById(request.getPackageId())
                 .orElseThrow(() -> new NotFoundException("Gói dịch vụ này không tồn tại"));
 
-        List<StatusEnum> statuses = List.of( StatusEnum.PENDING,  StatusEnum.RETRY);
+        List<StatusEnum> statuses = List.of(StatusEnum.PENDING, StatusEnum.RETRY);
         boolean existsPending = orderRepository.existsByUserIdAndSubscriptionPackageIdAndStatusIn(
                 currentUserId,
                 request.getPackageId(),
@@ -190,17 +192,28 @@ public class OrderServiceImpl implements IOrderService {
 
         PaymentTransaction txn = paymentService.handlePayosWebhook(body);
         if (txn != null) {
-            System.out.println(txn);
             Order order = txn.getOrder();
             StatusEnum fromStatus = order.getStatus();
             StatusEnum newStatus = txn.getStatus();
-
             // Nếu trạng thái khác thì update + save history
             if (!fromStatus.equals(newStatus)) {
                 order.setStatus(newStatus);
                 orderRepository.save(order);
 
                 saveHistory(order, fromStatus, newStatus, getNoteForStatus(newStatus));
+            }
+            order.toString();
+            if (StatusEnum.PAID.equals(newStatus)) {
+                WalletTransactionRequest walletTransactionRequest = WalletTransactionRequest.builder()
+                        .orderId(order.getId())
+                        .description("Nạp token từ gói " + order.getSubscriptionPackage().getName())
+                        .tokenChange(order.getSubscriptionPackage().getTokenAmount())
+                        .type(TransactionType.RECHARGE)
+                        .userId(order.getUserId())
+                        .build();
+
+                DataResponseDTO<WalletTransactionResponse> wallet = identityServiceClient.recharge(walletTransactionRequest);
+
             }
         }
     }
@@ -249,6 +262,8 @@ public class OrderServiceImpl implements IOrderService {
         return orderRepository.findAll(spec, pageable)
                 .map(orderMapper::toOrderResponseDTO);
     }
+
+
 
 
 }

@@ -1,5 +1,6 @@
 package com.BE.utils;
 
+import com.BE.filter.CustomUserPrincipal;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -11,8 +12,18 @@ public class AccountUtils {
 
 
     public UUID getCurrentUserId() {
-        String userId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
-        return UUID.fromString(userId);
+        CustomUserPrincipal principal = (CustomUserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return UUID.fromString(principal.getUserId());
+    }
+
+    public String getCurrentUserName() {
+        CustomUserPrincipal principal = (CustomUserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return principal.getUsername();
+    }
+
+    public String getCurrentUserRole() {
+        CustomUserPrincipal principal = (CustomUserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return principal.getRole();
     }
 
 }

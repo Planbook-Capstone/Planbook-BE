@@ -209,7 +209,7 @@
 
 
 	<build>
-		<finalName>be</finalName>
+		<finalName>identity</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>

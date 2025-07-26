@@ -28,7 +28,7 @@ public class KafkaProcessingServiceImpl implements IKafkaProcessingService {
             JsonNode root = mapper.readTree(rawMessage);
             String type = root.path("data").path("type").asText();
             JsonNode innerData = root.path("data").path("data");
-
+            System.out.println(type);
             switch (type) {
                 case "lesson_plan_content_generation_response" -> handleAcceptedResponse(innerData);
                 case "lesson_plan_content_generation_result" -> handleResultMessage(innerData);
@@ -44,9 +44,8 @@ public class KafkaProcessingServiceImpl implements IKafkaProcessingService {
         try {
             boolean success = innerData.path("success").asBoolean(false);
             JsonNode resultNode = innerData.path("result");
-            JsonNode lessonPlanNode = resultNode.path("lesson_plan");
-
-            String toolLogIdStr = lessonPlanNode.path("tool_log_id").asText(null);
+            JsonNode outputNode = resultNode.path("output");
+            String toolLogIdStr = innerData.path("tool_log_id").asText(null);
             if (toolLogIdStr == null) {
                 log.warn("⚠️ Không tìm thấy tool_log_id trong lesson_plan");
                 return;
@@ -55,8 +54,8 @@ public class KafkaProcessingServiceImpl implements IKafkaProcessingService {
             Long toolLogId = Long.parseLong(toolLogIdStr);
 
             if (success) {
-                Map<String, Object> lessonPlanMap = mapper.convertValue(lessonPlanNode, new TypeReference<>() {});
-                ToolLogUpdateRequest request = new ToolLogUpdateRequest(true, lessonPlanMap);
+                Map<String, Object> outputMap = mapper.convertValue(outputNode, new TypeReference<>() {});
+                ToolLogUpdateRequest request = new ToolLogUpdateRequest(true, outputMap);
                 logService.updateOutputByLogId(toolLogId, request);
                 log.info("✅ Cập nhật output SUCCESS cho tool_log_id: {}", toolLogId);
             } else {

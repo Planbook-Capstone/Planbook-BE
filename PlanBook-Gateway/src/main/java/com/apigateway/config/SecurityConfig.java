@@ -11,6 +11,7 @@ import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.reactive.CorsUtils;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 
 @Configuration
@@ -34,6 +35,7 @@ public class SecurityConfig {
                         .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .pathMatchers(publicEndpointConfig.getPublicEndpoints().toArray(new String[0])).permitAll()
                         .pathMatchers(HttpMethod.GET, publicEndpointConfig.getPublicGetEndpoints().toArray(new String[0])).permitAll()
+                        .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         // Tất cả các request còn lại phải được xác thực (có JWT hợp lệ)
                         .anyExchange().authenticated()
                 )

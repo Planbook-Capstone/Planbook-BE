@@ -9,6 +9,7 @@ import com.BE.model.response.DataResponseDTO;
 import com.BE.model.response.OrderHistoryResponseDTO;
 import com.BE.model.response.OrderResponseDTO;
 import com.BE.service.interfaceServices.IOrderService;
+import com.BE.utils.AccountUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -38,11 +39,11 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @RequestMapping("/api/orders")
 @SecurityRequirement(name = "api")
-@CrossOrigin("*")
 public class OrderController {
 
     private final IOrderService orderService;
     private final ObjectMapper objectMapper;
+    private final AccountUtils accountUtils;
 
     @Operation(
             summary = "Tạo đơn hàng mới",
@@ -137,7 +138,7 @@ public class OrderController {
     }
 
     @Hidden
-    @PostMapping("/webhook/payos")
+    @PostMapping("/webhook/payOs")
     public ObjectNode handlePayosWebhook(@RequestBody ObjectNode body) throws JsonProcessingException {
         ObjectNode response = objectMapper.createObjectNode();
 
@@ -183,6 +184,8 @@ public class OrderController {
                 status, userId, offset, pageSize, sortBy, sortDirection
         )));
     }
+
+
 
 
 }

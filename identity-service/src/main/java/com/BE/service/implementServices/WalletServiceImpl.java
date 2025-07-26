@@ -25,19 +25,40 @@ import java.util.UUID;
 public class WalletServiceImpl implements IWalletService {
     private final WalletRepository walletRepository;
     private final AccountUtils accountUtils;
-    private final WalletTransactionRepository transactionRepository;
+    private final AuthenRepository authenRepository;
     private final WalletMapper walletMapper;
 
     @Override
-    public WalletResponse getByUser() {
-        Wallet wallet = accountUtils.getCurrentUser().getWallet();
+    public WalletResponse getByUser(UUID id) {
+        Wallet wallet;
+        if (id != null) {
+            User user = authenRepository.findById(id).orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+            wallet = user.getWallet();
+        }else{
+            wallet = accountUtils.getCurrentUser().getWallet();
+        }
         return walletMapper.toResponse(wallet);
     }
 
+//    @Override
+//    public WalletResponse getByUserId(UUID id) {
+//        User user = authenRepository.findById(id).orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+//        Wallet wallet = user.getWallet();
+//        return walletMapper.toResponse(wallet);
+//    }
+
     @Override
-    public List<WalletTransactionResponse> getTransactions() {
-        Wallet wallet = accountUtils.getCurrentUser().getWallet();
-        return wallet.getTransactions().stream()
+    public List<WalletTransactionResponse> getTransactions(UUID id) {
+        Wallet wallet;
+        if (id != null) {
+            User user = authenRepository.findById(id).orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+            wallet = user.getWallet();
+        } else {
+            wallet = accountUtils.getCurrentUser().getWallet();
+        }
+
+        return wallet.getTransactions()
+                .stream()
                 .map(walletMapper::toResponse)
                 .toList();
     }
@@ -53,7 +74,8 @@ public class WalletServiceImpl implements IWalletService {
     @Transactional
     @Override
     public WalletTransactionResponse recharge(WalletTransactionRequest request) {
-        Wallet wallet = accountUtils.getCurrentUser().getWallet();
+        User user = authenRepository.findById(request.getUserId()).orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+        Wallet wallet = user.getWallet();
         int before = wallet.getBalance();
         int after = before + request.getTokenChange();
         wallet.setBalance(after);

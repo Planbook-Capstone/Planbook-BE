@@ -113,14 +113,18 @@ public class UserController {
     @PatchMapping("/{id}/status")
     @Operation(
             summary = "Cập nhật trạng thái người dùng",
-            description = "Chỉ dành cho Admin. Cho phép thay đổi trạng thái tài khoản của người dùng (ACTIVE, INACTIVE, BANNED)."
+            description = "Chỉ dành cho Admin. Cho phép thay đổi trạng thái tài khoản của người dùng (ACTIVE, INACTIVE)."
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Cập nhật trạng thái thành công"),
             @ApiResponse(responseCode = "404", description = "Không tìm thấy người dùng")
     })
-    public ResponseEntity<?> updateStatus(@PathVariable UUID id, @Valid @RequestBody StatusRequest request) {
-        return responseHandler.response(200,"Cập nhật trạng thái người dùng thành công", userService.updateStatus(id, request.getStatus()));
+    public ResponseEntity<?> updateStatus(
+            @PathVariable UUID id,
+            @Parameter(description = "Trạng thái mới của tài khoản", required = true, schema = @Schema(implementation = StatusEnum.class, allowableValues = {"ACTIVE", "INACTIVE"}))
+            @RequestParam StatusEnum status
+    ) {
+        return responseHandler.response(200,"Cập nhật trạng thái người dùng thành công", userService.updateStatus(id, status));
     }
 
 

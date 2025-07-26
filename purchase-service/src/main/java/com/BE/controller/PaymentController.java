@@ -2,6 +2,7 @@ package com.BE.controller;
 
 
 import io.swagger.v3.oas.annotations.Hidden;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,8 +14,8 @@ import vn.payos.exception.PayOSException;
 
 @RestController
 @RequestMapping("/api/payments")
-@CrossOrigin("*")
 @RequiredArgsConstructor
+@SecurityRequirement(name = "api")
 @Tag(name = "Payment API", description = "API để quản lý thanh toán qua PayOS")
 public class PaymentController {
 

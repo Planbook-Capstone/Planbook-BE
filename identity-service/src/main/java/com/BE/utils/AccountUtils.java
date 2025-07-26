@@ -14,7 +14,7 @@ public class AccountUtils {
     AuthenRepository authenRepository;
 
     public User getCurrentUser() {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        String username = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
         User user = authenRepository.findByUsername(username).orElseThrow();
         return user;
     }

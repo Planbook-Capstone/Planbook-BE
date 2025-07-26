@@ -11,8 +11,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class KafkaData {
+    private Long tool_log_id;
     private String user_id;
     private String lesson_id;
-    private Object lesson_plan_json;  // chính là parsed inputJson
+    private Object input;
     private String timestamp;
 }
