@@ -8,6 +8,7 @@ import com.BE.model.response.*;
 import org.springframework.core.io.Resource;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public interface IExamInstanceService {
@@ -61,4 +62,9 @@ public interface IExamInstanceService {
      * Change exam instance status (start, pause, complete, cancel)
      */
     ExamInstanceResponse changeExamStatus(UUID instanceId, ChangeExamStatusRequest request, UUID teacherId);
+
+    /**
+     * Get valid status transitions for an exam instance
+     */
+    Map<String, Object> getValidStatusTransitions(UUID instanceId, UUID teacherId);
 }

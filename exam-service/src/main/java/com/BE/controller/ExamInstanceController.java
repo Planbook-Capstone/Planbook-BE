@@ -18,18 +18,14 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-
-
-import java.util.*;
 
 @RestController
 @RequestMapping("/api/exam-instances")
@@ -1541,50 +1537,7 @@ public class ExamInstanceController {
             )
             @RequestHeader("X-User-Id") UUID teacherId) {
 
-        log.info("Getting valid status transitions for exam instance {} by teacher: {}", instanceId, teacherId);
-
-        // Get current instance to check ownership and current status
-        ExamInstanceResponse instance = examInstanceService.getExamInstanceById(instanceId, teacherId);
-        ExamInstanceStatus currentStatus = instance.getStatus();
-
-        // Build valid transitions based on current status
-        Map<String, Object> response = new HashMap<>();
-        response.put("currentStatus", currentStatus.getCode());
-        response.put("currentStatusDescription", currentStatus.getDescription());
-
-        List<Map<String, String>> validTransitions = new ArrayList<>();
-
-        switch (currentStatus) {
-            case DRAFT:
-                validTransitions.add(createTransition("SCHEDULED", "Schedule exam for future start"));
-                validTransitions.add(createTransition("ACTIVE", "Start exam immediately"));
-                validTransitions.add(createTransition("CANCELLED", "Cancel exam permanently"));
-                break;
-
-            case SCHEDULED:
-                validTransitions.add(createTransition("DRAFT", "Move back to draft for modifications"));
-                validTransitions.add(createTransition("ACTIVE", "Start exam now (before scheduled time)"));
-                validTransitions.add(createTransition("CANCELLED", "Cancel scheduled exam"));
-                break;
-
-            case ACTIVE:
-                validTransitions.add(createTransition("PAUSED", "Pause exam temporarily"));
-                validTransitions.add(createTransition("COMPLETED", "End exam early"));
-                break;
-
-            case PAUSED:
-                validTransitions.add(createTransition("ACTIVE", "Resume exam"));
-                validTransitions.add(createTransition("COMPLETED", "End exam while paused"));
-                validTransitions.add(createTransition("CANCELLED", "Cancel exam permanently"));
-                break;
-
-            case COMPLETED:
-            case CANCELLED:
-                // Final states - no transitions allowed
-                break;
-        }
-
-        response.put("validTransitions", validTransitions);
+        Map<String, Object> response = examInstanceService.getValidStatusTransitions(instanceId, teacherId);
 
         DataResponseDTO<Map<String, Object>> dataResponse = new DataResponseDTO<>(
             HttpStatus.OK.value(),
@@ -1592,14 +1545,5 @@ public class ExamInstanceController {
             response
         );
         return ResponseEntity.ok(dataResponse);
-    }
-
-    private Map<String, String> createTransition(String status, String action) {
-        ExamInstanceStatus statusEnum = ExamInstanceStatus.valueOf(status);
-        Map<String, String> transition = new HashMap<>();
-        transition.put("status", statusEnum.getCode());
-        transition.put("description", statusEnum.getDescription());
-        transition.put("action", action);
-        return transition;
     }
 }

@@ -30,15 +30,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import org.springframework.core.io.Resource;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDateTime;
-import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -296,6 +291,65 @@ public class ExamInstanceServiceImpl implements IExamInstanceService {
                 instanceId, currentStatus, newStatus, teacherId);
 
         return examInstanceMapper.toResponse(savedInstance);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Map<String, Object> getValidStatusTransitions(UUID instanceId, UUID teacherId) {
+        log.info("Getting valid status transitions for exam instance {} by teacher: {}", instanceId, teacherId);
+
+        // Get current instance to check ownership and current status
+        ExamInstanceResponse instance = getExamInstanceById(instanceId, teacherId);
+        ExamInstanceStatus currentStatus = instance.getStatus();
+
+        // Build valid transitions based on current status
+        Map<String, Object> response = new HashMap<>();
+        response.put("currentStatus", currentStatus.getCode());
+        response.put("currentStatusDescription", currentStatus.getDescription());
+
+        List<Map<String, String>> validTransitions = new ArrayList<>();
+
+        switch (currentStatus) {
+            case DRAFT:
+                validTransitions.add(createTransition("SCHEDULED", "Schedule exam for future start"));
+                validTransitions.add(createTransition("ACTIVE", "Start exam immediately"));
+                validTransitions.add(createTransition("CANCELLED", "Cancel exam permanently"));
+                break;
+
+            case SCHEDULED:
+                validTransitions.add(createTransition("DRAFT", "Move back to draft for modifications"));
+                validTransitions.add(createTransition("ACTIVE", "Start exam now (before scheduled time)"));
+                validTransitions.add(createTransition("CANCELLED", "Cancel scheduled exam"));
+                break;
+
+            case ACTIVE:
+                validTransitions.add(createTransition("PAUSED", "Pause exam temporarily"));
+                validTransitions.add(createTransition("COMPLETED", "End exam early"));
+                break;
+
+            case PAUSED:
+                validTransitions.add(createTransition("ACTIVE", "Resume exam"));
+                validTransitions.add(createTransition("COMPLETED", "End exam while paused"));
+                validTransitions.add(createTransition("CANCELLED", "Cancel exam permanently"));
+                break;
+
+            case COMPLETED:
+            case CANCELLED:
+                // Final states - no transitions allowed
+                break;
+        }
+
+        response.put("validTransitions", validTransitions);
+        return response;
+    }
+
+    private Map<String, String> createTransition(String status, String action) {
+        ExamInstanceStatus statusEnum = ExamInstanceStatus.valueOf(status);
+        Map<String, String> transition = new HashMap<>();
+        transition.put("status", statusEnum.getCode());
+        transition.put("description", statusEnum.getDescription());
+        transition.put("action", action);
+        return transition;
     }
 
 
