@@ -108,7 +108,7 @@ public class ExamInstanceController {
             """
     )
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "201", description = "Exam instance created successfully"),
+        @ApiResponse(responseCode = "201", description = "Tạo phiên thi thành công"),
         @ApiResponse(responseCode = "400", description = "Invalid request data"),
         @ApiResponse(responseCode = "401", description = "Unauthorized"),
         @ApiResponse(responseCode = "404", description = "Template not found")
@@ -140,7 +140,7 @@ public class ExamInstanceController {
         ExamInstanceResponse response = examInstanceService.createExamInstance(request, teacherId);
         DataResponseDTO<ExamInstanceResponse> dataResponse = new DataResponseDTO<>(
             HttpStatus.CREATED.value(),
-            "Exam instance created successfully",
+            "Tạo phiên thi thành công",
             response
         );
         return ResponseEntity.status(HttpStatus.CREATED).body(dataResponse);
@@ -205,7 +205,7 @@ public class ExamInstanceController {
             """
     )
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Instances retrieved successfully"),
+        @ApiResponse(responseCode = "200", description = "Lấy danh sách phiên thi thành công"),
         @ApiResponse(responseCode = "401", description = "Unauthorized")
     })
     public ResponseEntity<DataResponseDTO<List<ExamInstanceResponse>>> getExamInstancesByTeacher(
@@ -216,7 +216,7 @@ public class ExamInstanceController {
         List<ExamInstanceResponse> instances = examInstanceService.getExamInstancesByTeacher(teacherId);
         DataResponseDTO<List<ExamInstanceResponse>> dataResponse = new DataResponseDTO<>(
             HttpStatus.OK.value(),
-            "Instances retrieved successfully",
+            "Lấy danh sách phiên thi thành công",
             instances
         );
         return ResponseEntity.ok(dataResponse);
@@ -276,7 +276,7 @@ public class ExamInstanceController {
             """
     )
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Instance retrieved successfully"),
+        @ApiResponse(responseCode = "200", description = "Lấy thông tin phiên thi thành công"),
         @ApiResponse(responseCode = "401", description = "Unauthorized"),
         @ApiResponse(responseCode = "403", description = "Access denied - not your instance"),
         @ApiResponse(responseCode = "404", description = "Instance not found")
@@ -290,7 +290,7 @@ public class ExamInstanceController {
         ExamInstanceResponse instance = examInstanceService.getExamInstanceById(instanceId, teacherId);
         DataResponseDTO<ExamInstanceResponse> dataResponse = new DataResponseDTO<>(
             HttpStatus.OK.value(),
-            "Instance retrieved successfully",
+            "Lấy thông tin phiên thi thành công",
             instance
         );
         return ResponseEntity.ok(dataResponse);
@@ -376,7 +376,7 @@ public class ExamInstanceController {
             """
     )
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Instance updated successfully"),
+        @ApiResponse(responseCode = "200", description = "Cập nhật phiên thi thành công"),
         @ApiResponse(responseCode = "400", description = "Invalid request data"),
         @ApiResponse(responseCode = "401", description = "Unauthorized"),
         @ApiResponse(responseCode = "403", description = "Access denied - not your instance"),
@@ -409,7 +409,7 @@ public class ExamInstanceController {
         ExamInstanceResponse response = examInstanceService.updateExamInstance(instanceId, request, teacherId);
         DataResponseDTO<ExamInstanceResponse> dataResponse = new DataResponseDTO<>(
             HttpStatus.OK.value(),
-            "Instance updated successfully",
+            "Cập nhật phiên thi thành công",
             response
         );
         return ResponseEntity.ok(dataResponse);
@@ -509,7 +509,7 @@ public class ExamInstanceController {
             """
     )
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "204", description = "Instance deleted successfully"),
+        @ApiResponse(responseCode = "204", description = "Xóa phiên thi thành công"),
         @ApiResponse(responseCode = "401", description = "Unauthorized"),
         @ApiResponse(responseCode = "403", description = "Access denied - not your instance"),
         @ApiResponse(responseCode = "404", description = "Instance not found")
@@ -523,7 +523,7 @@ public class ExamInstanceController {
         examInstanceService.deleteExamInstance(instanceId, teacherId);
         DataResponseDTO<Void> dataResponse = new DataResponseDTO<>(
             HttpStatus.NO_CONTENT.value(),
-            "Instance deleted successfully",
+            "Xóa phiên thi thành công",
             null
         );
         return ResponseEntity.ok(dataResponse);
@@ -616,12 +616,12 @@ public class ExamInstanceController {
             """
     )
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Exam content retrieved successfully",
+        @ApiResponse(responseCode = "200", description = "Lấy nội dung đề thi thành công",
             content = @Content(mediaType = "application/json",
                 examples = @ExampleObject(value = """
                     {
                         "statusCode": 200,
-                        "message": "Exam content retrieved successfully",
+                        "message": "Lấy nội dung đề thi thành công",
                         "data": {
                             "examInstanceId": "917e3cc3-6c84-40ba-a9cc-3a86c894e8b7",
                             "examName": "Template Hóa học - Lớp 10",
@@ -670,7 +670,7 @@ public class ExamInstanceController {
         ExamContentResponse examContent = examInstanceService.getExamByCode(code);
         DataResponseDTO<ExamContentResponse> dataResponse = new DataResponseDTO<>(
             HttpStatus.OK.value(),
-            "Exam content retrieved successfully",
+            "Lấy nội dung đề thi thành công",
             examContent
         );
         return ResponseEntity.ok(dataResponse);
@@ -794,7 +794,7 @@ public class ExamInstanceController {
             """
     )
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Exam submitted and graded successfully"),
+        @ApiResponse(responseCode = "200", description = "Nộp bài và chấm điểm thành công"),
         @ApiResponse(responseCode = "400", description = "Invalid submission"),
         @ApiResponse(responseCode = "404", description = "Exam not found")
     })
@@ -839,7 +839,7 @@ public class ExamInstanceController {
         SubmitExamResponse response = examInstanceService.submitExam(code, request);
         DataResponseDTO<SubmitExamResponse> dataResponse = new DataResponseDTO<>(
             HttpStatus.OK.value(),
-            "Exam submitted successfully",
+            "Nộp bài thi thành công",
             response
         );
         return ResponseEntity.ok(dataResponse);
@@ -947,7 +947,7 @@ public class ExamInstanceController {
             ```json
             {
                 "code": 200,
-                "message": "Submissions retrieved successfully",
+                "message": "Lấy danh sách bài nộp thành công",
                 "data": [
                     {
                         "id": "uuid",
@@ -978,7 +978,7 @@ public class ExamInstanceController {
             """
     )
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Submissions retrieved successfully"),
+        @ApiResponse(responseCode = "200", description = "Lấy danh sách bài nộp thành công"),
         @ApiResponse(responseCode = "401", description = "Unauthorized"),
         @ApiResponse(responseCode = "403", description = "Access denied - not your exam instance"),
         @ApiResponse(responseCode = "404", description = "Exam instance not found")
@@ -993,7 +993,7 @@ public class ExamInstanceController {
         List<ExamSubmissionResponse> submissions = examInstanceService.getExamSubmissions(instanceId, teacherId);
         DataResponseDTO<List<ExamSubmissionResponse>> dataResponse = new DataResponseDTO<>(
             HttpStatus.OK.value(),
-            "Submissions retrieved successfully",
+            "Lấy danh sách bài nộp thành công",
             submissions
         );
         return ResponseEntity.ok(dataResponse);
@@ -1109,7 +1109,7 @@ public class ExamInstanceController {
             """
     )
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Excel file generated and downloaded successfully",
+        @ApiResponse(responseCode = "200", description = "Tạo và tải file Excel thành công",
             content = @Content(mediaType = "application/octet-stream")),
         @ApiResponse(responseCode = "401", description = "Unauthorized"),
         @ApiResponse(responseCode = "403", description = "Access denied - not your exam instance"),
@@ -1189,7 +1189,7 @@ public class ExamInstanceController {
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "200",
-            description = "Status changed successfully",
+            description = "Thay đổi trạng thái thành công",
             content = @Content(
                 mediaType = "application/json",
                 examples = @ExampleObject(
@@ -1197,7 +1197,7 @@ public class ExamInstanceController {
                     value = """
                         {
                             "statusCode": 200,
-                            "message": "Exam status changed to Đang diễn ra - học sinh có thể làm bài successfully",
+                            "message": "Thay đổi trạng thái đề thi thành Đang diễn ra - học sinh có thể làm bài thành công",
                             "data": {
                                 "id": "550e8400-e29b-41d4-a716-446655440003",
                                 "templateId": "550e8400-e29b-41d4-a716-446655440001",
@@ -1464,7 +1464,7 @@ public class ExamInstanceController {
         ExamInstanceResponse response = examInstanceService.changeExamStatus(instanceId, request, teacherId);
         DataResponseDTO<ExamInstanceResponse> dataResponse = new DataResponseDTO<>(
             HttpStatus.OK.value(),
-            String.format("Exam status changed to %s successfully", request.getStatus().getDescription()),
+            String.format("Thay đổi trạng thái đề thi thành %s thành công", request.getStatus().getDescription()),
             response
         );
         return ResponseEntity.ok(dataResponse);
@@ -1485,7 +1485,7 @@ public class ExamInstanceController {
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "200",
-            description = "Valid transitions retrieved successfully",
+            description = "Lấy danh sách chuyển đổi trạng thái hợp lệ thành công",
             content = @Content(
                 mediaType = "application/json",
                 examples = @ExampleObject(
@@ -1493,7 +1493,7 @@ public class ExamInstanceController {
                     value = """
                         {
                             "statusCode": 200,
-                            "message": "Valid transitions retrieved successfully",
+                            "message": "Lấy danh sách chuyển đổi trạng thái hợp lệ thành công",
                             "data": {
                                 "currentStatus": "DRAFT",
                                 "currentStatusDescription": "Bản nháp - chưa được kích hoạt",
@@ -1541,7 +1541,7 @@ public class ExamInstanceController {
 
         DataResponseDTO<Map<String, Object>> dataResponse = new DataResponseDTO<>(
             HttpStatus.OK.value(),
-            "Valid transitions retrieved successfully",
+            "Lấy danh sách chuyển đổi trạng thái hợp lệ thành công",
             response
         );
         return ResponseEntity.ok(dataResponse);

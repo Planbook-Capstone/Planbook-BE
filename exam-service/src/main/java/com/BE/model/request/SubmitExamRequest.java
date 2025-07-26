@@ -18,10 +18,10 @@ public class SubmitExamRequest {
 
     @Schema(description = "Name of the student submitting the exam",
         example = "Nguyen Van A", required = true)
-    @NotBlank(message = "Student name is required")
+    @NotBlank(message = "Tên học sinh là bắt buộc")
     private String studentName;
 
     @Schema(description = "Student's answers in simplified format", required = true)
-    @NotNull(message = "Answers are required")
+    @NotNull(message = "Câu trả lời là bắt buộc")
     private List<Map<String, Object>> answers;
 }

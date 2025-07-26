@@ -21,11 +21,11 @@ public class UpdateExamTemplateRequest {
     private String subject;
 
     @Schema(description = "Grade level", example = "10", minimum = "1", maximum = "12")
-    @Min(value = 1, message = "Grade must be at least 1")
+    @Min(value = 1, message = "Khối lớp phải ít nhất là 1")
     private Integer grade;
 
     @Schema(description = "Duration of exam in minutes", example = "90", minimum = "1")
-    @Min(value = 1, message = "Duration must be at least 1 minute")
+    @Min(value = 1, message = "Thời gian làm bài phải ít nhất 1 phút")
     private Integer durationMinutes;
 
     @Schema(description = "Updated school name", example = "THPT Nguyen Hue")

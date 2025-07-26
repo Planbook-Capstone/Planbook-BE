@@ -104,7 +104,7 @@ public enum ExamInstanceStatus {
             case ACTIVE:
                 if (!currentStatus.canStart()) {
                     throw new BadRequestException(
-                        String.format("Cannot start exam from status %s. Current status must be DRAFT, SCHEDULED, or PAUSED.", currentStatus)
+                        String.format("Không thể bắt đầu thi từ trạng thái %s. Trạng thái hiện tại phải là DRAFT, SCHEDULED, hoặc PAUSED.", currentStatus)
                     );
                 }
                 break;
@@ -112,7 +112,7 @@ public enum ExamInstanceStatus {
             case PAUSED:
                 if (!currentStatus.canPause()) {
                     throw new BadRequestException(
-                        String.format("Cannot pause exam from status %s. Current status must be ACTIVE.", currentStatus)
+                        String.format("Không thể tạm dừng thi từ trạng thái %s. Trạng thái hiện tại phải là ACTIVE.", currentStatus)
                     );
                 }
                 break;
@@ -120,7 +120,7 @@ public enum ExamInstanceStatus {
             case COMPLETED:
                 if (!currentStatus.canComplete()) {
                     throw new BadRequestException(
-                        String.format("Cannot complete exam from status %s. Current status must be ACTIVE or PAUSED.", currentStatus)
+                        String.format("Không thể kết thúc thi từ trạng thái %s. Trạng thái hiện tại phải là ACTIVE hoặc PAUSED.", currentStatus)
                     );
                 }
                 break;
@@ -128,28 +128,28 @@ public enum ExamInstanceStatus {
             case CANCELLED:
                 if (!currentStatus.canCancel()) {
                     throw new BadRequestException(
-                        String.format("Cannot cancel exam from status %s. Current status must be DRAFT, SCHEDULED, or PAUSED.", currentStatus)
+                        String.format("Không thể hủy thi từ trạng thái %s. Trạng thái hiện tại phải là DRAFT, SCHEDULED, hoặc PAUSED.", currentStatus)
                     );
                 }
                 break;
 
             case SCHEDULED:
                 if (currentStatus != DRAFT) {
-                    throw new BadRequestException("Can only schedule exam from DRAFT status");
+                    throw new BadRequestException("Chỉ có thể lên lịch thi từ trạng thái DRAFT");
                 }
                 if (instance.getStartAt().isBefore(now)) {
-                    throw new BadRequestException("Cannot schedule exam with start time in the past");
+                    throw new BadRequestException("Không thể lên lịch thi với thời gian bắt đầu trong quá khứ");
                 }
                 break;
 
             case DRAFT:
                 if (currentStatus != SCHEDULED) {
-                    throw new BadRequestException("Can only move to DRAFT from SCHEDULED status");
+                    throw new BadRequestException("Chỉ có thể chuyển về DRAFT từ trạng thái SCHEDULED");
                 }
                 break;
 
             default:
-                throw new BadRequestException("Invalid status: " + this);
+                throw new BadRequestException("Trạng thái không hợp lệ: " + this);
         }
     }
 

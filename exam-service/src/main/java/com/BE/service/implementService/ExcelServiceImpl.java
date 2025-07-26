@@ -49,7 +49,7 @@ public class ExcelServiceImpl implements IExcelService {
     @Transactional
     public Resource generateExcelReport(UUID examInstanceId) {
         ExamInstance instance = examInstanceRepository.findById(examInstanceId)
-                .orElseThrow(() -> new ResourceNotFoundException("Exam instance not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy phiên thi"));
         
         List<ExamSubmission> submissions = examSubmissionRepository
                 .findByExamInstanceIdOrderBySubmittedAtDesc(examInstanceId);
@@ -103,8 +103,8 @@ public class ExcelServiceImpl implements IExcelService {
             return new ByteArrayResource(outputStream.toByteArray());
             
         } catch (IOException e) {
-            log.error("Error generating Excel report: {}", e.getMessage());
-            throw new RuntimeException("Failed to generate Excel report", e);
+            log.error("Lỗi khi tạo báo cáo Excel: {}", e.getMessage());
+            throw new RuntimeException("Không thể tạo báo cáo Excel", e);
         }
     }
     
@@ -112,7 +112,7 @@ public class ExcelServiceImpl implements IExcelService {
     @Transactional
     public void updateExcelUrl(UUID examInstanceId, String excelUrl) {
         ExamInstance instance = examInstanceRepository.findById(examInstanceId)
-                .orElseThrow(() -> new ResourceNotFoundException("Exam instance not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy phiên thi"));
         
         instance.setExcelUrl(excelUrl);
         examInstanceRepository.save(instance);

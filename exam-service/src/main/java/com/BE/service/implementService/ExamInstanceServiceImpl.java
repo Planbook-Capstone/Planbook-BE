@@ -58,15 +58,15 @@ public class ExamInstanceServiceImpl implements IExamInstanceService {
     public ExamInstanceResponse createExamInstance(CreateExamInstanceRequest request, UUID teacherId) {
         // Validate template ownership
         ExamTemplate template = examTemplateRepository.findById(request.getTemplateId())
-                .orElseThrow(() -> new ResourceNotFoundException("Exam template not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy mẫu đề thi"));
         
         if (!template.getCreatedBy().equals(teacherId)) {
-            throw new BadRequestException("Access denied to this exam template");
+            throw new BadRequestException("Truy cập bị từ chối đối với mẫu đề thi này");
         }
         
         // Validate time range
         if (request.getEndAt().isBefore(request.getStartAt())) {
-            throw new BadRequestException("End time must be after start time");
+            throw new BadRequestException("Thời gian kết thúc phải sau thời gian bắt đầu");
         }
         
         ExamInstance instance = examInstanceMapper.toEntity(request, template);
@@ -89,10 +89,10 @@ public class ExamInstanceServiceImpl implements IExamInstanceService {
     @Transactional(readOnly = true)
     public ExamInstanceResponse getExamInstanceById(UUID instanceId, UUID teacherId) {
         ExamInstance instance = examInstanceRepository.findById(instanceId)
-                .orElseThrow(() -> new ResourceNotFoundException("Exam instance not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy phiên thi"));
 
         if (!instance.getTemplate().getCreatedBy().equals(teacherId)) {
-            throw new BadRequestException("Access denied to this exam instance");
+            throw new BadRequestException("Truy cập bị từ chối đối với phiên thi này");
         }
 
         return examInstanceMapper.toResponse(instance);
@@ -101,10 +101,10 @@ public class ExamInstanceServiceImpl implements IExamInstanceService {
     @Override
     public ExamInstanceResponse updateExamInstance(UUID instanceId, UpdateExamInstanceRequest request, UUID teacherId) {
         ExamInstance instance = examInstanceRepository.findById(instanceId)
-                .orElseThrow(() -> new ResourceNotFoundException("Exam instance not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy phiên thi"));
 
         if (!instance.getTemplate().getCreatedBy().equals(teacherId)) {
-            throw new BadRequestException("Access denied to this exam instance");
+            throw new BadRequestException("Truy cập bị từ chối đối với phiên thi này");
         }
 
         // Use MapStruct to update entity
@@ -122,10 +122,10 @@ public class ExamInstanceServiceImpl implements IExamInstanceService {
     @Override
     public void deleteExamInstance(UUID instanceId, UUID teacherId) {
         ExamInstance instance = examInstanceRepository.findById(instanceId)
-                .orElseThrow(() -> new ResourceNotFoundException("Exam instance not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy phiên thi"));
 
         if (!instance.getTemplate().getCreatedBy().equals(teacherId)) {
-            throw new BadRequestException("Access denied to this exam instance");
+            throw new BadRequestException("Truy cập bị từ chối đối với phiên thi này");
         }
 
         // Delete related submissions and result details first
@@ -143,12 +143,12 @@ public class ExamInstanceServiceImpl implements IExamInstanceService {
     @Transactional(readOnly = true)
     public ExamContentResponse getExamByCode(String code) {
         ExamInstance instance = examInstanceRepository.findByCode(code)
-                .orElseThrow(() -> new ResourceNotFoundException("Exam not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đề thi"));
 
         // Check if exam is accessible to students
         if (!instance.getStatus().isAccessible()) {
             throw new BadRequestException(
-                String.format("Exam is not available. Current status: %s (%s)",
+                String.format("Đề thi không khả dụng. Trạng thái hiện tại: %s (%s)",
                     instance.getStatus().getCode(), instance.getStatus().getDescription())
             );
         }
@@ -170,12 +170,12 @@ public class ExamInstanceServiceImpl implements IExamInstanceService {
     @Override
     public SubmitExamResponse submitExam(String code, SubmitExamRequest request) {
         ExamInstance instance = examInstanceRepository.findByCode(code)
-                .orElseThrow(() -> new ResourceNotFoundException("Exam not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đề thi"));
 
         // Check if exam allows submissions
         if (!instance.getStatus().isSubmittable()) {
             throw new BadRequestException(
-                String.format("Exam submissions are not allowed. Current status: %s (%s)",
+                String.format("Không được phép nộp bài thi. Trạng thái hiện tại: %s (%s)",
                     instance.getStatus().getCode(), instance.getStatus().getDescription())
             );
         }
@@ -211,7 +211,7 @@ public class ExamInstanceServiceImpl implements IExamInstanceService {
             // Log the converted JSON for debugging
             log.info("Converted answers JSON: {}", objectMapper.writeValueAsString(answersJson));
         } catch (Exception e) {
-            log.error("Error converting answers to JSON: {}", e.getMessage(), e);
+            log.error("Lỗi khi chuyển đổi câu trả lời sang JSON: {}", e.getMessage(), e);
             // Still store the original answers even if logging fails
             answersJson = new HashMap<>();
             answersJson.put("answers", request.getAnswers());
@@ -228,7 +228,7 @@ public class ExamInstanceServiceImpl implements IExamInstanceService {
         try {
             excelService.generateExcelReport(instance.getId());
         } catch (Exception e) {
-            log.error("Error generating Excel report: {}", e.getMessage());
+            log.error("Lỗi khi tạo báo cáo Excel: {}", e.getMessage());
         }
 
         return examSubmissionMapper.toSubmitResponse(savedSubmission);
@@ -238,10 +238,10 @@ public class ExamInstanceServiceImpl implements IExamInstanceService {
     @Transactional(readOnly = true)
     public List<ExamSubmissionResponse> getExamSubmissions(UUID instanceId, UUID teacherId) {
         ExamInstance instance = examInstanceRepository.findById(instanceId)
-                .orElseThrow(() -> new ResourceNotFoundException("Exam instance not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy phiên thi"));
 
         if (!instance.getTemplate().getCreatedBy().equals(teacherId)) {
-            throw new BadRequestException("Access denied to this exam instance");
+            throw new BadRequestException("Truy cập bị từ chối đối với phiên thi này");
         }
 
         // Fetch submissions with result details for detailed analysis
@@ -254,10 +254,10 @@ public class ExamInstanceServiceImpl implements IExamInstanceService {
     @Override
     public Resource generateExcelReport(UUID instanceId, UUID teacherId) {
         ExamInstance instance = examInstanceRepository.findById(instanceId)
-                .orElseThrow(() -> new ResourceNotFoundException("Exam instance not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy phiên thi"));
 
         if (!instance.getTemplate().getCreatedBy().equals(teacherId)) {
-            throw new BadRequestException("Access denied to this exam instance");
+            throw new BadRequestException("Truy cập bị từ chối đối với phiên thi này");
         }
 
         return excelService.generateExcelReport(instanceId);
@@ -266,10 +266,10 @@ public class ExamInstanceServiceImpl implements IExamInstanceService {
     @Override
     public ExamInstanceResponse changeExamStatus(UUID instanceId, ChangeExamStatusRequest request, UUID teacherId) {
         ExamInstance instance = examInstanceRepository.findById(instanceId)
-                .orElseThrow(() -> new ResourceNotFoundException("Exam instance not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy phiên thi"));
 
         if (!instance.getTemplate().getCreatedBy().equals(teacherId)) {
-            throw new BadRequestException("Access denied to this exam instance");
+            throw new BadRequestException("Truy cập bị từ chối đối với phiên thi này");
         }
 
         ExamInstanceStatus currentStatus = instance.getStatus();

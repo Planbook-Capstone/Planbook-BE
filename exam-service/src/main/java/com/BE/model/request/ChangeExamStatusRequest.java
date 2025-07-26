@@ -48,7 +48,7 @@ public class ChangeExamStatusRequest {
         required = true,
         implementation = ExamInstanceStatus.class
     )
-    @NotNull(message = "Status is required")
+    @NotNull(message = "Trạng thái là bắt buộc")
     private ExamInstanceStatus status;
 
     @Schema(

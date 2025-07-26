@@ -110,7 +110,7 @@ public class ExamTemplateController {
             """
     )
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "201", description = "Template created successfully",
+        @ApiResponse(responseCode = "201", description = "Tạo mẫu đề thi thành công",
             content = @Content(mediaType = "application/json",
                 examples = @ExampleObject(value = """
                     {
@@ -200,7 +200,7 @@ public class ExamTemplateController {
         ExamTemplateResponse response = examTemplateService.createExamTemplate(request, teacherId);
         DataResponseDTO<ExamTemplateResponse> dataResponse = new DataResponseDTO<>(
             HttpStatus.CREATED.value(),
-            "Exam template created successfully",
+            "Tạo mẫu đề thi thành công",
             response
         );
         return ResponseEntity.status(HttpStatus.CREATED).body(dataResponse);
@@ -246,7 +246,7 @@ public class ExamTemplateController {
             """
     )
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Templates retrieved successfully"),
+        @ApiResponse(responseCode = "200", description = "Lấy danh sách mẫu đề thi thành công"),
         @ApiResponse(responseCode = "401", description = "Unauthorized")
     })
     public ResponseEntity<DataResponseDTO<List<ExamTemplateResponse>>> getExamTemplatesByTeacher(
@@ -257,7 +257,7 @@ public class ExamTemplateController {
         List<ExamTemplateResponse> templates = examTemplateService.getExamTemplatesByTeacher(teacherId);
         DataResponseDTO<List<ExamTemplateResponse>> dataResponse = new DataResponseDTO<>(
             HttpStatus.OK.value(),
-            "Templates retrieved successfully",
+            "Lấy danh sách mẫu đề thi thành công",
             templates
         );
         return ResponseEntity.ok(dataResponse);
@@ -305,7 +305,7 @@ public class ExamTemplateController {
             """
     )
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Template retrieved successfully"),
+        @ApiResponse(responseCode = "200", description = "Lấy thông tin mẫu đề thi thành công"),
         @ApiResponse(responseCode = "401", description = "Unauthorized"),
         @ApiResponse(responseCode = "403", description = "Access denied - not your template"),
         @ApiResponse(responseCode = "404", description = "Template not found")
@@ -319,7 +319,7 @@ public class ExamTemplateController {
         ExamTemplateResponse template = examTemplateService.getExamTemplateById(templateId, teacherId);
         DataResponseDTO<ExamTemplateResponse> dataResponse = new DataResponseDTO<>(
             HttpStatus.OK.value(),
-            "Template retrieved successfully",
+            "Lấy thông tin mẫu đề thi thành công",
             template
         );
         return ResponseEntity.ok(dataResponse);
@@ -378,7 +378,7 @@ public class ExamTemplateController {
             """
     )
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Template updated successfully"),
+        @ApiResponse(responseCode = "200", description = "Cập nhật mẫu đề thi thành công"),
         @ApiResponse(responseCode = "400", description = "Invalid request data"),
         @ApiResponse(responseCode = "401", description = "Unauthorized"),
         @ApiResponse(responseCode = "403", description = "Access denied - not your template"),
@@ -411,7 +411,7 @@ public class ExamTemplateController {
         ExamTemplateResponse response = examTemplateService.updateExamTemplate(templateId, request, teacherId);
         DataResponseDTO<ExamTemplateResponse> dataResponse = new DataResponseDTO<>(
             HttpStatus.OK.value(),
-            "Template updated successfully",
+            "Cập nhật mẫu đề thi thành công",
             response
         );
         return ResponseEntity.ok(dataResponse);
@@ -478,7 +478,7 @@ public class ExamTemplateController {
             """
     )
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "204", description = "Template deleted successfully"),
+        @ApiResponse(responseCode = "204", description = "Xóa mẫu đề thi thành công"),
         @ApiResponse(responseCode = "401", description = "Unauthorized"),
         @ApiResponse(responseCode = "403", description = "Access denied - not your template"),
         @ApiResponse(responseCode = "404", description = "Template not found")
@@ -492,7 +492,7 @@ public class ExamTemplateController {
         examTemplateService.deleteExamTemplate(templateId, teacherId);
         DataResponseDTO<Void> dataResponse = new DataResponseDTO<>(
             HttpStatus.NO_CONTENT.value(),
-            "Template deleted successfully",
+            "Xóa mẫu đề thi thành công",
             null
         );
         return ResponseEntity.ok(dataResponse);
@@ -556,7 +556,7 @@ public class ExamTemplateController {
             """
     )
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "201", description = "Template cloned successfully",
+        @ApiResponse(responseCode = "201", description = "Sao chép mẫu đề thi thành công",
             content = @Content(mediaType = "application/json",
                 examples = @ExampleObject(value = """
                     {
@@ -596,7 +596,7 @@ public class ExamTemplateController {
         ExamTemplateResponse response = examTemplateService.cloneExamTemplate(templateId, teacherId);
         DataResponseDTO<ExamTemplateResponse> dataResponse = new DataResponseDTO<>(
             HttpStatus.CREATED.value(),
-            "Template cloned successfully",
+            "Sao chép mẫu đề thi thành công",
             response
         );
         return ResponseEntity.status(HttpStatus.CREATED).body(dataResponse);

@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface EnumValidator {
     Class<? extends Enum<?>> enumClass();
-    String message() default "Must be a valid enum value";
+    String message() default "Phải là một giá trị enum hợp lệ";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};
 }

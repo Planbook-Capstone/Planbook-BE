@@ -39,8 +39,8 @@ public class ExamTemplateServiceImpl implements IExamTemplateService {
             return examTemplateMapper.toResponse(savedTemplate);
 
         } catch (Exception e) {
-            log.error("Error creating exam template: {}", e.getMessage());
-            throw new BadRequestException("Invalid content format: " + e.getMessage());
+            log.error("Lỗi khi tạo mẫu đề thi: {}", e.getMessage());
+            throw new BadRequestException("Định dạng nội dung không hợp lệ: " + e.getMessage());
         }
     }
 
@@ -57,10 +57,10 @@ public class ExamTemplateServiceImpl implements IExamTemplateService {
     @Transactional(readOnly = true)
     public ExamTemplateResponse getExamTemplateById(UUID templateId, UUID teacherId) {
         ExamTemplate template = examTemplateRepository.findById(templateId)
-                .orElseThrow(() -> new ResourceNotFoundException("Exam template not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy mẫu đề thi"));
 
         if (!template.getCreatedBy().equals(teacherId)) {
-            throw new BadRequestException("Access denied to this exam template");
+            throw new BadRequestException("Truy cập bị từ chối đối với mẫu đề thi này");
         }
 
         return examTemplateMapper.toResponse(template);
@@ -69,10 +69,10 @@ public class ExamTemplateServiceImpl implements IExamTemplateService {
     @Override
     public ExamTemplateResponse updateExamTemplate(UUID templateId, UpdateExamTemplateRequest request, UUID teacherId) {
         ExamTemplate template = examTemplateRepository.findById(templateId)
-                .orElseThrow(() -> new ResourceNotFoundException("Exam template not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy mẫu đề thi"));
 
         if (!template.getCreatedBy().equals(teacherId)) {
-            throw new BadRequestException("Access denied to this exam template");
+            throw new BadRequestException("Truy cập bị từ chối đối với mẫu đề thi này");
         }
 
         try {
@@ -91,18 +91,18 @@ public class ExamTemplateServiceImpl implements IExamTemplateService {
             return examTemplateMapper.toResponse(savedTemplate);
 
         } catch (Exception e) {
-            log.error("Error updating exam template: {}", e.getMessage());
-            throw new BadRequestException("Invalid content format: " + e.getMessage());
+            log.error("Lỗi khi cập nhật mẫu đề thi: {}", e.getMessage());
+            throw new BadRequestException("Định dạng nội dung không hợp lệ: " + e.getMessage());
         }
     }
 
     @Override
     public void deleteExamTemplate(UUID templateId, UUID teacherId) {
         ExamTemplate template = examTemplateRepository.findById(templateId)
-                .orElseThrow(() -> new ResourceNotFoundException("Exam template not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy mẫu đề thi"));
 
         if (!template.getCreatedBy().equals(teacherId)) {
-            throw new BadRequestException("Access denied to this exam template");
+            throw new BadRequestException("Truy cập bị từ chối đối với mẫu đề thi này");
         }
 
         // Check if template is being used by any instances
@@ -117,10 +117,10 @@ public class ExamTemplateServiceImpl implements IExamTemplateService {
     public ExamTemplateResponse cloneExamTemplate(UUID templateId, UUID teacherId) {
         // Get the original template
         ExamTemplate originalTemplate = examTemplateRepository.findById(templateId)
-                .orElseThrow(() -> new ResourceNotFoundException("Exam template not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy mẫu đề thi"));
 
         if (!originalTemplate.getCreatedBy().equals(teacherId)) {
-            throw new BadRequestException("Access denied to this exam template");
+            throw new BadRequestException("Truy cập bị từ chối đối với mẫu đề thi này");
         }
 
         try {
@@ -132,8 +132,8 @@ public class ExamTemplateServiceImpl implements IExamTemplateService {
             return examTemplateMapper.toResponse(savedTemplate);
 
         } catch (Exception e) {
-            log.error("Error cloning exam template: {}", e.getMessage());
-            throw new BadRequestException("Error cloning template: " + e.getMessage());
+            log.error("Lỗi khi sao chép mẫu đề thi: {}", e.getMessage());
+            throw new BadRequestException("Lỗi khi sao chép mẫu đề thi: " + e.getMessage());
         }
     }
 

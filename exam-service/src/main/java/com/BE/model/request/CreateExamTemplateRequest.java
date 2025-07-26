@@ -17,21 +17,21 @@ import java.util.Map;
 public class CreateExamTemplateRequest {
 
     @Schema(description = "Name of the exam", example = "Math Basic Test", required = true)
-    @NotBlank(message = "Exam name is required")
+    @NotBlank(message = "Tên đề thi là bắt buộc")
     private String name;
 
     @Schema(description = "Subject of the exam", example = "Mathematics", required = true)
-    @NotBlank(message = "Subject is required")
+    @NotBlank(message = "Môn học là bắt buộc")
     private String subject;
 
     @Schema(description = "Grade level", example = "10", minimum = "1", maximum = "12", required = true)
-    @NotNull(message = "Grade is required")
-    @Min(value = 1, message = "Grade must be at least 1")
+    @NotNull(message = "Khối lớp là bắt buộc")
+    @Min(value = 1, message = "Khối lớp phải ít nhất là 1")
     private Integer grade;
 
     @Schema(description = "Duration of exam in minutes", example = "60", minimum = "1", required = true)
-    @NotNull(message = "Duration is required")
-    @Min(value = 1, message = "Duration must be at least 1 minute")
+    @NotNull(message = "Thời gian làm bài là bắt buộc")
+    @Min(value = 1, message = "Thời gian làm bài phải ít nhất 1 phút")
     private Integer durationMinutes;
 
     @Schema(description = "School name", example = "THPT Nguyen Hue")
@@ -44,7 +44,7 @@ public class CreateExamTemplateRequest {
     private String atomicMasses;
 
     @Schema(description = "Exam content with questions and answers", required = true)
-    @NotNull(message = "Content JSON is required")
+    @NotNull(message = "Nội dung đề thi là bắt buộc")
     private Map<String, Object> contentJson;
 
     @Schema(description = "Scoring configuration for the exam",

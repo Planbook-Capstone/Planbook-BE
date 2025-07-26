@@ -39,7 +39,7 @@ public class GlobalExceptionHandler {
             String message = violation.getMessage();
             errors.put(propertyPath, message);
         }
-        String message = "Validation failed: " + errors.toString();
+        String message = "Xác thực thất bại: " + errors.toString();
         ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), message);
         return ResponseEntity.badRequest().body(errorResponse);
     }
@@ -51,7 +51,7 @@ public class GlobalExceptionHandler {
         for (FieldError error : ex.getBindingResult().getFieldErrors()) {
             errors.put(error.getField(), error.getDefaultMessage());
         }
-        String message = "Validation failed: " + errors.toString();
+        String message = "Xác thực thất bại: " + errors.toString();
         ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), message);
         return ResponseEntity.badRequest().body(errorResponse);
     }
@@ -59,7 +59,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErrorResponse> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex, WebRequest request) {
         Throwable mostSpecificCause = ex.getMostSpecificCause();
-        String message = "Failed to parse JSON";
+        String message = "Không thể phân tích cú pháp JSON";
 
         if (mostSpecificCause instanceof InvalidFormatException) {
             InvalidFormatException ife = (InvalidFormatException) mostSpecificCause;
@@ -70,9 +70,9 @@ public class GlobalExceptionHandler {
 
             if (targetType.isEnum()) {
                 String validValues = EnumUtils.getValidEnumValues(targetType.asSubclass(Enum.class));
-                message = String.format("Field '%s' has invalid value '%s'. Expected one of: %s", fieldName, value, validValues);
+                message = String.format("Trường '%s' có giá trị không hợp lệ '%s'. Các giá trị hợp lệ: %s", fieldName, value, validValues);
             } else {
-                message = String.format("Field '%s' has invalid value '%s'. Expected type: %s", fieldName, value, targetType.getSimpleName());
+                message = String.format("Trường '%s' có giá trị không hợp lệ '%s'. Kiểu dữ liệu mong đợi: %s", fieldName, value, targetType.getSimpleName());
             }
         } else {
             message = mostSpecificCause.getMessage();
@@ -121,13 +121,13 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ErrorResponse> handleAccessDeniedException(AccessDeniedException ex) {
-        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.FORBIDDEN.value(), "Access denied: " + ex.getMessage());
+        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.FORBIDDEN.value(), "Truy cập bị từ chối: " + ex.getMessage());
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGenericException(Exception ex) {
-        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), "An unexpected error occurred: " + ex.getMessage());
+        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Đã xảy ra lỗi không mong muốn: " + ex.getMessage());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
     }
 
