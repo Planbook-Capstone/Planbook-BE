@@ -16,27 +16,27 @@ public interface IExamInstanceService {
     /**
      * Create a new exam instance from template
      */
-    ExamInstanceResponse createExamInstance(CreateExamInstanceRequest request, UUID teacherId);
-    
+    ExamInstanceResponse createExamInstance(CreateExamInstanceRequest request);
+
     /**
      * Get all exam instances by teacher
      */
-    List<ExamInstanceResponse> getExamInstancesByTeacher(UUID teacherId);
-    
+    List<ExamInstanceResponse> getExamInstancesByTeacher();
+
     /**
      * Get exam instance by ID
      */
-    ExamInstanceResponse getExamInstanceById(UUID instanceId, UUID teacherId);
-    
+    ExamInstanceResponse getExamInstanceById(UUID instanceId);
+
     /**
      * Update exam instance
      */
-    ExamInstanceResponse updateExamInstance(UUID instanceId, UpdateExamInstanceRequest request, UUID teacherId);
-    
+    ExamInstanceResponse updateExamInstance(UUID instanceId, UpdateExamInstanceRequest request);
+
     /**
      * Delete exam instance
      */
-    void deleteExamInstance(UUID instanceId, UUID teacherId);
+    void deleteExamInstance(UUID instanceId);
     
     /**
      * Get exam content by code (for students)
@@ -51,20 +51,20 @@ public interface IExamInstanceService {
     /**
      * Get exam submissions for an instance
      */
-    List<ExamSubmissionResponse> getExamSubmissions(UUID instanceId, UUID teacherId);
-    
+    List<ExamSubmissionResponse> getExamSubmissions(UUID instanceId);
+
     /**
      * Generate Excel report for exam instance
      */
-    Resource generateExcelReport(UUID instanceId, UUID teacherId);
+    Resource generateExcelReport(UUID instanceId);
 
     /**
      * Change exam instance status (start, pause, complete, cancel)
      */
-    ExamInstanceResponse changeExamStatus(UUID instanceId, ChangeExamStatusRequest request, UUID teacherId);
+    ExamInstanceResponse changeExamStatus(UUID instanceId, ChangeExamStatusRequest request);
 
     /**
      * Get valid status transitions for an exam instance
      */
-    Map<String, Object> getValidStatusTransitions(UUID instanceId, UUID teacherId);
+    Map<String, Object> getValidStatusTransitions(UUID instanceId);
 }

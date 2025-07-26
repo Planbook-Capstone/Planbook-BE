@@ -33,7 +33,7 @@ import java.util.UUID;
 @Slf4j
 
 public class ExamTemplateController {
-    
+
     private final IExamTemplateService examTemplateService;
     
     @PostMapping
@@ -192,12 +192,10 @@ public class ExamTemplateController {
                     )
                 )
             )
-            @Valid @RequestBody CreateExamTemplateRequest request,
-            @Parameter(description = "Teacher ID from JWT token (automatically added by API Gateway)", hidden = true)
-            @RequestHeader("X-User-Id") UUID teacherId) {
-        
-        log.info("Creating exam template for teacher: {}", teacherId);
-        ExamTemplateResponse response = examTemplateService.createExamTemplate(request, teacherId);
+            @Valid @RequestBody CreateExamTemplateRequest request) {
+
+        log.info("Creating exam template");
+        ExamTemplateResponse response = examTemplateService.createExamTemplate(request);
         DataResponseDTO<ExamTemplateResponse> dataResponse = new DataResponseDTO<>(
             HttpStatus.CREATED.value(),
             "Tạo mẫu đề thi thành công",
@@ -249,12 +247,10 @@ public class ExamTemplateController {
         @ApiResponse(responseCode = "200", description = "Lấy danh sách mẫu đề thi thành công"),
         @ApiResponse(responseCode = "401", description = "Unauthorized")
     })
-    public ResponseEntity<DataResponseDTO<List<ExamTemplateResponse>>> getExamTemplatesByTeacher(
-            @Parameter(description = "Teacher ID from JWT token (automatically added by API Gateway)", hidden = true)
-            @RequestHeader("X-User-Id") UUID teacherId) {
-        
-        log.info("Getting exam templates for teacher: {}", teacherId);
-        List<ExamTemplateResponse> templates = examTemplateService.getExamTemplatesByTeacher(teacherId);
+    public ResponseEntity<DataResponseDTO<List<ExamTemplateResponse>>> getExamTemplatesByTeacher() {
+
+        log.info("Getting exam templates");
+        List<ExamTemplateResponse> templates = examTemplateService.getExamTemplatesByTeacher();
         DataResponseDTO<List<ExamTemplateResponse>> dataResponse = new DataResponseDTO<>(
             HttpStatus.OK.value(),
             "Lấy danh sách mẫu đề thi thành công",
@@ -311,12 +307,10 @@ public class ExamTemplateController {
         @ApiResponse(responseCode = "404", description = "Template not found")
     })
     public ResponseEntity<DataResponseDTO<ExamTemplateResponse>> getExamTemplateById(
-            @PathVariable UUID templateId,
-            @Parameter(description = "Teacher ID from JWT token (automatically added by API Gateway)", hidden = true)
-            @RequestHeader("X-User-Id") UUID teacherId) {
-        
-        log.info("Getting exam template {} for teacher: {}", templateId, teacherId);
-        ExamTemplateResponse template = examTemplateService.getExamTemplateById(templateId, teacherId);
+            @PathVariable UUID templateId) {
+
+        log.info("Getting exam template {}", templateId);
+        ExamTemplateResponse template = examTemplateService.getExamTemplateById(templateId);
         DataResponseDTO<ExamTemplateResponse> dataResponse = new DataResponseDTO<>(
             HttpStatus.OK.value(),
             "Lấy thông tin mẫu đề thi thành công",
@@ -403,12 +397,10 @@ public class ExamTemplateController {
                     )
                 )
             )
-            @Valid @RequestBody UpdateExamTemplateRequest request,
-            @Parameter(description = "Teacher ID from JWT token (automatically added by API Gateway)", hidden = true)
-            @RequestHeader("X-User-Id") UUID teacherId) {
-        
-        log.info("Updating exam template {} for teacher: {}", templateId, teacherId);
-        ExamTemplateResponse response = examTemplateService.updateExamTemplate(templateId, request, teacherId);
+            @Valid @RequestBody UpdateExamTemplateRequest request) {
+
+        log.info("Updating exam template {}", templateId);
+        ExamTemplateResponse response = examTemplateService.updateExamTemplate(templateId, request);
         DataResponseDTO<ExamTemplateResponse> dataResponse = new DataResponseDTO<>(
             HttpStatus.OK.value(),
             "Cập nhật mẫu đề thi thành công",
@@ -484,12 +476,10 @@ public class ExamTemplateController {
         @ApiResponse(responseCode = "404", description = "Template not found")
     })
     public ResponseEntity<DataResponseDTO<Void>> deleteExamTemplate(
-            @PathVariable UUID templateId,
-            @Parameter(description = "Teacher ID from JWT token (automatically added by API Gateway)", hidden = true)
-            @RequestHeader("X-User-Id") UUID teacherId) {
+            @PathVariable UUID templateId) {
 
-        log.info("Deleting exam template {} for teacher: {}", templateId, teacherId);
-        examTemplateService.deleteExamTemplate(templateId, teacherId);
+        log.info("Deleting exam template {}", templateId);
+        examTemplateService.deleteExamTemplate(templateId);
         DataResponseDTO<Void> dataResponse = new DataResponseDTO<>(
             HttpStatus.NO_CONTENT.value(),
             "Xóa mẫu đề thi thành công",
@@ -588,12 +578,10 @@ public class ExamTemplateController {
     })
     public ResponseEntity<DataResponseDTO<ExamTemplateResponse>> cloneExamTemplate(
             @Parameter(description = "ID of the template to clone", example = "550e8400-e29b-41d4-a716-446655440001")
-            @PathVariable UUID templateId,
-            @Parameter(description = "Teacher ID from JWT token (automatically added by API Gateway)", hidden = true)
-            @RequestHeader("X-User-Id") UUID teacherId) {
+            @PathVariable UUID templateId) {
 
-        log.info("Cloning exam template {} for teacher: {}", templateId, teacherId);
-        ExamTemplateResponse response = examTemplateService.cloneExamTemplate(templateId, teacherId);
+        log.info("Cloning exam template {}", templateId);
+        ExamTemplateResponse response = examTemplateService.cloneExamTemplate(templateId);
         DataResponseDTO<ExamTemplateResponse> dataResponse = new DataResponseDTO<>(
             HttpStatus.CREATED.value(),
             "Sao chép mẫu đề thi thành công",

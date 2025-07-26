@@ -34,7 +34,7 @@ import org.springframework.http.MediaType;
 @Slf4j
 
 public class ExamInstanceController {
-    
+
     private final IExamInstanceService examInstanceService;
     
     // Teacher Instance Management APIs
@@ -132,12 +132,10 @@ public class ExamInstanceController {
                     )
                 )
             )
-            @Valid @RequestBody CreateExamInstanceRequest request,
-            @Parameter(description = "Teacher ID from JWT token (automatically added by API Gateway)", hidden = true)
-            @RequestHeader("X-User-Id") UUID teacherId) {
-        
-        log.info("Creating exam instance for teacher: {}", teacherId);
-        ExamInstanceResponse response = examInstanceService.createExamInstance(request, teacherId);
+            @Valid @RequestBody CreateExamInstanceRequest request) {
+
+        log.info("Creating exam instance");
+        ExamInstanceResponse response = examInstanceService.createExamInstance(request);
         DataResponseDTO<ExamInstanceResponse> dataResponse = new DataResponseDTO<>(
             HttpStatus.CREATED.value(),
             "Tạo phiên thi thành công",
@@ -208,12 +206,10 @@ public class ExamInstanceController {
         @ApiResponse(responseCode = "200", description = "Lấy danh sách phiên thi thành công"),
         @ApiResponse(responseCode = "401", description = "Unauthorized")
     })
-    public ResponseEntity<DataResponseDTO<List<ExamInstanceResponse>>> getExamInstancesByTeacher(
-            @Parameter(description = "Teacher ID from JWT token (automatically added by API Gateway)", hidden = true)
-            @RequestHeader("X-User-Id") UUID teacherId) {
+    public ResponseEntity<DataResponseDTO<List<ExamInstanceResponse>>> getExamInstancesByTeacher() {
 
-        log.info("Getting exam instances for teacher: {}", teacherId);
-        List<ExamInstanceResponse> instances = examInstanceService.getExamInstancesByTeacher(teacherId);
+        log.info("Getting exam instances");
+        List<ExamInstanceResponse> instances = examInstanceService.getExamInstancesByTeacher();
         DataResponseDTO<List<ExamInstanceResponse>> dataResponse = new DataResponseDTO<>(
             HttpStatus.OK.value(),
             "Lấy danh sách phiên thi thành công",
@@ -282,12 +278,10 @@ public class ExamInstanceController {
         @ApiResponse(responseCode = "404", description = "Instance not found")
     })
     public ResponseEntity<DataResponseDTO<ExamInstanceResponse>> getExamInstanceById(
-            @PathVariable UUID instanceId,
-            @Parameter(description = "Teacher ID from JWT token (automatically added by API Gateway)", hidden = true)
-            @RequestHeader("X-User-Id") UUID teacherId) {
+            @PathVariable UUID instanceId) {
 
-        log.info("Getting exam instance {} for teacher: {}", instanceId, teacherId);
-        ExamInstanceResponse instance = examInstanceService.getExamInstanceById(instanceId, teacherId);
+        log.info("Getting exam instance {}", instanceId);
+        ExamInstanceResponse instance = examInstanceService.getExamInstanceById(instanceId);
         DataResponseDTO<ExamInstanceResponse> dataResponse = new DataResponseDTO<>(
             HttpStatus.OK.value(),
             "Lấy thông tin phiên thi thành công",
@@ -401,12 +395,10 @@ public class ExamInstanceController {
                     )
                 )
             )
-            @Valid @RequestBody UpdateExamInstanceRequest request,
-            @Parameter(description = "Teacher ID from JWT token (automatically added by API Gateway)", hidden = true)
-            @RequestHeader("X-User-Id") UUID teacherId) {
-        
-        log.info("Updating exam instance {} for teacher: {}", instanceId, teacherId);
-        ExamInstanceResponse response = examInstanceService.updateExamInstance(instanceId, request, teacherId);
+            @Valid @RequestBody UpdateExamInstanceRequest request) {
+
+        log.info("Updating exam instance {}", instanceId);
+        ExamInstanceResponse response = examInstanceService.updateExamInstance(instanceId, request);
         DataResponseDTO<ExamInstanceResponse> dataResponse = new DataResponseDTO<>(
             HttpStatus.OK.value(),
             "Cập nhật phiên thi thành công",
@@ -515,12 +507,10 @@ public class ExamInstanceController {
         @ApiResponse(responseCode = "404", description = "Instance not found")
     })
     public ResponseEntity<DataResponseDTO<Void>> deleteExamInstance(
-            @PathVariable UUID instanceId,
-            @Parameter(description = "Teacher ID from JWT token (automatically added by API Gateway)", hidden = true)
-            @RequestHeader("X-User-Id") UUID teacherId) {
-        
-        log.info("Deleting exam instance {} for teacher: {}", instanceId, teacherId);
-        examInstanceService.deleteExamInstance(instanceId, teacherId);
+            @PathVariable UUID instanceId) {
+
+        log.info("Deleting exam instance {}", instanceId);
+        examInstanceService.deleteExamInstance(instanceId);
         DataResponseDTO<Void> dataResponse = new DataResponseDTO<>(
             HttpStatus.NO_CONTENT.value(),
             "Xóa phiên thi thành công",
@@ -985,12 +975,10 @@ public class ExamInstanceController {
     })
     public ResponseEntity<DataResponseDTO<List<ExamSubmissionResponse>>> getExamSubmissions(
             @Parameter(description = "Exam instance ID", example = "550e8400-e29b-41d4-a716-446655440003")
-            @PathVariable UUID instanceId,
-            @Parameter(description = "Teacher ID from JWT token (automatically added by API Gateway)", hidden = true)
-            @RequestHeader("X-User-Id") UUID teacherId) {
+            @PathVariable UUID instanceId) {
 
-        log.info("Getting submissions for exam instance {} by teacher: {}", instanceId, teacherId);
-        List<ExamSubmissionResponse> submissions = examInstanceService.getExamSubmissions(instanceId, teacherId);
+        log.info("Getting submissions for exam instance {}", instanceId);
+        List<ExamSubmissionResponse> submissions = examInstanceService.getExamSubmissions(instanceId);
         DataResponseDTO<List<ExamSubmissionResponse>> dataResponse = new DataResponseDTO<>(
             HttpStatus.OK.value(),
             "Lấy danh sách bài nộp thành công",
@@ -1117,12 +1105,10 @@ public class ExamInstanceController {
     })
     public ResponseEntity<Resource> downloadExcelReport(
             @Parameter(description = "Exam instance ID", example = "550e8400-e29b-41d4-a716-446655440003")
-            @PathVariable UUID instanceId,
-            @Parameter(description = "Teacher ID from JWT token (automatically added by API Gateway)", hidden = true)
-            @RequestHeader("X-User-Id") UUID teacherId) {
+            @PathVariable UUID instanceId) {
 
-        log.info("Generating Excel report for exam instance {} by teacher: {}", instanceId, teacherId);
-        Resource resource = examInstanceService.generateExcelReport(instanceId, teacherId);
+        log.info("Generating Excel report for exam instance {}", instanceId);
+        Resource resource = examInstanceService.generateExcelReport(instanceId);
 
         String filename = String.format("exam_results_%s.xlsx", instanceId);
 
@@ -1449,19 +1435,10 @@ public class ExamInstanceController {
                     }
                 )
             )
-            @Valid @RequestBody ChangeExamStatusRequest request,
-            @Parameter(
-                description = """
-                    Teacher ID extracted from JWT token by API Gateway.
-                    This header is automatically added by the API Gateway after JWT validation.
-                    Clients should NOT send this header manually.
-                    """,
-                hidden = true
-            )
-            @RequestHeader("X-User-Id") UUID teacherId) {
+            @Valid @RequestBody ChangeExamStatusRequest request) {
 
-        log.info("Changing exam instance {} status to {} by teacher: {}", instanceId, request.getStatus(), teacherId);
-        ExamInstanceResponse response = examInstanceService.changeExamStatus(instanceId, request, teacherId);
+        log.info("Changing exam instance {} status to {}", instanceId, request.getStatus());
+        ExamInstanceResponse response = examInstanceService.changeExamStatus(instanceId, request);
         DataResponseDTO<ExamInstanceResponse> dataResponse = new DataResponseDTO<>(
             HttpStatus.OK.value(),
             String.format("Thay đổi trạng thái đề thi thành %s thành công", request.getStatus().getDescription()),
@@ -1530,14 +1507,9 @@ public class ExamInstanceController {
                 example = "550e8400-e29b-41d4-a716-446655440003",
                 required = true
             )
-            @PathVariable UUID instanceId,
-            @Parameter(
-                description = "Teacher ID from JWT token (automatically added by API Gateway)",
-                hidden = true
-            )
-            @RequestHeader("X-User-Id") UUID teacherId) {
+            @PathVariable UUID instanceId) {
 
-        Map<String, Object> response = examInstanceService.getValidStatusTransitions(instanceId, teacherId);
+        Map<String, Object> response = examInstanceService.getValidStatusTransitions(instanceId);
 
         DataResponseDTO<Map<String, Object>> dataResponse = new DataResponseDTO<>(
             HttpStatus.OK.value(),

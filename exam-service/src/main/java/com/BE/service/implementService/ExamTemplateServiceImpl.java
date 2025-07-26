@@ -9,6 +9,7 @@ import com.BE.exception.BadRequestException;
 import com.BE.exception.ResourceNotFoundException;
 import com.BE.repository.ExamTemplateRepository;
 import com.BE.service.interfaceService.IExamTemplateService;
+import com.BE.utils.AccountUtils;
 import com.BE.utils.ExamUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,13 +28,15 @@ public class ExamTemplateServiceImpl implements IExamTemplateService {
     private final ExamTemplateRepository examTemplateRepository;
     private final ExamUtils examUtils;
     private final ExamTemplateMapper examTemplateMapper;
+    private final AccountUtils accountUtils;
 
     @Override
-    public ExamTemplateResponse createExamTemplate(CreateExamTemplateRequest request, UUID teacherId) {
+    public ExamTemplateResponse createExamTemplate(CreateExamTemplateRequest request) {
         try {
             // Validate content structure
 //            examUtils.validateExamContent(request.getContentJson());
 
+            UUID teacherId = accountUtils.getCurrentUserId();
             ExamTemplate template = examTemplateMapper.toEntity(request, teacherId);
             ExamTemplate savedTemplate = examTemplateRepository.save(template);
             return examTemplateMapper.toResponse(savedTemplate);
@@ -46,7 +49,8 @@ public class ExamTemplateServiceImpl implements IExamTemplateService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ExamTemplateResponse> getExamTemplatesByTeacher(UUID teacherId) {
+    public List<ExamTemplateResponse> getExamTemplatesByTeacher() {
+        UUID teacherId = accountUtils.getCurrentUserId();
         List<ExamTemplate> templates = examTemplateRepository.findByCreatedByOrderByCreatedAtDesc(teacherId);
         return templates.stream()
                 .map(examTemplateMapper::toResponse)
@@ -55,7 +59,8 @@ public class ExamTemplateServiceImpl implements IExamTemplateService {
 
     @Override
     @Transactional(readOnly = true)
-    public ExamTemplateResponse getExamTemplateById(UUID templateId, UUID teacherId) {
+    public ExamTemplateResponse getExamTemplateById(UUID templateId) {
+        UUID teacherId = accountUtils.getCurrentUserId();
         ExamTemplate template = examTemplateRepository.findById(templateId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy mẫu đề thi"));
 
@@ -67,7 +72,8 @@ public class ExamTemplateServiceImpl implements IExamTemplateService {
     }
 
     @Override
-    public ExamTemplateResponse updateExamTemplate(UUID templateId, UpdateExamTemplateRequest request, UUID teacherId) {
+    public ExamTemplateResponse updateExamTemplate(UUID templateId, UpdateExamTemplateRequest request) {
+        UUID teacherId = accountUtils.getCurrentUserId();
         ExamTemplate template = examTemplateRepository.findById(templateId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy mẫu đề thi"));
 
@@ -97,7 +103,8 @@ public class ExamTemplateServiceImpl implements IExamTemplateService {
     }
 
     @Override
-    public void deleteExamTemplate(UUID templateId, UUID teacherId) {
+    public void deleteExamTemplate(UUID templateId) {
+        UUID teacherId = accountUtils.getCurrentUserId();
         ExamTemplate template = examTemplateRepository.findById(templateId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy mẫu đề thi"));
 
@@ -114,7 +121,8 @@ public class ExamTemplateServiceImpl implements IExamTemplateService {
     }
 
     @Override
-    public ExamTemplateResponse cloneExamTemplate(UUID templateId, UUID teacherId) {
+    public ExamTemplateResponse cloneExamTemplate(UUID templateId) {
+        UUID teacherId = accountUtils.getCurrentUserId();
         // Get the original template
         ExamTemplate originalTemplate = examTemplateRepository.findById(templateId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy mẫu đề thi"));

@@ -21,6 +21,7 @@ import com.BE.repository.ExamSubmissionRepository;
 import com.BE.repository.ExamTemplateRepository;
 import com.BE.service.interfaceService.IExamInstanceService;
 import com.BE.service.interfaceService.IExcelService;
+import com.BE.utils.AccountUtils;
 import com.BE.utils.DateNowUtils;
 import com.BE.utils.ExamGradingUtils;
 import com.BE.utils.ExamUtils;
@@ -53,13 +54,15 @@ public class ExamInstanceServiceImpl implements IExamInstanceService {
     private final ExamInstanceMapper examInstanceMapper;
     private final ExamSubmissionMapper examSubmissionMapper;
     private final ExamResultDetailMapper examResultDetailMapper;
+    private final AccountUtils accountUtils;
 
     @Override
-    public ExamInstanceResponse createExamInstance(CreateExamInstanceRequest request, UUID teacherId) {
+    public ExamInstanceResponse createExamInstance(CreateExamInstanceRequest request) {
+        UUID teacherId = accountUtils.getCurrentUserId();
         // Validate template ownership
         ExamTemplate template = examTemplateRepository.findById(request.getTemplateId())
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy mẫu đề thi"));
-        
+
         if (!template.getCreatedBy().equals(teacherId)) {
             throw new BadRequestException("Truy cập bị từ chối đối với mẫu đề thi này");
         }
@@ -78,7 +81,8 @@ public class ExamInstanceServiceImpl implements IExamInstanceService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ExamInstanceResponse> getExamInstancesByTeacher(UUID teacherId) {
+    public List<ExamInstanceResponse> getExamInstancesByTeacher() {
+        UUID teacherId = accountUtils.getCurrentUserId();
         List<ExamInstance> instances = examInstanceRepository.findByTeacherIdOrderByCreatedAtDesc(teacherId);
         return instances.stream()
                 .map(examInstanceMapper::toResponse)
@@ -87,7 +91,8 @@ public class ExamInstanceServiceImpl implements IExamInstanceService {
 
     @Override
     @Transactional(readOnly = true)
-    public ExamInstanceResponse getExamInstanceById(UUID instanceId, UUID teacherId) {
+    public ExamInstanceResponse getExamInstanceById(UUID instanceId) {
+        UUID teacherId = accountUtils.getCurrentUserId();
         ExamInstance instance = examInstanceRepository.findById(instanceId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy phiên thi"));
 
@@ -99,7 +104,8 @@ public class ExamInstanceServiceImpl implements IExamInstanceService {
     }
 
     @Override
-    public ExamInstanceResponse updateExamInstance(UUID instanceId, UpdateExamInstanceRequest request, UUID teacherId) {
+    public ExamInstanceResponse updateExamInstance(UUID instanceId, UpdateExamInstanceRequest request) {
+        UUID teacherId = accountUtils.getCurrentUserId();
         ExamInstance instance = examInstanceRepository.findById(instanceId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy phiên thi"));
 
@@ -120,7 +126,8 @@ public class ExamInstanceServiceImpl implements IExamInstanceService {
     }
 
     @Override
-    public void deleteExamInstance(UUID instanceId, UUID teacherId) {
+    public void deleteExamInstance(UUID instanceId) {
+        UUID teacherId = accountUtils.getCurrentUserId();
         ExamInstance instance = examInstanceRepository.findById(instanceId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy phiên thi"));
 
@@ -236,7 +243,8 @@ public class ExamInstanceServiceImpl implements IExamInstanceService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ExamSubmissionResponse> getExamSubmissions(UUID instanceId, UUID teacherId) {
+    public List<ExamSubmissionResponse> getExamSubmissions(UUID instanceId) {
+        UUID teacherId = accountUtils.getCurrentUserId();
         ExamInstance instance = examInstanceRepository.findById(instanceId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy phiên thi"));
 
@@ -252,7 +260,8 @@ public class ExamInstanceServiceImpl implements IExamInstanceService {
     }
 
     @Override
-    public Resource generateExcelReport(UUID instanceId, UUID teacherId) {
+    public Resource generateExcelReport(UUID instanceId) {
+        UUID teacherId = accountUtils.getCurrentUserId();
         ExamInstance instance = examInstanceRepository.findById(instanceId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy phiên thi"));
 
@@ -264,7 +273,8 @@ public class ExamInstanceServiceImpl implements IExamInstanceService {
     }
 
     @Override
-    public ExamInstanceResponse changeExamStatus(UUID instanceId, ChangeExamStatusRequest request, UUID teacherId) {
+    public ExamInstanceResponse changeExamStatus(UUID instanceId, ChangeExamStatusRequest request) {
+        UUID teacherId = accountUtils.getCurrentUserId();
         ExamInstance instance = examInstanceRepository.findById(instanceId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy phiên thi"));
 
@@ -295,11 +305,12 @@ public class ExamInstanceServiceImpl implements IExamInstanceService {
 
     @Override
     @Transactional(readOnly = true)
-    public Map<String, Object> getValidStatusTransitions(UUID instanceId, UUID teacherId) {
+    public Map<String, Object> getValidStatusTransitions(UUID instanceId) {
+        UUID teacherId = accountUtils.getCurrentUserId();
         log.info("Getting valid status transitions for exam instance {} by teacher: {}", instanceId, teacherId);
 
         // Get current instance to check ownership and current status
-        ExamInstanceResponse instance = getExamInstanceById(instanceId, teacherId);
+        ExamInstanceResponse instance = getExamInstanceById(instanceId);
         ExamInstanceStatus currentStatus = instance.getStatus();
 
         // Build valid transitions based on current status

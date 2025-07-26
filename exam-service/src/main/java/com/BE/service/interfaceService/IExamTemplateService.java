@@ -6,34 +6,34 @@ import java.util.List;
 import java.util.UUID;
 
 public interface IExamTemplateService {
-    
+
     /**
      * Create a new exam template
      */
-    ExamTemplateResponse createExamTemplate(CreateExamTemplateRequest request, UUID teacherId);
-    
+    ExamTemplateResponse createExamTemplate(CreateExamTemplateRequest request);
+
     /**
      * Get all exam templates by teacher
      */
-    List<ExamTemplateResponse> getExamTemplatesByTeacher(UUID teacherId);
-    
+    List<ExamTemplateResponse> getExamTemplatesByTeacher();
+
     /**
      * Get exam template by ID
      */
-    ExamTemplateResponse getExamTemplateById(UUID templateId, UUID teacherId);
-    
+    ExamTemplateResponse getExamTemplateById(UUID templateId);
+
     /**
      * Update exam template
      */
-    ExamTemplateResponse updateExamTemplate(UUID templateId, UpdateExamTemplateRequest request, UUID teacherId);
-    
+    ExamTemplateResponse updateExamTemplate(UUID templateId, UpdateExamTemplateRequest request);
+
     /**
      * Delete exam template
      */
-    void deleteExamTemplate(UUID templateId, UUID teacherId);
+    void deleteExamTemplate(UUID templateId);
 
     /**
      * Clone exam template
      */
-    ExamTemplateResponse cloneExamTemplate(UUID templateId, UUID teacherId);
+    ExamTemplateResponse cloneExamTemplate(UUID templateId);
 }
