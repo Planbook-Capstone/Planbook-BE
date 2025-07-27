@@ -30,9 +30,9 @@ public class KafkaProcessingServiceImpl implements IKafkaProcessingService {
             JsonNode innerData = root.path("data").path("data");
             System.out.println(type);
             switch (type) {
-                case "lesson_plan_content_generation_response" -> handleAcceptedResponse(innerData);
-                case "lesson_plan_content_generation_result" -> handleResultMessage(innerData);
-                case "lesson_plan_content_generation_progress" -> sendProgressWebSocket(innerData);
+                case "generation_response" -> handleAcceptedResponse(innerData);
+                case "generation_result" -> handleResultMessage(innerData);
+                case "generation_progress" -> sendProgressWebSocket(innerData);
                 default -> log.warn("⚠️ Không hỗ trợ type message Kafka: {}", type);
             }
         } catch (Exception e) {
@@ -50,11 +50,12 @@ public class KafkaProcessingServiceImpl implements IKafkaProcessingService {
                 log.warn("⚠️ Không tìm thấy tool_log_id trong lesson_plan");
                 return;
             }
-
+            System.out.println(success);
             Long toolLogId = Long.parseLong(toolLogIdStr);
 
             if (success) {
                 Map<String, Object> outputMap = mapper.convertValue(outputNode, new TypeReference<>() {});
+                outputMap.put("tool_log_id", toolLogIdStr);
                 ToolLogUpdateRequest request = new ToolLogUpdateRequest(true, outputMap);
                 logService.updateOutputByLogId(toolLogId, request);
                 log.info("✅ Cập nhật output SUCCESS cho tool_log_id: {}", toolLogId);
@@ -89,6 +90,7 @@ public class KafkaProcessingServiceImpl implements IKafkaProcessingService {
                     .destination("/queue/notifications")
                     .payload(Map.of(
                             "type", "accepted",
+                            "tool_log_id", id,
                             "task_id", taskId,
                             "message", message
                     ))
@@ -116,6 +118,8 @@ public class KafkaProcessingServiceImpl implements IKafkaProcessingService {
                     "type", "progress",
                     "task_id", innerData.path("task_id").asText(),
                     "lesson_id", innerData.path("lesson_id").asLong(),
+                    "book_id", innerData.path("book_id").asLong(),
+                    "tool_log_id", id,
                     "progress", innerData.path("progress").asInt(),
                     "status", innerData.path("status").asText(),
                     "message", innerData.path("message").asText()

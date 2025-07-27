@@ -13,6 +13,7 @@ import lombok.NoArgsConstructor;
 public class KafkaData {
     private Long tool_log_id;
     private String user_id;
+    private String book_id;
     private String lesson_id;
     private Object input;
     private String timestamp;
