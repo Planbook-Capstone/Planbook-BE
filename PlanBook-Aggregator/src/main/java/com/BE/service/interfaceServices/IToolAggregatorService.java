@@ -8,7 +8,6 @@ import java.util.Map;
 
 public interface IToolAggregatorService {
     Map<String,Object>  executeExternalTool(ToolExecuteRequest request);
-
     String executeInternalTool(ToolExecuteRequest request);
     AggregatedToolResponse getAggregatedToolInfo(ToolSearchPageRequest request);
 }
