@@ -9,6 +9,7 @@ import com.BE.model.request.SlideTemplateRequest;
 import com.BE.model.response.SlideTemplateResponse;
 import com.BE.repository.SlideTemplateRepository;
 import com.BE.service.interfaceServices.ISlideTemplateService;
+import com.BE.service.interfaceServices.ISlideDetailService;
 import com.BE.utils.DateNowUtils;
 import com.BE.utils.PageUtil;
 import lombok.AccessLevel;
@@ -19,28 +20,34 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.stream.Collectors;
+import org.springframework.transaction.annotation.Transactional;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class SlideTemplateServiceImpl implements ISlideTemplateService {
 
-
     PageUtil pageUtil;
-
     SlideTemplateRepository slideTemplateRepository;
-
-
     SlideTemplateMapper slideTemplateMapper;
+    ISlideDetailService iSlideDetailService;
+    ObjectMapper objectMapper;
 
     @Override
+    @Transactional
     public SlideTemplate saveSlideTemplate(SlideTemplateRequest request) {
         SlideTemplate entity = slideTemplateMapper.toEntity(request);
         entity.setStatus(StatusEnum.ACTIVE);
-        return slideTemplateRepository.save(entity);
+        SlideTemplate savedEntity = slideTemplateRepository.save(entity);
+
+        // Xử lý JSON tổng để tạo SlideDetail
+        String slideDataJson = extractSlideDataJson(request);
+        if (slideDataJson != null && !slideDataJson.trim().isEmpty()) {
+            iSlideDetailService.processSlideDetailsFromTemplate(savedEntity.getId(), slideDataJson);
+        }
+
+        return savedEntity;
     }
 
     @Override
@@ -76,8 +83,8 @@ public class SlideTemplateServiceImpl implements ISlideTemplateService {
         return pageResult.map(slideTemplateMapper::toResponse);
     }
 
-
     @Override
+    @Transactional
     public SlideTemplateResponse updateSlideTemplate(Long id, SlideTemplateRequest request) {
         SlideTemplate existingForm = slideTemplateRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy biểu mẫu có id: " + id));
@@ -85,6 +92,13 @@ public class SlideTemplateServiceImpl implements ISlideTemplateService {
         slideTemplateMapper.updateEntityFromRequest(request, existingForm);
 
         SlideTemplate updated = slideTemplateRepository.save(existingForm);
+
+        // Xử lý JSON tổng để cập nhật SlideDetail
+        String slideDataJson = extractSlideDataJson(request);
+        if (slideDataJson != null && !slideDataJson.trim().isEmpty()) {
+            iSlideDetailService.processSlideDetailsFromTemplate(updated.getId(), slideDataJson);
+        }
+
         return slideTemplateMapper.toResponse(updated);
     }
 
@@ -103,6 +117,37 @@ public class SlideTemplateServiceImpl implements ISlideTemplateService {
         template.setStatus(statusEnum);
         SlideTemplate updated = slideTemplateRepository.save(template);
         return slideTemplateMapper.toResponse(updated);
+    }
+
+    /**
+     * Trích xuất JSON tổng từ request
+     * Ưu tiên slideDataJson, nếu không có thì kiểm tra textBlocks có chứa JSON tổng
+     * không
+     */
+    private String extractSlideDataJson(SlideTemplateRequest request) {
+        // Ưu tiên slideDataJson nếu có
+        if (request.getSlideDataJson() != null && !request.getSlideDataJson().trim().isEmpty()) {
+            return request.getSlideDataJson();
+        }
+
+        // Kiểm tra textBlocks có chứa JSON tổng không
+        if (request.getTextBlocks() != null) {
+            try {
+                // Chuyển textBlocks thành JSON string để kiểm tra
+                String textBlocksJson = objectMapper.writeValueAsString(request.getTextBlocks());
+
+                // Kiểm tra xem có chứa các key đặc trưng của JSON tổng không
+                if (textBlocksJson.contains("\"version\"") &&
+                        textBlocksJson.contains("\"slides\"") &&
+                        textBlocksJson.contains("\"slideFormat\"")) {
+                    return textBlocksJson;
+                }
+            } catch (Exception e) {
+                // Ignore error, không phải JSON tổng
+            }
+        }
+
+        return null;
     }
 
 }

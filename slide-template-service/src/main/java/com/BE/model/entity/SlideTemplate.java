@@ -11,6 +11,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 
 @Entity
@@ -46,5 +47,8 @@ public class SlideTemplate {
 
     @UpdateTimestamp
     LocalDateTime updatedAt;
+
+    @OneToMany(mappedBy = "slideTemplate", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    List<SlideDetail> slideDetails;
 
 }

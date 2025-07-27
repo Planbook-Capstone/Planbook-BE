@@ -20,23 +20,20 @@ import java.util.Map;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class SlideTemplateRequest {
-    @NotBlank(message = "Name cannot be blank")
-    String name;
+        @NotBlank(message = "Name cannot be blank")
+        String name;
 
-    @NotBlank(message = "Description cannot be blank")
-    String description;
+        @NotBlank(message = "Description cannot be blank")
+        String description;
 
-    @NotNull(message = "TextBlocks không được để trống")
-    @Schema(
-            description = "TextBlocks lưu text",
-            example = "{\"text\": \"Xin chào\"}"
-    )
-    Map<String, Object> textBlocks;
+        @NotNull(message = "TextBlocks không được để trống")
+        @Schema(description = "TextBlocks lưu text", example = "{\"text\": \"Xin chào\"}")
+        Map<String, Object> textBlocks;
 
-    @NotNull(message = "ImageBlocks không được để trống")
-    @Schema(
-            description = "ImageBlocks lưu link image",
-            example = "{\"text\": \"Xin chào\"}"
-    )
-    Map<String, Object> imageBlocks;
+        @NotNull(message = "ImageBlocks không được để trống")
+        @Schema(description = "ImageBlocks lưu link image", example = "{\"text\": \"Xin chào\"}")
+        Map<String, Object> imageBlocks;
+
+        @Schema(description = "JSON tổng của slide template từ frontend", example = "{\"version\": \"1.0\", \"slides\": [...]}")
+        String slideDataJson;
 }
