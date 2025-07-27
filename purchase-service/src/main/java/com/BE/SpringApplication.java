@@ -21,9 +21,9 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @SecurityScheme(name = "api", scheme = "bearer", type = SecuritySchemeType.HTTP, in = SecuritySchemeIn.HEADER)
 @OpenAPIDefinition(
 		info = @Info(title = "Do Minh API", version = "2.0")
-//		,servers = {
-//				@Server(url = "https://biolab.life/purchase-service", description = "Production Server")
-//		}
+		,servers = {
+				@Server(url = "https://biolab.life/purchase-service", description = "Production Server")
+		}
 )
 public class SpringApplication {
 

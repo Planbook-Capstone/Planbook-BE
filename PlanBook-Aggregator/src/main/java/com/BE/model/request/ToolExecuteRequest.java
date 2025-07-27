@@ -28,6 +28,14 @@ public class ToolExecuteRequest {
     )
     private ToolTypeEnum toolType;
 
+    @NotNull(message = "BookId không được để trống")
+    @Schema(
+            description = "ID của sách mà tool đang xử lý",
+            example = "1",
+            required = true
+    )
+    private Long book_id;
+
     @NotNull(message = "lessonId không được để trống")
     @Schema(
             description = "ID của bài học mà tool đang xử lý",

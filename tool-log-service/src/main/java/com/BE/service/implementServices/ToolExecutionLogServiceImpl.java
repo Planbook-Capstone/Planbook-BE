@@ -36,7 +36,6 @@ public class ToolExecutionLogServiceImpl implements IToolExecutionLogService {
 
     final ToolExecutionLogRepository repository;
     final ToolExecutionLogMapper mapper;
-    final DateNowUtils dateNowUtils;
     final PageUtil pageUtil;
     final ObjectMapper objectMapper;
     final IOutboxService iOutboxService;
@@ -68,6 +67,7 @@ public class ToolExecutionLogServiceImpl implements IToolExecutionLogService {
                         .type(request.getToolName())
                         .data(KafkaData.builder()
                                 .user_id(request.getUserId().toString())
+                                .book_id(request.getBookId().toString())
                                 .lesson_id(request.getLessonId().toString())
                                 .tool_log_id(response.getId())
                                 .input(input)

@@ -29,6 +29,10 @@ public class ToolExecutionLogRequest {
     @Schema(description = "ID của công cụ được gọi", example = "123", required = true)
     UUID toolId;
 
+    @NotNull(message = "ID sách không được để trống")
+    @Schema(description = "ID của sách được gọi", example = "456", required = true)
+    Long bookId;
+
     @NotNull(message = "ID bài học không được để trống")
     @Schema(description = "ID của bài được gọi", example = "456", required = true)
     Long lessonId;

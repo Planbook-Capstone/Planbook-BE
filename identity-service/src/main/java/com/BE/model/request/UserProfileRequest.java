@@ -45,8 +45,8 @@ public class UserProfileRequest {
     LocalDate birthday;
 
 
-    @Pattern(regexp = "MALE, FEMALE, OTHER", message = "Giới tính phải là Nam, Nữ hoặc Khác")
-    @Schema(example = "MALE", allowableValues = {"MALE, FEMALE, OTHER"})
+    @Pattern(regexp = "MALE|FEMALE|OTHER", message = "Giới tính phải là MALE, FEMALE hoặc OTHER")
+    @Schema(example = "MALE", allowableValues = {"MALE", "FEMALE", "OTHER"})
     String gender;
 
 

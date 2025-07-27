@@ -1,6 +1,7 @@
 package com.BE.config;
 
 import com.BE.enums.RoleEnum;
+import com.BE.enums.StatusEnum;
 import com.BE.model.entity.User;
 import com.BE.repository.AuthenRepository;
 import com.BE.service.interfaceServices.IWalletService;
@@ -49,6 +50,7 @@ public class DataLoaderConfig implements CommandLineRunner {
             newUser.setPassword(passwordEncoder.encode(username)); // Cảnh báo: không nên dùng username làm password
             newUser.setEmail(email);
             newUser.setRole(role);
+            newUser.setStatus(StatusEnum.ACTIVE);
             if(RoleEnum.TEACHER.equals(role) || RoleEnum.PARTNER.equals(role)){
                 iWalletService.create(newUser);
             }
