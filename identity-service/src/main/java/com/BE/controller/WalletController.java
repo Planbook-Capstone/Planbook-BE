@@ -1,7 +1,7 @@
 package com.BE.controller;
 
+import com.BE.model.request.WalletTokenRequest;
 import com.BE.model.request.WalletTransactionRequest;
-import com.BE.model.response.*;
 import com.BE.service.interfaceServices.IWalletService;
 import com.BE.utils.ResponseHandler;
 import io.swagger.v3.oas.annotations.Operation;
@@ -12,7 +12,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -56,5 +55,20 @@ public class WalletController {
     ) {
         return responseHandler.response(200, "Lấy lịch sử nạp ví thành công", walletService.getTransactions(userId));
     }
+
+
+    @PostMapping("/deduct")
+    @Operation(summary = "Trừ token khỏi ví")
+    public ResponseEntity<?> deduct(@Valid @RequestBody WalletTokenRequest request) {
+        return responseHandler.response(200, "Trừ token thành công", walletService.deduct(request));
+    }
+
+    @PostMapping("/check")
+    @Operation(summary = "Kiểm tra người dùng có đủ token không")
+    public ResponseEntity<Boolean> checkSufficientToken(@Valid @RequestBody WalletTokenRequest request) {
+        boolean hasEnough = walletService.hasSufficientToken(request);
+        return ResponseEntity.ok(hasEnough);
+    }
+
 
 }

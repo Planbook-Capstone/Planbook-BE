@@ -17,6 +17,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class WorkSpace {
+
     @Id
     @GeneratedValue
     @UuidGenerator

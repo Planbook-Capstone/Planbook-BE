@@ -29,8 +29,8 @@ public class LessonPlanNode {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
-    @Column(name = "lesson_plan_id", nullable = false)
-    Long lessonPlanId;
+    @Column(name = "lesson_plan_template_id", nullable = false)
+    Long lessonPlanTemplateId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")

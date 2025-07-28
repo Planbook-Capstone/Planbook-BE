@@ -1,6 +1,7 @@
 package com.BE.feign;
 
 import com.BE.model.request.AuthenticationRequest;
+import com.BE.model.request.WalletTokenRequest;
 import com.BE.model.response.AuthenticationResponse;
 import com.BE.model.response.BookTypeResponse;
 import com.BE.model.response.DataResponseDTO;
@@ -12,7 +13,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @FeignClient(name = "identity-service")
-public interface AuthServiceClient {
+public interface IdentityServiceClient {
 
 //    @PostMapping("/auth/login")
 //    AuthenticationResponse login(@RequestBody LoginRequestDTO request);
@@ -28,6 +29,13 @@ public interface AuthServiceClient {
     DataResponseDTO<Page<BookTypeResponse>> getBookTypes(
             @RequestParam Map<String, Object> params
     );
+
+
+
+    @PostMapping("/api/wallets/check")
+    boolean checkSufficientToken(@RequestBody WalletTokenRequest request);
+
+
 
 //    @PostMapping("/auth/login-google")
 //    AuthenticationResponse loginGoogle(@RequestBody LoginGoogleRequest request);

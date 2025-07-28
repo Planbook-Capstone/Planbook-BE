@@ -1,7 +1,6 @@
 package com.BE.service.implementServices;
 
-import com.BE.feign.AuthServiceClient;
-import com.BE.feign.UserServiceClient;
+import com.BE.feign.IdentityServiceClient;
 import com.BE.mapper.AuthAggregatorMapper;
 import com.BE.model.request.AuthenticationRequest;
 import com.BE.model.request.RegisterAggregatorRequest;
@@ -17,8 +16,8 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class AuthAggregatorServiceImpl implements IAuthAggregatorService {
 
-    private final AuthServiceClient authClient;
-    private final UserServiceClient userClient;
+    private final IdentityServiceClient authClient;
+//    private final UserServiceClient userClient;
     private final AuthAggregatorMapper mapper;
 
     @Override
@@ -31,9 +30,9 @@ public class AuthAggregatorServiceImpl implements IAuthAggregatorService {
 
         DataResponseDTO<AuthenticationResponse> authRes = authClient.register(auth);
 
-        DataResponseDTO<UserProfileResponse> userProfile = userClient.createProfile(authRes.getData().getId(), profile);
+//        DataResponseDTO<UserProfileResponse> userProfile = userClient.createProfile(authRes.getData().getId(), profile);
 
-        authRes.getData().setFullName(userProfile.getData().getFullName());
+//        authRes.getData().setFullName(userProfile.getData().getFullName());
         return authRes.getData();
     }
 }

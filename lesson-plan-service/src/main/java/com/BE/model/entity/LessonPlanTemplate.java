@@ -11,13 +11,13 @@ import java.time.LocalDateTime;
  * Entity representing a lesson plan
  */
 @Entity
-@Table(name = "lesson_plans")
+@Table(name = "lesson_plan_templates")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class LessonPlan {
+public class LessonPlanTemplate {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

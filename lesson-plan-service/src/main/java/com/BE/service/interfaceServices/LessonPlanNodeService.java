@@ -49,8 +49,8 @@ public interface LessonPlanNodeService {
     /**
      * Get all nodes (including inactive) for a lesson plan - Admin only
      * Returns all nodes with full tree structure regardless of status
-     * @param lessonPlanId ID of the lesson plan
+     * @param lessonPlanTemplateId ID of the lesson plan
      * @return List of all nodes (active and inactive) with full tree structure
      */
-    List<LessonPlanNodeDTO> getAllNodesByLessonPlanId(Long lessonPlanId);
+    List<LessonPlanNodeDTO> getAllNodesByLessonPlanTemplateId(Long lessonPlanTemplateId);
 }

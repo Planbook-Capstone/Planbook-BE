@@ -169,9 +169,9 @@ public class LessonPlanNodeController {
     })
     public ResponseEntity<Object> getAllNodesByLessonPlanId(
             @io.swagger.v3.oas.annotations.Parameter(description = "ID của giáo án", example = "101")
-            @PathVariable Long lessonPlanId) {
+            @PathVariable Long lessonPlanTemplateId) {
 
-        List<LessonPlanNodeDTO> nodes = lessonPlanNodeService.getAllNodesByLessonPlanId(lessonPlanId);
+        List<LessonPlanNodeDTO> nodes = lessonPlanNodeService.getAllNodesByLessonPlanTemplateId(lessonPlanTemplateId);
         return responseHandler.response(200, "Lấy tất cả nodes thành công!", nodes);
     }
 }

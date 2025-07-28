@@ -42,12 +42,37 @@ public class SlideDetailServiceImpl implements ISlideDetailService {
     }
 
     @Override
-    public List<SlideDetailResponse> getSlideDetailsByTemplateId(Long templateId) {
+    public Map<String, Object> getSlideDetailsByTemplateId(Long templateId) {
         List<SlideDetail> slideDetails = slideDetailRepository.findBySlideTemplateId(templateId);
-        return slideDetails.stream()
-                .map(slideDetailMapper::toResponse)
-                .collect(Collectors.toList());
+        Map<String, Object> result = new LinkedHashMap<>();
+        ObjectMapper mapper = new ObjectMapper();
+
+        for (int i = 0; i < slideDetails.size(); i++) {
+            SlideDetail slide = slideDetails.get(i);
+            Map<String, Object> slideMap = new LinkedHashMap<>();
+
+            slideMap.put("id", slide.getId());
+            slideMap.put("title", slide.getTitle());
+
+            try {
+                Map<String, Object> parsedSlideData = mapper.readValue(slide.getSlideData(), Map.class);
+                slideMap.put("slideData", parsedSlideData);
+            } catch (Exception e) {
+                slideMap.put("slideData", null); // hoặc slide.getSlideData() nếu muốn giữ raw string
+            }
+
+            slideMap.put("description", slide.getDescription());
+            slideMap.put("status", slide.getStatus().name());
+            slideMap.put("slideTemplateId", slide.getSlideTemplate().getId());
+            slideMap.put("createdAt", slide.getCreatedAt());
+            slideMap.put("updatedAt", slide.getUpdatedAt());
+
+            result.put(String.valueOf(i), slideMap);
+        }
+
+        return result;
     }
+
 
     @Override
     @Transactional

@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Schema(description = "Thông tin giáo án")
-public class LessonPlanDTO {
+public class LessonPlanTemplateDTO {
 
     @Schema(description = "ID của giáo án", example = "1")
     private Long id;
