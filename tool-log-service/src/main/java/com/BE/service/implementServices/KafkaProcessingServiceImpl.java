@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @Service
@@ -115,16 +116,27 @@ public class KafkaProcessingServiceImpl implements IKafkaProcessingService {
                 return;
             }
 
-            Map<String, Object> payload = Map.of(
-                    "type", "progress",
-                    "task_id", innerData.path("task_id").asText(),
-                    "lesson_id", innerData.path("lesson_id").asLong(),
-                    "book_id", innerData.path("book_id").asLong(),
-                    "tool_log_id", id,
-                    "progress", innerData.path("progress").asInt(),
-                    "status", innerData.path("status").asText(),
-                    "message", innerData.path("message").asText()
-            );
+            JsonNode partialResultNode = innerData.path("partial_result");
+            Map<String, Object> partialResult = null;
+
+            if (partialResultNode != null && !partialResultNode.isMissingNode() && !partialResultNode.isNull() && partialResultNode.isObject()) {
+                partialResult = mapper.convertValue(partialResultNode, new TypeReference<>() {});
+            }
+
+
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("type", "progress");
+            payload.put("task_id", innerData.path("task_id").asText());
+            payload.put("lesson_id", innerData.path("lesson_id").asLong());
+            payload.put("book_id", innerData.path("book_id").asLong());
+            payload.put("tool_log_id", id);
+            payload.put("progress", innerData.path("progress").asInt());
+            payload.put("status", innerData.path("status").asText());
+            payload.put("message", innerData.path("message").asText());
+
+            if (partialResult != null) {
+                payload.put("partial_result", partialResult);
+            }
 
             WebSocketMessageRequest request = WebSocketMessageRequest.builder()
                     .userId(toolExecutionLogResponse.getUserId().toString())

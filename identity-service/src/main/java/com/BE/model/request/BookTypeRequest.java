@@ -38,12 +38,11 @@ public class BookTypeRequest {
     String description;
 
     @Schema(
-            description = "Mức độ ưu tiên", // ĐÃ THAY ĐỔI MÔ TẢ
-            example = "1", // ĐÃ THAY ĐỔI VÍ DỤ
+            description = "Đường dẫn chuyển trang tương ứng cho frontend (FE)",
+            example = "/dashboard/lesson/123",
             required = true,
-            type = "int"
+            type = "string"
     )
-
     String href;
 
     @NotNull(message = "Priority cannot be null")
