@@ -24,7 +24,7 @@ public class LessonPlanNodeDTO {
     Long id;
 
     @Schema(description = "ID của giáo án", example = "101")
-    Long lessonPlanId;
+    Long lessonPlanTemplateId;
 
     @Schema(description = "ID của node cha", example = "2")
     Long parentId;

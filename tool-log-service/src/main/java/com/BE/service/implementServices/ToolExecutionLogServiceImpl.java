@@ -3,6 +3,7 @@ package com.BE.service.implementServices;
 import com.BE.enums.ExecutionStatus;
 import com.BE.enums.ToolTypeEnum;
 import com.BE.exception.exceptions.NotFoundException;
+import com.BE.feign.IdentityServiceClient;
 import com.BE.feign.WebSocketServiceClient;
 import com.BE.mapper.ToolExecutionLogMapper;
 import com.BE.model.entity.ToolExecutionLog;
@@ -40,6 +41,7 @@ public class ToolExecutionLogServiceImpl implements IToolExecutionLogService {
     final ObjectMapper objectMapper;
     final IOutboxService iOutboxService;
     final WebSocketServiceClient webSocketServiceClient;
+    final IdentityServiceClient identityServiceClient;
 
     @Value("${kafka.topic.name.request}")
     String requestTopic;
@@ -164,9 +166,16 @@ public class ToolExecutionLogServiceImpl implements IToolExecutionLogService {
         ToolExecutionLog log = repository.findById(toolLogId)
                 .orElseThrow(() -> new NotFoundException("Không tìm thấy log với ID: " + toolLogId));
 
+        if(output.getSuccess()){
+            WalletTokenRequest walletTokenRequest = new WalletTokenRequest();
+            walletTokenRequest.setAmount(log.getTokenUsed());
+            walletTokenRequest.setUserId(log.getUserId());
+            identityServiceClient.deduct(walletTokenRequest);
+        }
         // Cập nhật output và status
         log.setOutput(output.getOutput());
         log.setStatus(output.getSuccess() ? ExecutionStatus.SUCCESS : ExecutionStatus.FAILED);
+
 
         log = repository.save(log);
 

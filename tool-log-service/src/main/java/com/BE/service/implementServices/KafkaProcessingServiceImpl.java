@@ -1,6 +1,8 @@
 package com.BE.service.implementServices;
 
+import com.BE.feign.IdentityServiceClient;
 import com.BE.model.request.ToolLogUpdateRequest;
+import com.BE.model.request.WalletTokenRequest;
 import com.BE.model.request.WebSocketMessageRequest;
 import com.BE.model.response.ToolExecutionLogResponse;
 import com.BE.service.interfaceServices.IKafkaProcessingService;
@@ -22,13 +24,13 @@ public class KafkaProcessingServiceImpl implements IKafkaProcessingService {
     private final ObjectMapper mapper;
     private final IToolExecutionLogService logService;
 
+
     @Override
     public void process(String rawMessage) {
         try {
             JsonNode root = mapper.readTree(rawMessage);
             String type = root.path("data").path("type").asText();
             JsonNode innerData = root.path("data").path("data");
-            System.out.println(type);
             switch (type) {
                 case "generation_response" -> handleAcceptedResponse(innerData);
                 case "generation_result" -> handleResultMessage(innerData);
@@ -50,7 +52,6 @@ public class KafkaProcessingServiceImpl implements IKafkaProcessingService {
                 log.warn("⚠️ Không tìm thấy tool_log_id trong lesson_plan");
                 return;
             }
-            System.out.println(success);
             Long toolLogId = Long.parseLong(toolLogIdStr);
 
             if (success) {

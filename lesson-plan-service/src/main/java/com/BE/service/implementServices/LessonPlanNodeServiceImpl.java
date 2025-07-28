@@ -34,7 +34,7 @@ public class LessonPlanNodeServiceImpl implements LessonPlanNodeService {
 
         // Get all active root nodes (nodes without parent) for the lesson plan
         List<LessonPlanNode> rootNodes = lessonPlanNodeRepository
-                .findByLessonPlanIdAndParentIsNullAndStatusOrderByOrderIndex(lessonPlanId, Status.ACTIVE);
+                .findByLessonPlanTemplateIdAndParentIsNullAndStatusOrderByOrderIndex(lessonPlanId, Status.ACTIVE);
 
         if (rootNodes.isEmpty()) {
             log.info("No root nodes found for lesson plan ID: {}", lessonPlanId);
@@ -42,7 +42,7 @@ public class LessonPlanNodeServiceImpl implements LessonPlanNodeService {
         }
 
         // Convert to DTOs - only root nodes without children populated
-        List<LessonPlanNodeDTO> result = lessonPlanNodeMapper.toDTOListWithoutChildren(rootNodes);
+        List<LessonPlanNodeDTO> result = lessonPlanNodeMapper.toDTOList(rootNodes);
 
         log.info("Successfully retrieved {} root nodes for lesson plan ID: {}",
                 result.size(), lessonPlanId);
@@ -90,7 +90,7 @@ public class LessonPlanNodeServiceImpl implements LessonPlanNodeService {
                     .orElseThrow(() -> new RuntimeException("Node cha không tồn tại với ID: " + request.getParentId()));
             
             // Validate that parent belongs to the same lesson plan
-            if (!parent.getLessonPlanId().equals(request.getLessonPlanId())) {
+            if (!parent.getLessonPlanTemplateId().equals(request.getLessonPlanTemplateId())) {
                 throw new RuntimeException("Node cha không thuộc cùng giáo án");
             }
             
@@ -194,15 +194,15 @@ public class LessonPlanNodeServiceImpl implements LessonPlanNodeService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<LessonPlanNodeDTO> getAllNodesByLessonPlanId(Long lessonPlanId) {
-        log.info("Getting all nodes (including inactive) for lesson plan ID: {}", lessonPlanId);
+    public List<LessonPlanNodeDTO> getAllNodesByLessonPlanTemplateId(Long lessonPlanTemplateId) {
+        log.info("Getting all nodes (including inactive) for lesson plan ID: {}", lessonPlanTemplateId);
 
         // Get all root nodes (both active and inactive) for the lesson plan
         List<LessonPlanNode> allRootNodes = lessonPlanNodeRepository
-                .findByLessonPlanIdAndParentIsNullOrderByOrderIndex(lessonPlanId);
+                .findByLessonPlanTemplateIdAndParentIsNullOrderByOrderIndex(lessonPlanTemplateId);
 
         if (allRootNodes.isEmpty()) {
-            log.info("No nodes found for lesson plan ID: {}", lessonPlanId);
+            log.info("No nodes found for lesson plan ID: {}", lessonPlanTemplateId);
             return List.of();
         }
 
@@ -210,7 +210,7 @@ public class LessonPlanNodeServiceImpl implements LessonPlanNodeService {
         List<LessonPlanNodeDTO> result = lessonPlanNodeMapper.toDTOList(allRootNodes);
 
         log.info("Successfully retrieved {} root nodes (including inactive) for lesson plan ID: {}",
-                result.size(), lessonPlanId);
+                result.size(), lessonPlanTemplateId);
 
         return result;
     }

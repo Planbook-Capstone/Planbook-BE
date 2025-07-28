@@ -2,7 +2,8 @@ package com.BE.service.implementServices;
 
 import com.BE.enums.ToolStatusEnum;
 import com.BE.enums.ToolTypeEnum;
-import com.BE.feign.AuthServiceClient;
+import com.BE.exception.exceptions.WalletTokenException;
+import com.BE.feign.IdentityServiceClient;
 import com.BE.feign.ToolExternalCallerServiceClient;
 import com.BE.feign.ToolExternalServiceClient;
 import com.BE.feign.ToolLogServiceClient;
@@ -18,7 +19,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Service
@@ -28,17 +28,27 @@ public class ToolAggregatorServiceImpl implements IToolAggregatorService {
 
     ToolExternalServiceClient toolExternalServiceClient;
     ToolExternalCallerServiceClient toolExternalCallerServiceClient;
-    AuthServiceClient toolInternalServiceClient;
+    IdentityServiceClient toolInternalServiceClient;
     ToolLogServiceClient toolLogServiceClient;
-
     ToolAggregatorMapper toolAggregatorMapper;
-
     AccountUtils accountUtils;
+
+    private void checkToken(Integer tokenCostPerQuery){
+        WalletTokenRequest request = new WalletTokenRequest();
+        request.setAmount(tokenCostPerQuery);
+        request.setUserId(accountUtils.getCurrentUserId());
+
+        if(!toolInternalServiceClient.checkSufficientToken(request)){
+            throw new WalletTokenException("Không đủ token trong ví để thực hiện hành động");
+        }
+    }
 
 
     @Override
     public String executeInternalTool(ToolExecuteRequest request) {
+
         DataResponseDTO<BookTypeResponse> internalToolConfigResponse = toolInternalServiceClient.getBookTypeById(request.getToolId());
+        checkToken(internalToolConfigResponse.getData().getTokenCostPerQuery());
 
         ToolExecutionLogRequest toolExecutionLogRequest = ToolExecutionLogRequest.builder()
                 .userId(accountUtils.getCurrentUserId())
@@ -116,6 +126,7 @@ public class ToolAggregatorServiceImpl implements IToolAggregatorService {
     @Override
     public Map<String, Object> executeExternalTool(ToolExecuteRequest request) {
         DataResponseDTO<ExternalToolConfigResponse> externalToolConfigResponse = toolExternalServiceClient.getById(request.getToolId());
+        checkToken(externalToolConfigResponse.getData().getTokenCostPerQuery());
         ToolExecutionLogRequest toolExecutionLogRequest = ToolExecutionLogRequest.builder()
                 .userId(accountUtils.getCurrentUserId())
                 .toolId(request.getToolId())

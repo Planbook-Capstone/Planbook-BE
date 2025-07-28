@@ -22,7 +22,7 @@ public class CreateLessonPlanNodeRequest {
 
     @NotNull(message = "ID giáo án không được để trống")
     @Schema(description = "ID của giáo án", example = "101", required = true)
-    Long lessonPlanId;
+    Long lessonPlanTemplateId;
 
     @Schema(description = "ID của node cha (null nếu là node gốc)", example = "2")
     Long parentId;

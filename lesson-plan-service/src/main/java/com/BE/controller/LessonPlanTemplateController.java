@@ -1,10 +1,10 @@
 package com.BE.controller;
 
 import com.BE.enums.Status;
-import com.BE.model.response.LessonPlanDTO;
+import com.BE.model.response.LessonPlanTemplateDTO;
 import com.BE.model.request.CreateLessonPlanRequest;
 import com.BE.model.request.UpdateLessonPlanRequest;
-import com.BE.service.interfaceServices.LessonPlanService;
+import com.BE.service.interfaceServices.LessonPlanTemplateService;
 import com.BE.utils.ResponseHandler;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -27,14 +27,14 @@ import org.springframework.web.bind.annotation.*;
  * REST Controller for LessonPlan operations
  */
 @RestController
-@RequestMapping("/api/lesson-plans")
+@RequestMapping("/api/lesson-plan-templates")
 @SecurityRequirement(name = "api")
 @RequiredArgsConstructor
 @Slf4j
-@Tag(name = "Lesson Plan Controller", description = "Quản lý giáo án")
-public class LessonPlanController {
+@Tag(name = "Lesson Plan Template Controller", description = "Quản lý giáo án")
+public class LessonPlanTemplateController {
 
-    private final LessonPlanService lessonPlanService;
+    private final LessonPlanTemplateService lessonPlanTemplateService;
     private final ResponseHandler responseHandler;
 
     @PostMapping
@@ -45,9 +45,9 @@ public class LessonPlanController {
             @ApiResponse(responseCode = "403", description = "Không có quyền truy cập")
     })
     // @PreAuthorize("hasRole('TEACHER') or hasRole('ADMIN')")
-    public ResponseEntity createLessonPlan(@Valid @RequestBody CreateLessonPlanRequest request) {
+    public ResponseEntity createLessonPlanTemplate(@Valid @RequestBody CreateLessonPlanRequest request) {
         try {
-            LessonPlanDTO lessonPlan = lessonPlanService.createLessonPlan(request);
+            LessonPlanTemplateDTO lessonPlan = lessonPlanTemplateService.createLessonPlan(request);
             return responseHandler.response(200, "Tạo giáo án thành công!", lessonPlan);
         } catch (Exception e) {
             return responseHandler.response(500, "Lỗi khi tạo giáo án: " + e.getMessage(), null);
@@ -62,9 +62,9 @@ public class LessonPlanController {
             @ApiResponse(responseCode = "403", description = "Không có quyền truy cập")
     })
     // @PreAuthorize("hasRole('TEACHER') or hasRole('ADMIN')")
-    public ResponseEntity getLessonPlan(@PathVariable Long id) {
+    public ResponseEntity getLessonPlanTemplate(@PathVariable Long id) {
         try {
-            LessonPlanDTO lessonPlan = lessonPlanService.getLessonPlanById(id);
+            LessonPlanTemplateDTO lessonPlan = lessonPlanTemplateService.getLessonPlanById(id);
             return responseHandler.response(200, "Lấy thông tin giáo án thành công!", lessonPlan);
         } catch (Exception e) {
             return responseHandler.response(500, "Lỗi khi lấy thông tin giáo án: " + e.getMessage(), null);
@@ -82,9 +82,9 @@ public class LessonPlanController {
             @ApiResponse(responseCode = "403", description = "Không có quyền truy cập")
     })
     // @PreAuthorize("hasRole('TEACHER') or hasRole('ADMIN')")
-    public ResponseEntity updateLessonPlan(@PathVariable Long id, @Valid @RequestBody UpdateLessonPlanRequest request) {
+    public ResponseEntity updateLessonPlanTemplate(@PathVariable Long id, @Valid @RequestBody UpdateLessonPlanRequest request) {
         try {
-            LessonPlanDTO lessonPlan = lessonPlanService.updateLessonPlan(id, request);
+            LessonPlanTemplateDTO lessonPlan = lessonPlanTemplateService.updateLessonPlan(id, request);
             return responseHandler.response(200, "Cập nhật giáo án thành công!", lessonPlan);
         } catch (Exception e) {
             return responseHandler.response(500, "Lỗi khi cập nhật giáo án: " + e.getMessage(), null);
@@ -99,9 +99,9 @@ public class LessonPlanController {
             @ApiResponse(responseCode = "403", description = "Không có quyền truy cập")
     })
     // @PreAuthorize("hasRole('TEACHER') or hasRole('ADMIN')")
-    public ResponseEntity deleteLessonPlan(@PathVariable Long id) {
+    public ResponseEntity deleteLessonPlanTemplate(@PathVariable Long id) {
         try {
-            lessonPlanService.deleteLessonPlan(id);
+            lessonPlanTemplateService.deleteLessonPlan(id);
             return responseHandler.response(200, "Xóa giáo án thành công!", null);
         } catch (Exception e) {
             return responseHandler.response(500, "Lỗi khi xóa giáo án: " + e.getMessage(), null);
@@ -119,7 +119,7 @@ public class LessonPlanController {
             @ApiResponse(responseCode = "403", description = "Không có quyền truy cập")
     })
     // @PreAuthorize("hasRole('TEACHER') or hasRole('ADMIN')")
-    public ResponseEntity getAllLessonPlans(
+    public ResponseEntity getAllLessonPlanTemplates(
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) Status status,
             @RequestParam(defaultValue = "1") int page,
@@ -129,7 +129,7 @@ public class LessonPlanController {
             int zeroBasedPage = Math.max(0, page - 1);
             // Sort by createdAt descending (newest first)
             Pageable pageable = PageRequest.of(zeroBasedPage, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-            Page<LessonPlanDTO> lessonPlans = lessonPlanService.getAllLessonPlans(keyword, status, pageable);
+            Page<LessonPlanTemplateDTO> lessonPlans = lessonPlanTemplateService.getAllLessonPlans(keyword, status, pageable);
             return responseHandler.response(200, "Lấy danh sách giáo án thành công!", lessonPlans);
         } catch (Exception e) {
             return responseHandler.response(500, "Lỗi khi lấy danh sách giáo án: " + e.getMessage(), null);

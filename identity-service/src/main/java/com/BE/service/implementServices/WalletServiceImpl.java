@@ -5,12 +5,12 @@ import com.BE.mapper.WalletMapper;
 import com.BE.model.entity.User;
 import com.BE.model.entity.Wallet;
 import com.BE.model.entity.WalletTransaction;
+import com.BE.model.request.WalletTokenRequest;
 import com.BE.model.request.WalletTransactionRequest;
 import com.BE.model.response.WalletResponse;
 import com.BE.model.response.WalletTransactionResponse;
 import com.BE.repository.AuthenRepository;
 import com.BE.repository.WalletRepository;
-import com.BE.repository.WalletTransactionRepository;
 import com.BE.service.interfaceServices.IWalletService;
 import com.BE.utils.AccountUtils;
 import jakarta.transaction.Transactional;
@@ -95,4 +95,38 @@ public class WalletServiceImpl implements IWalletService {
 
         return walletMapper.toResponse(txn);
     }
+
+
+    @Override
+    @Transactional
+    public WalletResponse deduct(WalletTokenRequest request) {
+        UUID userId = request.getUserId();
+        Integer amount = request.getAmount();
+
+        User user = authenRepository.findById(userId).orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+        Wallet wallet = user.getWallet();
+
+        if (wallet.getBalance() < amount) {
+            throw new IllegalStateException("Không đủ token trong ví");
+        }
+
+        wallet.setBalance(wallet.getBalance() - amount);
+        wallet = walletRepository.save(wallet);
+
+        return walletMapper.toResponse(wallet);
+    }
+
+    @Override
+    public boolean hasSufficientToken(WalletTokenRequest request) {
+        UUID userId = request.getUserId();
+        int amount = request.getAmount();
+
+        if (amount <= 0) return true;
+
+        User user = authenRepository.findById(userId).orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+        Wallet wallet = user.getWallet();
+        return wallet.getBalance() >= amount;
+    }
+
+
 }
