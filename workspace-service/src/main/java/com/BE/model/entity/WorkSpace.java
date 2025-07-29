@@ -28,9 +28,6 @@ public class WorkSpace {
     @JoinColumn(name = "academic_year_id")
     private AcademicYear academicYear;
 
-    @Column(name = "user_id", nullable = false)
-    private UUID userId;
-
 
     @CreationTimestamp
     String createdAt;

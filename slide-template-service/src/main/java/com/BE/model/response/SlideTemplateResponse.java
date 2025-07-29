@@ -13,7 +13,7 @@ import java.util.Map;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class SlideTemplateResponse {
-    long id;
+    Long id;
     String name;
     String description;
     StatusEnum status;
