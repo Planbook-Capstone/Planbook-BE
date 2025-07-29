@@ -22,7 +22,7 @@ import java.util.Map;
 public class SlideTemplate {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    long id;
+    Long id;
 
     @Column(nullable = false)
     String name;

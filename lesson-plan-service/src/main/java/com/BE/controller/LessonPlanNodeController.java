@@ -32,7 +32,7 @@ public class LessonPlanNodeController {
     @Autowired
     ResponseHandler responseHandler;
 
-    @GetMapping("/lesson-nodes/{lessonPlanId}/tree")
+    @GetMapping("/lesson-nodes/{lessonPlanTemplateId}/tree")
     @Operation(summary = "Lấy các root nodes của giáo án",
                description = "Trả về các root nodes (các bước chính) của giáo án, không bao gồm children")
     @ApiResponses(value = {
@@ -42,8 +42,8 @@ public class LessonPlanNodeController {
             @ApiResponse(responseCode = "404", description = "Không tìm thấy giáo án"),
             @ApiResponse(responseCode = "403", description = "Không có quyền truy cập")
     })
-    public ResponseEntity getLessonTree(@PathVariable Long lessonPlanId) {
-        List<LessonPlanNodeDTO> rootNodes = lessonPlanNodeService.getLessonTree(lessonPlanId);
+    public ResponseEntity getLessonTree(@PathVariable Long lessonPlanTemplateId) {
+        List<LessonPlanNodeDTO> rootNodes = lessonPlanNodeService.getLessonTree(lessonPlanTemplateId);
         return responseHandler.response(200, "Lấy root nodes thành công!", rootNodes);
     }
 

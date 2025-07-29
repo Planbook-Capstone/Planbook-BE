@@ -11,7 +11,7 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class SlidePlaceholderResponse {
-    long id;
+    Long id;
     PlaceholderTypeEnum type;
     String name;
     String description;

@@ -13,10 +13,10 @@ public interface LessonPlanNodeService {
 
     /**
      * Get only root nodes for a lesson plan (without children populated)
-     * @param lessonPlanId ID of the lesson plan
+     * @param lessonPlanTemplateId ID of the lesson plan
      * @return List of root nodes only, sorted by orderIndex
      */
-    List<LessonPlanNodeDTO> getLessonTree(Long lessonPlanId);
+    List<LessonPlanNodeDTO> getLessonTree(Long lessonPlanTemplateId);
 
     /**
      * Get all children of a specific node with full recursive tree structure

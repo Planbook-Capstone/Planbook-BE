@@ -20,7 +20,7 @@ import java.time.LocalDateTime;
 public class SlidePlaceholder {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    long id;
+    Long id;
 
     @Column(nullable = false, unique = true)
     @Enumerated(EnumType.STRING)
