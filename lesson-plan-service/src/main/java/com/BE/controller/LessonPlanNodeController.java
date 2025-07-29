@@ -156,7 +156,7 @@ public class LessonPlanNodeController {
         return responseHandler.response(200, "Xoá node giáo án thành công!", null);
     }
 
-    @GetMapping("/admin/lesson-nodes/{lessonPlanId}/all-nodes")
+    @GetMapping("/admin/lesson-nodes/{lessonPlanTemplateId}/all-nodes")
     @Operation(
             summary = "Lấy tất cả nodes của giáo án (bao gồm cả inactive) - Admin only",
             description = "Trả về tất cả nodes của giáo án với cấu trúc phân cấp đầy đủ, bao gồm cả các node đã bị xóa (inactive). Chỉ dành cho admin."
