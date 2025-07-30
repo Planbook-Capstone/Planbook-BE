@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class WorkSpaceResponse {
-    private UUID id;
+    private Long id;
     private AcademicYearResponse academicYear;
     private UUID userId;
     private String createdAt;
