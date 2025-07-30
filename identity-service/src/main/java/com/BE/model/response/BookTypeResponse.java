@@ -1,6 +1,7 @@
 package com.BE.model.response;
 
 import com.BE.enums.StatusEnum;
+import com.BE.enums.ToolCodeEnum;
 import com.BE.enums.ToolTypeEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AccessLevel;
@@ -64,6 +65,13 @@ public class BookTypeResponse {
             format = "int32"
     )
     Integer tokenCostPerQuery;
+
+    @Schema(
+            description = "Mã định danh duy nhất của công cụ hỗ trợ. Đây là giá trị enum thể hiện mã code của từng loại công cụ trong hệ thống.",
+            type = "string",
+            example = "LESSON_PLAN, SLIDE_GENERATOR, EXAM_CREATOR" // Ví dụ một giá trị cụ thể trong ToolCodeEnum
+    )
+    ToolCodeEnum code;
 
     @Schema(
             description = "Loại công cụ hỗ trợ. Có thể là 'EXTERNAL' hoặc 'INTERNAL'.", // ĐÃ THAY ĐỔI MÔ TẢ
