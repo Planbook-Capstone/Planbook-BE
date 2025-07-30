@@ -24,8 +24,6 @@ import java.util.UUID;
 @Tag(name = "AcademicYears", description = "API quản lý năm học")
 @RequestMapping("/api/academic-years")
 @SecurityRequirement(name = "api")
-@CrossOrigin("*")
-
 public class AcademicYearController {
     @Autowired
     private IAcademicYearService academicYearService;

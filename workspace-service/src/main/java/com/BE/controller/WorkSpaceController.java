@@ -25,7 +25,6 @@ import java.util.UUID;
 @Tag(name = "WorkSpaces", description = "API quản lí Workspaces")
 @RequestMapping("/api/workspaces")
 @SecurityRequirement(name = "api")
-@CrossOrigin("*")
 public class WorkSpaceController {
     @Autowired
     private IWorkSpaceService workSpaceService;
@@ -100,12 +99,12 @@ public class WorkSpaceController {
         return responseHandler.response(200, "Lấy danh sách workspace phân trang thành công!", workSpaceService.getAll(pageable));
     }
 
-    @Operation(summary = "Lấy danh sách workspace của account hiện tại trong năm học đang hoạt động.", description = "Lấy danh sách workspace của account hiện tại trong năm học đang hoạt động.")
-    @ApiResponse(responseCode = "200", description = "Danh sách workspace của account hiện tại trong năm học active.")
-    @GetMapping("/my")
-    public ResponseEntity getMyWorkspaces() {
-        var filtered = workSpaceService.getCurrentUserWorkspacesInActiveYear();
-        return responseHandler.response(200, "Lấy workspace của tài khoản hiện tại trong năm học đang hoạt động thành công!",
-                filtered);
-    }
+//    @Operation(summary = "Lấy danh sách workspace của account hiện tại trong năm học đang hoạt động.", description = "Lấy danh sách workspace của account hiện tại trong năm học đang hoạt động.")
+//    @ApiResponse(responseCode = "200", description = "Danh sách workspace của account hiện tại trong năm học active.")
+//    @GetMapping("/my")
+//    public ResponseEntity getMyWorkspaces() {
+//        var filtered = workSpaceService.getCurrentUserWorkspacesInActiveYear();
+//        return responseHandler.response(200, "Lấy workspace của tài khoản hiện tại trong năm học đang hoạt động thành công!",
+//                filtered);
+//    }
 }

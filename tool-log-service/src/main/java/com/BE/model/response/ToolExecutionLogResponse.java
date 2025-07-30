@@ -1,6 +1,7 @@
 package com.BE.model.response;
 
 import com.BE.enums.ExecutionStatus;
+import com.BE.enums.ToolCodeEnum;
 import com.BE.enums.ToolTypeEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Max;
@@ -10,6 +11,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -31,11 +33,16 @@ public class ToolExecutionLogResponse {
     @Schema(description = "ID công cụ được gọi", example = "2")
     UUID toolId;
 
-    @Schema(description = "ID của bài được gọi", example = "3")
-    Long lessonId;
+    @Schema(  description = "Danh sách ID của các bài học được gọi",
+            example = "[123, 456, 789]")
+    List<Long> lessonIds;
 
-    @Schema(description = "Tên của công cụ", example = "Lesson Plan Generator")
-    String toolName;
+    Long workspaceId;
+
+    Long resultId;
+
+    @Schema(description = "Mã định danh cố định của tool, dùng để mapping với FastAPI", example = "LESSON_PLAN, SLIDE_GENERATOR, EXAM_CREATOR")
+    ToolCodeEnum code;
 
     ExecutionStatus status;
 

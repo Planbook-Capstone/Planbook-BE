@@ -1,5 +1,6 @@
 package com.BE.service.implementServices;
 
+import com.BE.enums.ToolCodeEnum;
 import com.BE.enums.ToolStatusEnum;
 import com.BE.enums.ToolTypeEnum;
 import com.BE.exception.exceptions.WalletTokenException;
@@ -18,7 +19,9 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -50,14 +53,42 @@ public class ToolAggregatorServiceImpl implements IToolAggregatorService {
         DataResponseDTO<BookTypeResponse> internalToolConfigResponse = toolInternalServiceClient.getBookTypeById(request.getToolId());
         checkToken(internalToolConfigResponse.getData().getTokenCostPerQuery());
 
+        List<Long> lessons = new ArrayList<>();
+
+        if (ToolCodeEnum.EXAM_CREATOR.equals(internalToolConfigResponse.getData().getCode())) {
+            Object matrixObj = request.getInput().get("matrix");
+            if (matrixObj instanceof List<?> matrixList) {
+                for (Object item : matrixList) {
+                    if (item instanceof Map<?, ?> lessonEntry) {
+                        Object lessonIdRaw = lessonEntry.get("lessonId");
+                        if (lessonIdRaw != null) {
+                            try {
+                                Long lessonId = Long.valueOf(lessonIdRaw.toString());
+                                lessons.add(lessonId);
+                            } catch (NumberFormatException e) {
+                                throw new IllegalArgumentException("lessonId không hợp lệ trong matrix: " + lessonIdRaw);
+                            }
+                        }
+                    }
+                }
+            } else {
+                throw new IllegalArgumentException("Trường 'matrix' trong input phải là một danh sách");
+            }
+        } else {
+            lessons.add(request.getLesson_id());
+        }
+
+
         ToolExecutionLogRequest toolExecutionLogRequest = ToolExecutionLogRequest.builder()
                 .userId(accountUtils.getCurrentUserId())
                 .toolId(request.getToolId())
                 .toolType(request.getToolType())
-                .toolName(internalToolConfigResponse.getData().getName())
+                .code(internalToolConfigResponse.getData().getCode())
                 .input(request.getInput())
                 .bookId(request.getBook_id())
-                .lessonId(request.getLesson_id())
+                .lessonIds(lessons)
+                .workspaceId(request.getWorkspaceId())
+                .resultId(request.getResultId())
                 .tokenUsed(internalToolConfigResponse.getData().getTokenCostPerQuery())
                 .build();
         DataResponseDTO<ToolExecutionLogResponse> response = toolLogServiceClient.toolExecutionLog(toolExecutionLogRequest);
@@ -127,13 +158,16 @@ public class ToolAggregatorServiceImpl implements IToolAggregatorService {
     public Map<String, Object> executeExternalTool(ToolExecuteRequest request) {
         DataResponseDTO<ExternalToolConfigResponse> externalToolConfigResponse = toolExternalServiceClient.getById(request.getToolId());
         checkToken(externalToolConfigResponse.getData().getTokenCostPerQuery());
+        List<Long> lessons = new ArrayList<>();
+        lessons.add(request.getLesson_id());
         ToolExecutionLogRequest toolExecutionLogRequest = ToolExecutionLogRequest.builder()
                 .userId(accountUtils.getCurrentUserId())
                 .toolId(request.getToolId())
                 .toolType(request.getToolType())
-                .toolName(externalToolConfigResponse.getData().getName())
+//                .code(externalToolConfigResponse.getData().getCode())
+                .code(ToolCodeEnum.QUIZ_GAME)
                 .input(request.getInput())
-                .lessonId(request.getLesson_id())
+                .lessonIds(lessons)
                 .tokenUsed(externalToolConfigResponse.getData().getTokenCostPerQuery())
                 .build();
 

@@ -56,9 +56,8 @@ public class WorkSpaceServiceImpl implements IWorkSpaceService {
     @Override
     public WorkSpaceResponse create(WorkSpaceRequest request) {
         WorkSpace ws = new WorkSpace();
-        ws.setName(request.getName());
-        ws.setCreatedAt(dateNowUtils.dateNow());
-        ws.setUpdatedAt(dateNowUtils.dateNow());
+//        ws.setName(request.getName());
+
         AcademicYear ay = academicYearRepository.findById(request.getAcademicYearId())
                 .orElseThrow(() -> new BadRequestException("Không tìm thấy năm học"));
 //        User user = authenRepository.findById(request.getUserId())
@@ -72,8 +71,7 @@ public class WorkSpaceServiceImpl implements IWorkSpaceService {
     public WorkSpaceResponse update(UUID id, WorkSpaceRequest request) {
         WorkSpace ws = workSpaceRepository.findById(id)
                 .orElseThrow(() -> new BadRequestException("Không tìm thấy không gian làm việc"));
-        ws.setName(request.getName());
-        ws.setUpdatedAt(dateNowUtils.dateNow());
+//        ws.setName(request.getName());
         AcademicYear ay = academicYearRepository.findById(request.getAcademicYearId())
                 .orElseThrow(() -> new BadRequestException("Không tìm thấy năm học"));
 //        User user = authenRepository.findById(request.getUserId())

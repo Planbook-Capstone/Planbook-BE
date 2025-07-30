@@ -1,17 +1,18 @@
 package com.BE.model.entity;
 
-
-import com.BE.config.MapToJsonConverter;
+import com.BE.convert.LongListToJsonConverter;
+import com.BE.convert.MapToJsonConverter;
 import com.BE.enums.ExecutionStatus;
+import com.BE.enums.ToolCodeEnum;
 import com.BE.enums.ToolTypeEnum;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import org.hibernate.annotations.UuidGenerator;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -35,10 +36,18 @@ public class ToolExecutionLog {
     @Column(nullable = false)
     UUID toolId; // Có thể là ID của ExternalToolConfig hoặc BookType
 
-    Long lessonId;
+    @Column(columnDefinition = "json")
+    @Convert(converter = LongListToJsonConverter.class)
+    List<Long> lessonIds;
 
     @Column(nullable = false)
-    String toolName;
+    Long workspaceId;
+
+    Long resultId;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    ToolCodeEnum code;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

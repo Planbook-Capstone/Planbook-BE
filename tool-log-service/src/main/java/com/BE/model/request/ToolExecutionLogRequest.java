@@ -1,6 +1,8 @@
 package com.BE.model.request;
 
+import com.BE.enums.ToolCodeEnum;
 import com.BE.enums.ToolTypeEnum;
+import com.BE.exception.EnumValidator;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -9,6 +11,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -33,13 +36,24 @@ public class ToolExecutionLogRequest {
     @Schema(description = "ID của sách được gọi", example = "456", required = true)
     Long bookId;
 
-    @NotNull(message = "ID bài học không được để trống")
-    @Schema(description = "ID của bài được gọi", example = "456", required = true)
-    Long lessonId;
+    @Schema(
+            description = "Danh sách ID của các bài học được gọi",
+            example = "[123, 456, 789]",
+            required = true
+    )
+    @NotNull(message = "Danh sách ID bài học không được để trống")
+    List<Long> lessonIds;
 
-    @NotBlank(message = "Tên công cụ không được để trống")
-    @Schema(description = "Tên của công cụ", example = "Lesson Plan Generator")
-    String toolName;
+    @Schema(description = "WorkspaceId", example = "456", required = true)
+    @NotNull(message = "WorkspaceId không được để trống")
+    Long workspaceId;
+
+    Long resultId;
+
+    @NotNull(message = "Mã tool không được để trống")
+    @EnumValidator(enumClass = ToolCodeEnum.class, message = "Code không hợp lệ")
+    @Schema(description = "Mã định danh cố định của tool, dùng để mapping với FastAPI", example = "LESSON_PLAN, SLIDE_GENERATOR, EXAM_CREATOR", required = true)
+    ToolCodeEnum code;
 
     @NotNull(message = "Loại công cụ không được để trống")
     @Schema(description = "Loại công cụ", example = "EXTERNAL", required = true)
