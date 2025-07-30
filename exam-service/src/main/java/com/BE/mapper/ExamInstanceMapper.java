@@ -27,6 +27,7 @@ public interface ExamInstanceMapper {
     @Mapping(target = "statusChangedAt", ignore = true)
     @Mapping(target = "statusChangeReason", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "submissions", ignore = true)
     ExamInstance toEntity(CreateExamInstanceRequest request, ExamTemplate template);
 
@@ -51,6 +52,7 @@ public interface ExamInstanceMapper {
     @Mapping(target = "statusChangedAt", ignore = true)
     @Mapping(target = "statusChangeReason", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "submissions", ignore = true)
     void updateEntity(@MappingTarget ExamInstance entity, UpdateExamInstanceRequest request);
 

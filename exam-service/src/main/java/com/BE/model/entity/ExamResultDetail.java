@@ -1,5 +1,6 @@
 package com.BE.model.entity;
 
+import com.BE.config.TimestampEntityListener;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -7,10 +8,12 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.GenericGenerator;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
 @Table(name = "exam_result_details")
+@EntityListeners(TimestampEntityListener.class)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -35,7 +38,13 @@ public class ExamResultDetail {
     
     @Column(name = "correct_answer", nullable = false)
     private String correctAnswer;
-    
+
     @Column(name = "is_correct", nullable = false)
     private Boolean isCorrect;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 }
