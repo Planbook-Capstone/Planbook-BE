@@ -47,8 +47,7 @@ public class CreateToolResultRequest {
 
     @Size(max = 1000, message = "description không được vượt quá 1000 ký tự")
     private String description;
-
-    @NotNull(message = "data không được để trống")
+    
     private Object data;
 
     @NotNull(message = "status không được để trống")
