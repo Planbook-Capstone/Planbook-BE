@@ -183,7 +183,7 @@ public class ToolExecutionLogServiceImpl implements IToolExecutionLogService {
                 request.setLessonIds(log.getLessonIds());
                 request.setName("Auto Result từ ToolLog " + log.getId()); // Có thể tùy biến theo use-case
                 request.setDescription("Tự động tạo từ tool execution log");
-                request.setData(output.getOutput());
+//                request.setData(output.getOutput());
                 request.setStatus(ToolResultStatus.DRAFT);
 
                 try {
