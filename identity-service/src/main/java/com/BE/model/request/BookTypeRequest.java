@@ -1,5 +1,7 @@
 package com.BE.model.request;
 
+import com.BE.enums.ToolCodeEnum;
+import com.BE.exception.EnumValidator;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -44,6 +46,12 @@ public class BookTypeRequest {
             type = "string"
     )
     String href;
+
+
+    @NotNull(message = "Mã tool không được để trống")
+    @EnumValidator(enumClass = ToolCodeEnum.class, message = "Code không hợp lệ")
+    @Schema(description = "Mã định danh cố định của tool, dùng để mapping với FastAPI", example = "LESSON_PLAN, SLIDE_GENERATOR, EXAM_CREATOR", required = true)
+    ToolCodeEnum code;
 
     @NotNull(message = "Priority cannot be null")
     @Min(value = 1, message = "Priority must be greater than or equal to 1") // Đảm bảo giá trị ưu tiên là số nguyên dương

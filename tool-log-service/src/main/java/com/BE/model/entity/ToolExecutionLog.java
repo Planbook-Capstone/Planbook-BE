@@ -1,9 +1,8 @@
 package com.BE.model.entity;
-
-
 import com.BE.convert.LongListToJsonConverter;
 import com.BE.convert.MapToJsonConverter;
 import com.BE.enums.ExecutionStatus;
+import com.BE.enums.ToolCodeEnum;
 import com.BE.enums.ToolTypeEnum;
 import jakarta.persistence.*;
 import lombok.*;
@@ -41,7 +40,13 @@ public class ToolExecutionLog {
     List<Long> lessonIds;
 
     @Column(nullable = false)
-    String toolName;
+    Long workspaceId;
+
+    Long resultId;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    ToolCodeEnum code;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

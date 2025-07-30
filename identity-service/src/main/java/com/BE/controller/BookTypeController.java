@@ -48,24 +48,43 @@ public class BookTypeController {
                             schema = @Schema(implementation = BookTypeRequest.class),
                             examples = {
                                     @ExampleObject(
-                                            name = "createGradingToolExample",
-                                            summary = "Ví dụ tạo Loại Công cụ: Chấm điểm",
-                                            value = "{\n  \"name\": \"Chấm điểm\",\n  \"description\": \"Công cụ giúp giảng viên quản lý và chấm điểm bài tập, bài kiểm tra của sinh viên.\",\n \"priority\": 1,\n \"href\": \"example\",\n  \"icon\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==\",\n  \"tokenCostPerQuery\": 5\n}" // ĐÃ THÊM tokenCostPerQuery
-                                    ),
-                                    @ExampleObject(
                                             name = "createLessonPlanToolExample",
                                             summary = "Ví dụ tạo Loại Công cụ: Tạo giáo án",
-                                            value = "{\n  \"name\": \"Tạo giáo án\",\n  \"description\": \"Công cụ hỗ trợ xây dựng và quản lý các giáo án điện tử.\",\n \"priority\": 1,\n  \"icon\": null,\n  \"tokenCostPerQuery\": 10\n}" // ĐÃ THÊM tokenCostPerQuery
+                                            value = "{\n" +
+                                                    "  \"name\": \"Tạo giáo án\",\n" +
+                                                    "  \"description\": \"Công cụ hỗ trợ xây dựng và quản lý các giáo án điện tử.\",\n" +
+                                                    "  \"priority\": 1,\n" +
+                                                    "  \"href\": \"example\",\n" +
+                                                    "  \"icon\": null,\n" +
+                                                    "  \"tokenCostPerQuery\": 10,\n" +
+                                                    "  \"code\": \"LESSON_PLAN\"\n" +
+                                                    "}"
                                     ),
                                     @ExampleObject(
                                             name = "createSlideToolExample",
                                             summary = "Ví dụ tạo Loại Công cụ: Tạo slide bài giảng",
-                                            value = "{\n  \"name\": \"Tạo slide bài giảng\",\n  \"description\": \"Công cụ giúp thiết kế và trình bày slide bài giảng một cách chuyên nghiệp.\",\n \"priority\": 1,\n  \"icon\": null,\n  \"tokenCostPerQuery\": 15\n}" // ĐÃ THÊM tokenCostPerQuery
+                                            value = "{\n" +
+                                                    "  \"name\": \"Tạo slide bài giảng\",\n" +
+                                                    "  \"description\": \"Công cụ giúp thiết kế và trình bày slide bài giảng một cách chuyên nghiệp.\",\n" +
+                                                    "  \"priority\": 1,\n" +
+                                                    "  \"href\": \"example\",\n" +
+                                                    "  \"icon\": null,\n" +
+                                                    "  \"tokenCostPerQuery\": 15,\n" +
+                                                    "  \"code\": \"SLIDE_GENERATOR\"\n" +
+                                                    "}"
                                     ),
                                     @ExampleObject(
                                             name = "createExamToolExample",
                                             summary = "Ví dụ tạo Loại Công cụ: Tạo đề thi",
-                                            value = "{\n  \"name\": \"Tạo đề thi\",\n  \"description\": \"Công cụ hỗ trợ tạo và quản lý các đề thi trắc nghiệm, tự luận.\",\n \"priority\": 1,\n  \"icon\": null,\n  \"tokenCostPerQuery\": 20\n}" // ĐÃ THÊM tokenCostPerQuery
+                                            value = "{\n" +
+                                                    "  \"name\": \"Tạo đề thi\",\n" +
+                                                    "  \"description\": \"Công cụ hỗ trợ tạo và quản lý các đề thi trắc nghiệm, tự luận.\",\n" +
+                                                    "  \"priority\": 1,\n" +
+                                                    "  \"href\": \"example\",\n" +
+                                                    "  \"icon\": null,\n" +
+                                                    "  \"tokenCostPerQuery\": 20,\n" +
+                                                    "  \"code\": \"EXAM_CREATOR\"\n" +
+                                                    "}"
                                     )
                             }
                     )
@@ -157,14 +176,43 @@ public class BookTypeController {
                             schema = @Schema(implementation = BookTypeRequest.class),
                             examples = {
                                     @ExampleObject(
-                                            name = "updateGradingToolExample", // ĐÃ THAY ĐỔI TÊN EXAMPLE
-                                            summary = "Ví dụ cập nhật công cụ 'Chấm điểm' (cả token)",
-                                            value = "{\n  \"name\": \"Chấm điểm (Đã nâng cấp)\",\n  \"description\": \"Công cụ giúp giảng viên quản lý và chấm điểm bài tập, bài kiểm tra của sinh viên, với nhiều tính năng mới.\",\n \"priority\": 1,\n  \"icon\": null,\n  \"tokenCostPerQuery\": 7\n}" // ĐÃ THÊM tokenCostPerQuery và sửa giá trị
+                                            name = "createLessonPlanToolExample",
+                                            summary = "Ví dụ tạo Loại Công cụ: Tạo giáo án",
+                                            value = "{\n" +
+                                                    "  \"name\": \"Tạo giáo án\",\n" +
+                                                    "  \"description\": \"Công cụ hỗ trợ xây dựng và quản lý các giáo án điện tử.\",\n" +
+                                                    "  \"priority\": 1,\n" +
+                                                    "  \"href\": \"example\",\n" +
+                                                    "  \"icon\": null,\n" +
+                                                    "  \"tokenCostPerQuery\": 10,\n" +
+                                                    "  \"code\": \"LESSON_PLAN\"\n" +
+                                                    "}"
                                     ),
                                     @ExampleObject(
-                                            name = "updateLessonPlanToolExample", // ĐÃ THAY ĐỔI TÊN EXAMPLE
-                                            summary = "Ví dụ cập nhật công cụ 'Tạo giáo án' (cả token)",
-                                            value = "{\n  \"name\": \"Tạo giáo án\",\n  \"description\": \"Công cụ số hóa và quản lý giáo án điện tử toàn diện.\",\n \"priority\": 1,\n  \"icon\": \"data:image/jpeg;base64,.....\",\n  \"tokenCostPerQuery\": 12\n}" // ĐÃ THÊM tokenCostPerQuery và sửa giá trị
+                                            name = "createSlideToolExample",
+                                            summary = "Ví dụ tạo Loại Công cụ: Tạo slide bài giảng",
+                                            value = "{\n" +
+                                                    "  \"name\": \"Tạo slide bài giảng\",\n" +
+                                                    "  \"description\": \"Công cụ giúp thiết kế và trình bày slide bài giảng một cách chuyên nghiệp.\",\n" +
+                                                    "  \"priority\": 1,\n" +
+                                                    "  \"href\": \"example\",\n" +
+                                                    "  \"icon\": null,\n" +
+                                                    "  \"tokenCostPerQuery\": 15,\n" +
+                                                    "  \"code\": \"SLIDE_GENERATOR\"\n" +
+                                                    "}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "createExamToolExample",
+                                            summary = "Ví dụ tạo Loại Công cụ: Tạo đề thi",
+                                            value = "{\n" +
+                                                    "  \"name\": \"Tạo đề thi\",\n" +
+                                                    "  \"description\": \"Công cụ hỗ trợ tạo và quản lý các đề thi trắc nghiệm, tự luận.\",\n" +
+                                                    "  \"priority\": 1,\n" +
+                                                    "  \"href\": \"example\",\n" +
+                                                    "  \"icon\": null,\n" +
+                                                    "  \"tokenCostPerQuery\": 20,\n" +
+                                                    "  \"code\": \"EXAM_CREATOR\"\n" +
+                                                    "}"
                                     )
                             }
                     )

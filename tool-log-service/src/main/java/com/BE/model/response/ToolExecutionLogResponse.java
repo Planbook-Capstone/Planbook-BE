@@ -1,6 +1,7 @@
 package com.BE.model.response;
 
 import com.BE.enums.ExecutionStatus;
+import com.BE.enums.ToolCodeEnum;
 import com.BE.enums.ToolTypeEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Max;
@@ -36,8 +37,12 @@ public class ToolExecutionLogResponse {
             example = "[123, 456, 789]")
     List<Long> lessonIds;
 
-    @Schema(description = "Tên của công cụ", example = "Lesson Plan Generator")
-    String toolName;
+    Long workspaceId;
+
+    Long resultId;
+
+    @Schema(description = "Mã định danh cố định của tool, dùng để mapping với FastAPI", example = "LESSON_PLAN, SLIDE_GENERATOR, EXAM_CREATOR")
+    ToolCodeEnum code;
 
     ExecutionStatus status;
 

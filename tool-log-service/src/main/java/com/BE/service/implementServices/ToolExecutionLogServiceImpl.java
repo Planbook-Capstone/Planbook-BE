@@ -1,14 +1,16 @@
 package com.BE.service.implementServices;
 
-import com.BE.enums.ExecutionStatus;
-import com.BE.enums.ToolTypeEnum;
+import com.BE.enums.*;
 import com.BE.exception.exceptions.NotFoundException;
 import com.BE.feign.IdentityServiceClient;
 import com.BE.feign.WebSocketServiceClient;
+import com.BE.feign.WorkspaceServiceClient;
 import com.BE.mapper.ToolExecutionLogMapper;
 import com.BE.model.entity.ToolExecutionLog;
 import com.BE.model.request.*;
+import com.BE.model.response.DataResponseDTO;
 import com.BE.model.response.ToolExecutionLogResponse;
+import com.BE.model.response.ToolResultResponse;
 import com.BE.repository.ToolExecutionLogRepository;
 import com.BE.service.interfaceServices.IOutboxService;
 import com.BE.service.interfaceServices.IToolExecutionLogService;
@@ -42,6 +44,7 @@ public class ToolExecutionLogServiceImpl implements IToolExecutionLogService {
     final IOutboxService iOutboxService;
     final WebSocketServiceClient webSocketServiceClient;
     final IdentityServiceClient identityServiceClient;
+    final WorkspaceServiceClient workspaceServiceClient;
 
     @Value("${kafka.topic.name.request}")
     String requestTopic;
@@ -66,11 +69,11 @@ public class ToolExecutionLogServiceImpl implements IToolExecutionLogService {
                 // Serialize log response thành JSON
                 Map<String, Object> input = request.getInput();
                 ToolKafkaPayload payload = ToolKafkaPayload.builder()
-                        .type(request.getToolName())
+                        .type(request.getCode().toString())
                         .data(KafkaData.builder()
                                 .user_id(request.getUserId().toString())
                                 .book_id(request.getBookId().toString())
-                                .lesson_id(request.getLessonId().toString())
+                                .lesson_id(request.getLessonIds().get(0).toString())
                                 .tool_log_id(response.getId())
                                 .input(input)
                                 .timestamp(Instant.now().toString())
@@ -79,7 +82,7 @@ public class ToolExecutionLogServiceImpl implements IToolExecutionLogService {
 
                 String jsonToSend = objectMapper.writeValueAsString(payload);
 
-                iOutboxService.saveOutbox(requestTopic, jsonToSend, response.getToolName(), request.getUserId() + ":" + request.getToolId());
+                iOutboxService.saveOutbox(requestTopic, jsonToSend, request.getCode().toString(), request.getUserId() + ":" + request.getToolId());
 
             } catch (JsonProcessingException e) {
                 throw new RuntimeException("Lỗi serialize ToolExecutionLog khi ghi outbox", e);
@@ -171,6 +174,36 @@ public class ToolExecutionLogServiceImpl implements IToolExecutionLogService {
             walletTokenRequest.setAmount(log.getTokenUsed());
             walletTokenRequest.setUserId(log.getUserId());
             identityServiceClient.deduct(walletTokenRequest);
+            if (log.getResultId() == null) {
+                // 1. Tạo request tạo ToolResult từ dữ liệu của log
+                CreateToolResultRequest request = new CreateToolResultRequest();
+                request.setUserId(log.getUserId());
+                request.setWorkspaceId(log.getWorkspaceId());
+                request.setType(convertToToolResultType(log.getCode())); // Mapping Enum nếu cùng tên
+                request.setLessonIds(log.getLessonIds());
+                request.setName("Auto Result từ ToolLog " + log.getId()); // Có thể tùy biến theo use-case
+                request.setDescription("Tự động tạo từ tool execution log");
+                request.setData(output.getOutput());
+                request.setStatus(ToolResultStatus.DRAFT);
+
+                try {
+                    // 2. Gọi Feign để tạo ToolResult
+                    DataResponseDTO<ToolResultResponse> response = workspaceServiceClient.create(request);
+
+                    if (response != null && response.getData() != null) {
+                        // 3. Lưu lại resultId vào log
+                        Long createdResultId = response.getData().getId();
+                        log.setResultId(createdResultId);
+                    } else {
+                        throw new RuntimeException("Tạo ToolResult thất bại: response không hợp lệ");
+                    }
+
+                } catch (Exception e) {
+                    throw new RuntimeException("Gọi tạo ToolResult thất bại: " + e.getMessage(), e);
+                }
+            }
+
+
         }
         // Cập nhật output và status
         log.setOutput(output.getOutput());
@@ -190,7 +223,22 @@ public class ToolExecutionLogServiceImpl implements IToolExecutionLogService {
             sendWebSocket(webSocketMessageRequest);
         }
 
+
     }
+
+
+
+        private ToolResultType convertToToolResultType(ToolCodeEnum code) {
+            if (code == null) return null;
+
+            return switch (code) {
+                case LESSON_PLAN -> ToolResultType.LESSON_PLAN;
+                case SLIDE_GENERATOR -> ToolResultType.SLIDE;
+                case EXAM_CREATOR -> ToolResultType.EXAM;
+                default -> throw new IllegalArgumentException("ToolCodeEnum không map được sang ToolResultType: " + code);
+            };
+        }
+
 
     @Override
     public void sendWebSocket(WebSocketMessageRequest request) {
