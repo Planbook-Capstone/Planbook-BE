@@ -44,6 +44,19 @@ public class ToolExecuteRequest {
     )
     private Long lesson_id;
 
+    @Schema(
+            description = "workspaceId",
+            example = "1",
+            required = true
+    )
+    Long workspaceId;
+
+    @Schema(
+            description = "ID của toolResult",
+            example = "1"
+    )
+    Long resultId;
+
 
     @NotNull(message = "Input không được để trống")
     @Schema(
