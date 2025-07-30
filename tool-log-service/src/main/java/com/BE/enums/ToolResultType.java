@@ -6,15 +6,7 @@ package com.BE.enums;
 public enum ToolResultType {
     LESSON_PLAN("Giáo án"),
     SLIDE("Slide bài giảng"),
-    EXAM("Đề kiểm tra"),
-    QUIZ("Câu hỏi trắc nghiệm"),
-    WORKSHEET("Bài tập"),
-    ASSIGNMENT("Bài tập về nhà"),
-    RUBRIC("Thang đánh giá"),
-    CURRICULUM("Chương trình học"),
-    ACTIVITY("Hoạt động học tập"),
-    ASSESSMENT("Đánh giá"),
-    OTHER("Khác");
+    EXAM("Đề kiểm tra");
 
     private final String displayName;
 

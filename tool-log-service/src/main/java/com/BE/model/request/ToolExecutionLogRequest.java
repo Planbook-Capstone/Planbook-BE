@@ -9,6 +9,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -33,9 +34,13 @@ public class ToolExecutionLogRequest {
     @Schema(description = "ID của sách được gọi", example = "456", required = true)
     Long bookId;
 
-    @NotNull(message = "ID bài học không được để trống")
-    @Schema(description = "ID của bài được gọi", example = "456", required = true)
-    Long lessonId;
+    @Schema(
+            description = "Danh sách ID của các bài học được gọi",
+            example = "[123, 456, 789]",
+            required = true
+    )
+    @NotNull(message = "Danh sách ID bài học không được để trống")
+    List<Long> lessonIds;
 
     @NotBlank(message = "Tên công cụ không được để trống")
     @Schema(description = "Tên của công cụ", example = "Lesson Plan Generator")

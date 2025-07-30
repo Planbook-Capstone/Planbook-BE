@@ -1,6 +1,7 @@
 package com.BE.model.entity;
 
-import com.BE.config.ObjectToJsonConverter;
+import com.BE.convert.LongListToJsonConverter;
+import com.BE.convert.ObjectToJsonConverter;
 import com.BE.enums.ToolResultStatus;
 import com.BE.enums.ToolResultType;
 import jakarta.persistence.*;
@@ -10,6 +11,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -49,6 +51,10 @@ public class ToolResult {
     @Convert(converter = ObjectToJsonConverter.class)
     Object data;
 
+    @Column(columnDefinition = "json")
+    @Convert(converter = LongListToJsonConverter.class)
+    List<Long> lessonIds;
+
     @Enumerated(EnumType.STRING)
     ToolResultStatus status;
 
@@ -58,4 +64,3 @@ public class ToolResult {
     @UpdateTimestamp
     LocalDateTime updatedAt;
 }
-
