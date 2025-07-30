@@ -25,7 +25,6 @@ import java.util.UUID;
 @Tag(name = "WorkSpaces", description = "API quản lí Workspaces")
 @RequestMapping("/api/workspaces")
 @SecurityRequirement(name = "api")
-@CrossOrigin("*")
 public class WorkSpaceController {
     @Autowired
     private IWorkSpaceService workSpaceService;
