@@ -46,13 +46,13 @@ public class WorkSpaceController {
             @ApiResponse(responseCode = "404", description = "Không tìm thấy workspace.")
     })
     @GetMapping("/{id}")
-    public ResponseEntity getById(@PathVariable UUID id) {
+    public ResponseEntity getById(@PathVariable Long id) {
         return responseHandler.response(200, "Lấy workspace theo id thành công!", workSpaceService.getById(id));
     }
 
-    @Operation(summary = "Tạo mới workspace", description = "Tạo mới workspace cho user trong năm học nhất định.", requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Dữ liệu tạo workspace mới", required = true, content = @Content(schema = @Schema(implementation = WorkSpaceRequest.class), examples = @ExampleObject(value = "{\"name\":\"Workspace 2024\",\"academicYearId\":\"uuid-nam-hoc\",\"userId\":\"uuid-user\"}"))))
+    @Operation(summary = "Tạo mới workspace", description = "Tạo mới workspace cho user trong năm học nhất định.", requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Dữ liệu tạo workspace mới", required = true, content = @Content(schema = @Schema(implementation = WorkSpaceRequest.class), examples = @ExampleObject(value = "{\"academicYearId\":\"UUid\"}"))))
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Tạo thành công.", content = @Content(schema = @Schema(implementation = WorkSpaceResponse.class), examples = @ExampleObject(value = "{\"id\":\"uuid\",\"name\":\"Workspace 2024\",\"academicYearId\":\"uuid-nam-hoc\",\"userId\":\"uuid-user\"}"))),
+            @ApiResponse(responseCode = "200", description = "Tạo thành công.", content = @Content(schema = @Schema(implementation = WorkSpaceResponse.class), examples = @ExampleObject(value = "{\"id\":\"long\",\"name\":\"Workspace 2024\",\"academicYearId\":\"uuid-nam-hoc\",\"userId\":\"uuid-user\"}"))),
             @ApiResponse(responseCode = "400", description = "Dữ liệu không hợp lệ hoặc thiếu trường bắt buộc."),
             @ApiResponse(responseCode = "404", description = "Không tìm thấy user hoặc năm học.")
     })
@@ -67,7 +67,7 @@ public class WorkSpaceController {
             @ApiResponse(responseCode = "404", description = "Không tìm thấy workspace, user hoặc năm học.")
     })
     @PutMapping("/{id}")
-    public ResponseEntity update(@PathVariable UUID id, @Valid @RequestBody WorkSpaceRequest request) {
+    public ResponseEntity update(@PathVariable Long id, @Valid @RequestBody WorkSpaceRequest request) {
         return responseHandler.response(200, "Cập nhật workspace thành công!", workSpaceService.update(id, request));
     }
 
@@ -77,7 +77,7 @@ public class WorkSpaceController {
             @ApiResponse(responseCode = "404", description = "Không tìm thấy workspace.")
     })
     @DeleteMapping("/{id}")
-    public ResponseEntity delete(@PathVariable UUID id) {
+    public ResponseEntity delete(@PathVariable Long id) {
         workSpaceService.delete(id);
         return responseHandler.response(200, "Xóa workspace thành công!", 1);
     }

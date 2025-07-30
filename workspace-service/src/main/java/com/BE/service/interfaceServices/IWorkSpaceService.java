@@ -11,13 +11,13 @@ import com.BE.model.entity.WorkSpace;
 public interface IWorkSpaceService {
     List<WorkSpaceResponse> getAll();
 
-    WorkSpaceResponse getById(UUID id);
+    WorkSpaceResponse getById(Long id);
 
     WorkSpaceResponse create(WorkSpaceRequest request);
 
-    WorkSpaceResponse update(UUID id, WorkSpaceRequest request);
+    WorkSpaceResponse update(Long id, WorkSpaceRequest request);
 
-    void delete(UUID id);
+    void delete(Long id);
 
     Page<WorkSpaceResponse> getAll(Pageable pageable);
 

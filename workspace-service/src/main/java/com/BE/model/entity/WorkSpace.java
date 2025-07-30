@@ -19,9 +19,8 @@ import lombok.Setter;
 public class WorkSpace {
 
     @Id
-    @GeneratedValue
-    @UuidGenerator
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    Long id;
 
     @JsonIgnore
     @ManyToOne
