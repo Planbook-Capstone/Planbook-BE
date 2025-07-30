@@ -87,6 +87,8 @@ public class ToolAggregatorServiceImpl implements IToolAggregatorService {
                 .input(request.getInput())
                 .bookId(request.getBook_id())
                 .lessonIds(lessons)
+                .workspaceId(request.getWorkspaceId())
+                .resultId(request.getResultId())
                 .tokenUsed(internalToolConfigResponse.getData().getTokenCostPerQuery())
                 .build();
         DataResponseDTO<ToolExecutionLogResponse> response = toolLogServiceClient.toolExecutionLog(toolExecutionLogRequest);
