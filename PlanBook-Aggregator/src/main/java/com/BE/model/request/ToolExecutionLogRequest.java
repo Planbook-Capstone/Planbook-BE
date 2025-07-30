@@ -1,6 +1,8 @@
 package com.BE.model.request;
 
+import com.BE.enums.ToolCodeEnum;
 import com.BE.enums.ToolTypeEnum;
+import com.BE.exception.EnumValidator;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -42,9 +44,16 @@ public class ToolExecutionLogRequest {
     @NotNull(message = "Danh sách ID bài học không được để trống")
     List<Long> lessonIds;
 
-    @NotBlank(message = "Tên công cụ không được để trống")
-    @Schema(description = "Tên của công cụ", example = "Lesson Plan Generator")
-    String toolName;
+    @Schema(description = "WorkspaceId", example = "456", required = true)
+    @NotNull(message = "WorkspaceId không được để trống")
+    Long workspaceId;
+
+    Long resultId;
+
+    @NotNull(message = "Mã tool không được để trống")
+    @EnumValidator(enumClass = ToolCodeEnum.class, message = "Code không hợp lệ")
+    @Schema(description = "Mã định danh cố định của tool, dùng để mapping với FastAPI", example = "LESSON_PLAN, SLIDE_GENERATOR, EXAM_CREATOR", required = true)
+    ToolCodeEnum code;
 
     @NotNull(message = "Loại công cụ không được để trống")
     @Schema(description = "Loại công cụ", example = "EXTERNAL", required = true)
@@ -61,4 +70,6 @@ public class ToolExecutionLogRequest {
 
     @Schema(description = "Output tool trả về", example = "{\"translated\": \"Hello\"}")
     Map<String, Object> output;
+
+
 }

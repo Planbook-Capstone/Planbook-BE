@@ -1,6 +1,7 @@
 package com.BE.model.entity;
 
 import com.BE.enums.StatusEnum;
+import com.BE.enums.ToolCodeEnum;
 import com.BE.enums.ToolTypeEnum;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -30,6 +31,10 @@ public class BookType {
     String href;
 
     int priority;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, unique = true)
+    ToolCodeEnum code;
 
     @Lob
     @Column(columnDefinition = "LONGTEXT")
