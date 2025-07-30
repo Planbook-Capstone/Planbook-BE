@@ -55,7 +55,10 @@ public class ExamSubmission {
     
     @Column(name = "submitted_at", nullable = false, updatable = false)
     private LocalDateTime submittedAt;
-    
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
     // Relationship with ExamResultDetail
     @OneToMany(mappedBy = "submission", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<ExamResultDetail> resultDetails;

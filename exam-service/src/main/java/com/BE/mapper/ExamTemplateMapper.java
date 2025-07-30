@@ -21,6 +21,7 @@ public interface ExamTemplateMapper {
     @Mapping(target = "createdBy", source = "teacherId")
     @Mapping(target = "version", constant = "1")
     @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "examInstances", ignore = true)
     ExamTemplate toEntity(CreateExamTemplateRequest request, UUID teacherId);
 
@@ -36,6 +37,7 @@ public interface ExamTemplateMapper {
     @Mapping(target = "createdBy", ignore = true)
     @Mapping(target = "version", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "examInstances", ignore = true)
     void updateEntity(@MappingTarget ExamTemplate entity, UpdateExamTemplateRequest request);
 
@@ -46,6 +48,7 @@ public interface ExamTemplateMapper {
     @Mapping(target = "createdBy", source = "teacherId")
     @Mapping(target = "version", constant = "1")
     @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "examInstances", ignore = true)
     @Mapping(target = "name", expression = "java(original.getName() + \" (Copy)\")")
     ExamTemplate cloneEntity(ExamTemplate original, UUID teacherId);

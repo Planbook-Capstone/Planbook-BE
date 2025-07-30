@@ -21,6 +21,8 @@ public interface ExamResultDetailMapper {
     @Mapping(target = "studentAnswer", source = "detailData.studentAnswer")
     @Mapping(target = "correctAnswer", source = "detailData.correctAnswer")
     @Mapping(target = "isCorrect", source = "detailData.isCorrect")
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
     ExamResultDetail toEntity(ExamResultDetailData detailData, ExamSubmission submission);
 
     /**

@@ -29,8 +29,9 @@ public interface ExamSubmissionMapper {
     @Mapping(target = "maxScore", source = "gradingResult.maxScore")
     @Mapping(target = "answersJson", source = "answersJson")
     @Mapping(target = "submittedAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "resultDetails", ignore = true)
-    ExamSubmission toEntity(SubmitExamRequest request, ExamInstance examInstance, 
+    ExamSubmission toEntity(SubmitExamRequest request, ExamInstance examInstance,
                            ExamGradingResult gradingResult, Map<String, Object> answersJson);
 
     /**
