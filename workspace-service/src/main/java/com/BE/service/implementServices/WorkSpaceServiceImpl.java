@@ -57,6 +57,7 @@ public class WorkSpaceServiceImpl implements IWorkSpaceService {
     public WorkSpaceResponse create(WorkSpaceRequest request) {
         WorkSpace ws = new WorkSpace();
 //        ws.setName(request.getName());
+
         AcademicYear ay = academicYearRepository.findById(request.getAcademicYearId())
                 .orElseThrow(() -> new BadRequestException("Không tìm thấy năm học"));
 //        User user = authenRepository.findById(request.getUserId())
