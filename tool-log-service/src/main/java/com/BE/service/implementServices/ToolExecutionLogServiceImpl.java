@@ -211,6 +211,7 @@ public class ToolExecutionLogServiceImpl implements IToolExecutionLogService {
 
 
         log = repository.save(log);
+        output.getOutput().put("result_id", log.getResultId());
 
         if(ToolTypeEnum.INTERNAL.equals(log.getToolType())){
 
