@@ -2,6 +2,7 @@ package com.BE.model.entity;
 
 import com.BE.config.MapToJsonConverter;
 import com.BE.enums.StatusEnum;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -48,6 +49,7 @@ public class SlideTemplate {
     @UpdateTimestamp
     LocalDateTime updatedAt;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "slideTemplate", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     List<SlideDetail> slideDetails;
 
