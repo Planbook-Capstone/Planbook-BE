@@ -9,5 +9,9 @@ public enum PlaceholderTypeEnum {
     SubtitleName,
     SubtitleContent,
     ImageName,
-    ImageContent
+    ImageContent,
+    MainPointName,
+    MainPointContent,
+    SubPointName,
+    SubPointContent
 }
