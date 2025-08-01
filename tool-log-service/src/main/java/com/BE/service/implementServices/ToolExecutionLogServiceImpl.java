@@ -212,7 +212,7 @@ public class ToolExecutionLogServiceImpl implements IToolExecutionLogService {
 
         log = repository.save(log);
         output.getOutput().put("result_id", log.getResultId());
-
+        output.getOutput().put("tool_code", log.getCode());
         if(ToolTypeEnum.INTERNAL.equals(log.getToolType())){
 
             WebSocketMessageRequest webSocketMessageRequest =  WebSocketMessageRequest.builder()
