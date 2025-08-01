@@ -94,7 +94,8 @@ public class KafkaProcessingServiceImpl implements IKafkaProcessingService {
                             "type", "accepted",
                             "tool_log_id", id,
                             "task_id", taskId,
-                            "message", message
+                            "message", message,
+                            "tool_code", toolExecutionLogResponse.getCode()
                     ))
                     .build();
 
@@ -133,7 +134,7 @@ public class KafkaProcessingServiceImpl implements IKafkaProcessingService {
             payload.put("progress", innerData.path("progress").asInt());
             payload.put("status", innerData.path("status").asText());
             payload.put("message", innerData.path("message").asText());
-
+            payload.put("tool_code", toolExecutionLogResponse.getCode());
             if (partialResult != null) {
                 payload.put("partial_result", partialResult);
             }

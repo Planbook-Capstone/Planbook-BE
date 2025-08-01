@@ -246,4 +246,6 @@ public class ToolExecutionLogServiceImpl implements IToolExecutionLogService {
         webSocketServiceClient.pushToClient(request);
     }
 
+
+
 }
