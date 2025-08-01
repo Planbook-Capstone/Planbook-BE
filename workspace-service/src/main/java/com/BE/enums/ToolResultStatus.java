@@ -5,12 +5,8 @@ package com.BE.enums;
  */
 public enum ToolResultStatus {
     DRAFT("Bản nháp"),
-    PUBLISHED("Đã xuất bản"),
     ARCHIVED("Đã lưu trữ"),
-    DELETED("Đã xóa"),
-    IN_REVIEW("Đang xem xét"),
-    APPROVED("Đã phê duyệt"),
-    REJECTED("Đã từ chối");
+    DELETED("Đã xóa");
 
     private final String displayName;
 
