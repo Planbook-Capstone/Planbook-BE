@@ -1,5 +1,6 @@
 package com.BE.feign;
 
+import com.BE.config.FeignConfig;
 import com.BE.model.request.AuthenticationRequest;
 import com.BE.model.request.WalletTokenRequest;
 import com.BE.model.response.AuthenticationResponse;
@@ -12,14 +13,14 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 import java.util.UUID;
 
-@FeignClient(name = "identity-service")
+@FeignClient(name = "identity-service",  configuration = FeignConfig.class)
 public interface IdentityServiceClient {
 
 //    @PostMapping("/auth/login")
 //    AuthenticationResponse login(@RequestBody LoginRequestDTO request);
 
-    @PostMapping("/api/register")
-    DataResponseDTO<AuthenticationResponse> register(@RequestBody AuthenticationRequest request);
+//    @PostMapping("/api/register")
+//    DataResponseDTO<AuthenticationResponse> register(@RequestBody AuthenticationRequest request);
 
     @GetMapping("/api/book-types/{id}")
     DataResponseDTO<BookTypeResponse> getBookTypeById(@PathVariable("id") UUID id);

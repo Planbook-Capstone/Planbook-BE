@@ -1,5 +1,6 @@
 package com.BE.feign;
 
+import com.BE.config.FeignConfig;
 import com.BE.model.request.ToolExecuteExternalRequest;
 import com.BE.model.response.DataResponseDTO;
 import com.BE.model.response.ExternalToolConfigResponse;
@@ -9,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.Map;
 
-@FeignClient(name = "external-caller-service")
+@FeignClient(name = "external-caller-service",  configuration = FeignConfig.class)
 public interface ToolExternalCallerServiceClient {
 
     @PostMapping("/api/partner-tools")
