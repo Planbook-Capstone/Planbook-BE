@@ -1,5 +1,6 @@
 package com.BE.feign;
 
+import com.BE.config.FeignConfig;
 import com.BE.enums.ToolStatusEnum;
 import com.BE.model.request.ToolSearchPageRequest;
 import com.BE.model.response.DataResponseDTO;
@@ -15,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.util.Map;
 import java.util.UUID;
 
-@FeignClient(name = "external-tool-config-service")
+@FeignClient(name = "external-tool-config-service",  configuration = FeignConfig.class)
 public interface ToolExternalServiceClient {
 
     @GetMapping("/api/external-tools/{id}")

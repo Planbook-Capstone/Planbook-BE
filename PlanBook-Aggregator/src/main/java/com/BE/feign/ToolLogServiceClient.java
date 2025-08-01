@@ -1,5 +1,6 @@
 package com.BE.feign;
 
+import com.BE.config.FeignConfig;
 import com.BE.model.request.ToolExecutionLogRequest;
 import com.BE.model.request.ToolLogUpdateRequest;
 import com.BE.model.response.DataResponseDTO;
@@ -9,7 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-@FeignClient(name = "tool-log-service")
+@FeignClient(name = "tool-log-service",  configuration = FeignConfig.class)
 public interface ToolLogServiceClient {
 
     @PostMapping("/api/tool-logs")
