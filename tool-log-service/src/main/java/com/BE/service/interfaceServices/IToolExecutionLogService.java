@@ -1,5 +1,6 @@
 package com.BE.service.interfaceServices;
 
+import com.BE.model.entity.ToolExecutionLog;
 import com.BE.model.request.ToolExecutionLogRequest;
 import com.BE.model.request.ToolExecutionLogSearchRequest;
 import com.BE.model.request.ToolLogUpdateRequest;
@@ -19,5 +20,6 @@ public interface IToolExecutionLogService {
     void updateOutputByLogId(Long toolLogId, ToolLogUpdateRequest output);
 
     void sendWebSocket(WebSocketMessageRequest request);
+
 
 }
