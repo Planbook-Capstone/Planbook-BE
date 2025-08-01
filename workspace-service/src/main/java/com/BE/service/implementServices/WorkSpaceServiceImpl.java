@@ -47,7 +47,7 @@ public class WorkSpaceServiceImpl implements IWorkSpaceService {
     }
 
     @Override
-    public WorkSpaceResponse getById(UUID id) {
+    public WorkSpaceResponse getById(Long id) {
         WorkSpace ws = workSpaceRepository.findById(id)
                 .orElseThrow(() -> new BadRequestException("Không tìm thấy không gian làm việc"));
         return workSpaceMapper.toResponse(ws);
@@ -68,7 +68,7 @@ public class WorkSpaceServiceImpl implements IWorkSpaceService {
     }
 
     @Override
-    public WorkSpaceResponse update(UUID id, WorkSpaceRequest request) {
+    public WorkSpaceResponse update(Long id, WorkSpaceRequest request) {
         WorkSpace ws = workSpaceRepository.findById(id)
                 .orElseThrow(() -> new BadRequestException("Không tìm thấy không gian làm việc"));
 //        ws.setName(request.getName());
@@ -82,7 +82,7 @@ public class WorkSpaceServiceImpl implements IWorkSpaceService {
     }
 
     @Override
-    public void delete(UUID id) {
+    public void delete(Long id) {
         workSpaceRepository.deleteById(id);
     }
 

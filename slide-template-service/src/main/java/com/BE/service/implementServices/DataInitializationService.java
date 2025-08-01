@@ -30,7 +30,8 @@ public class DataInitializationService implements CommandLineRunner {
 
         // Tạo các placeholder mẫu
         createPlaceholder(PlaceholderTypeEnum.LessonName, "Tên bài học", "Tên của bài học được hiển thị trên slide");
-        createPlaceholder(PlaceholderTypeEnum.LessonDescription, "Tóm tắt bài học", "Mô tả ngắn gọn về nội dung bài học");
+        createPlaceholder(PlaceholderTypeEnum.LessonDescription, "Tóm tắt bài học",
+                "Mô tả ngắn gọn về nội dung bài học");
         createPlaceholder(PlaceholderTypeEnum.CreatedDate, "Ngày tạo", "Ngày tạo bài học hoặc slide");
         createPlaceholder(PlaceholderTypeEnum.TitleName, "Tên mục lớn", "Tiêu đề của một phần lớn trong bài học");
         createPlaceholder(PlaceholderTypeEnum.TitleContent, "Nội dung mục lớn", "Nội dung chi tiết của mục lớn");
@@ -38,6 +39,11 @@ public class DataInitializationService implements CommandLineRunner {
         createPlaceholder(PlaceholderTypeEnum.SubtitleContent, "Nội dung mục nhỏ", "Nội dung chi tiết của mục nhỏ");
         createPlaceholder(PlaceholderTypeEnum.ImageName, "Tên hình ảnh", "Tên hoặc tiêu đề của hình ảnh");
         createPlaceholder(PlaceholderTypeEnum.ImageContent, "Nội dung hình ảnh", "Mô tả hoặc chú thích cho hình ảnh");
+        createPlaceholder(PlaceholderTypeEnum.MainPointName, "Tên điểm chính", "Tiêu đề của điểm chính trong slide");
+        createPlaceholder(PlaceholderTypeEnum.MainPointContent, "Nội dung điểm chính",
+                "Nội dung chi tiết của điểm chính");
+        createPlaceholder(PlaceholderTypeEnum.SubPointName, "Tên điểm phụ", "Tiêu đề của điểm phụ thuộc về điểm chính");
+        createPlaceholder(PlaceholderTypeEnum.SubPointContent, "Nội dung điểm phụ", "Nội dung chi tiết của điểm phụ");
     }
 
     private void createPlaceholder(PlaceholderTypeEnum type, String name, String description) {

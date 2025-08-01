@@ -36,4 +36,6 @@ public class AcademicResourceCreateRequest {
 
     @Schema(example = "[1, 2, 3]", description = "List of tag IDs to associate with this resource")
     Set<Long> tagIds;
+
+
 }

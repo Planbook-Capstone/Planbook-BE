@@ -49,6 +49,7 @@ public class ToolExecuteRequest {
             example = "1",
             required = true
     )
+    @NotNull(message = "WorkspaceId không được để trống")
     Long workspaceId;
 
     @Schema(
