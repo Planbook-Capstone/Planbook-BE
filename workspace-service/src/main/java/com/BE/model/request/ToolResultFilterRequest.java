@@ -34,7 +34,7 @@ public class ToolResultFilterRequest {
     private ToolResultType type;
 
     @EnumValidator(enumClass = ToolResultStatus.class, message = "status phải là một trong các giá trị hợp lệ")
-    @Schema(description = "Trạng thái kết quả", example = "DRAFT")
+    @Schema(description = "Trạng thái kết quả", example = "ARCHIVED")
     private ToolResultStatus status;
 
     @Schema(description = "ID của template nếu có", example = "789")
@@ -56,11 +56,11 @@ public class ToolResultFilterRequest {
     private Integer size = 10;
 
     @EnumValidator(enumClass = ToolResultSortBy.class, message = "sortBy phải là một trong các giá trị hợp lệ")
-    @Schema(description = "Trường sắp xếp", example = "createdAt")
+    @Schema(description = "Trường sắp xếp")
     private ToolResultSortBy sortBy = ToolResultSortBy.CREATED_AT;
 
     @EnumValidator(enumClass = SortDirection.class, message = "sortDirection phải là ASC hoặc DESC")
-    @Schema(description = "Hướng sắp xếp (asc/desc)", example = "desc")
+    @Schema(description = "Hướng sắp xếp (asc/desc)")
     private SortDirection sortDirection = SortDirection.DESC;
 
     // === Convenience methods ===
