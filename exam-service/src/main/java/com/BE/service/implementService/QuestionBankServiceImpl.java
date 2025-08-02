@@ -12,11 +12,9 @@ import com.BE.model.response.QuestionBankResponse;
 import com.BE.repository.QuestionBankRepository;
 import com.BE.service.interfaceService.IQuestionBankService;
 import com.BE.utils.AccountUtils;
-import com.BE.utils.QuestionBankUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -31,7 +29,6 @@ public class QuestionBankServiceImpl implements IQuestionBankService {
     private final QuestionBankRepository questionBankRepository;
     private final QuestionBankMapper questionBankMapper;
     private final AccountUtils accountUtils;
-    private final QuestionBankUtils questionBankUtils;
 
     @Override
     public QuestionBankResponse createQuestionBank(CreateQuestionBankRequest request) {
@@ -279,8 +276,6 @@ public class QuestionBankServiceImpl implements IQuestionBankService {
             Long activeQuestions = allQuestionBanks.stream()
                     .filter(qb -> qb.getIsActive() != null && qb.getIsActive())
                     .count();
-            Long totalUsageCount = 0L; // Usage count feature removed
-
             // Group by question type
             Map<QuestionType, Long> questionsByType = allQuestionBanks.stream()
                     .filter(qb -> qb.getIsActive() != null && qb.getIsActive())
@@ -305,13 +300,12 @@ public class QuestionBankServiceImpl implements IQuestionBankService {
                             Collectors.counting()
                     ));
 
-            log.info("Generated statistics for user {}: total={}, active={}, usage={}",
-                    currentUserId, totalQuestions, activeQuestions, totalUsageCount);
+            log.info("Generated statistics for user {}: total={}, active={}",
+                    currentUserId, totalQuestions, activeQuestions);
 
             return new QuestionBankStatistics(
                     totalQuestions,
                     activeQuestions,
-                    totalUsageCount,
                     questionsByType,
                     questionsByDifficulty,
                     questionsByLesson

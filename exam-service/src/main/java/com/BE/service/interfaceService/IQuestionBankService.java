@@ -147,12 +147,7 @@ public interface IQuestionBankService {
 
 
 
-    /**
-     * Generate exam template from selected question banks
-     * @param questionBankIds List of question bank IDs
-     * @return Template in parts-based format
-     */
-    java.util.Map<String, Object> generateExamTemplate(java.util.List<Long> questionBankIds);
+
 
     /**
      * Statistics inner class
@@ -160,7 +155,6 @@ public interface IQuestionBankService {
     class QuestionBankStatistics {
         private Long totalQuestions;
         private Long activeQuestions;
-        private Long totalUsageCount;
         private java.util.Map<QuestionType, Long> questionsByType;
         private java.util.Map<DifficultyLevel, Long> questionsByDifficulty;
         private java.util.Map<Long, Long> questionsByLesson;
@@ -168,13 +162,12 @@ public interface IQuestionBankService {
         // Constructors, getters, setters
         public QuestionBankStatistics() {}
 
-        public QuestionBankStatistics(Long totalQuestions, Long activeQuestions, Long totalUsageCount,
+        public QuestionBankStatistics(Long totalQuestions, Long activeQuestions,
                                     java.util.Map<QuestionType, Long> questionsByType,
                                     java.util.Map<DifficultyLevel, Long> questionsByDifficulty,
                                     java.util.Map<Long, Long> questionsByLesson) {
             this.totalQuestions = totalQuestions;
             this.activeQuestions = activeQuestions;
-            this.totalUsageCount = totalUsageCount;
             this.questionsByType = questionsByType;
             this.questionsByDifficulty = questionsByDifficulty;
             this.questionsByLesson = questionsByLesson;
@@ -186,9 +179,6 @@ public interface IQuestionBankService {
 
         public Long getActiveQuestions() { return activeQuestions; }
         public void setActiveQuestions(Long activeQuestions) { this.activeQuestions = activeQuestions; }
-
-        public Long getTotalUsageCount() { return totalUsageCount; }
-        public void setTotalUsageCount(Long totalUsageCount) { this.totalUsageCount = totalUsageCount; }
 
         public java.util.Map<QuestionType, Long> getQuestionsByType() { return questionsByType; }
         public void setQuestionsByType(java.util.Map<QuestionType, Long> questionsByType) { this.questionsByType = questionsByType; }
