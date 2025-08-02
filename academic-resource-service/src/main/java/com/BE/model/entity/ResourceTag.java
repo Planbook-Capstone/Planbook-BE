@@ -1,4 +1,4 @@
-package com.BE.model;
+package com.BE.model.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

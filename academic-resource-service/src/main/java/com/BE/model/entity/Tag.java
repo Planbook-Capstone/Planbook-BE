@@ -1,5 +1,4 @@
-package com.BE.model;
-
+package com.BE.model.entity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -8,6 +7,7 @@ import lombok.experimental.FieldDefaults;
 import lombok.AccessLevel;
 
 import java.util.Set;
+import java.util.UUID;
 
 @Entity
 @Table(name = "tag")
@@ -27,7 +27,7 @@ public class Tag {
     @Column(name = "description", columnDefinition = "TEXT")
     String description;
 
-    String createdBy;
+    UUID createdBy;
     
     @OneToMany(mappedBy = "tag", cascade = CascadeType.ALL)
     Set<ResourceTag> resourceTags;

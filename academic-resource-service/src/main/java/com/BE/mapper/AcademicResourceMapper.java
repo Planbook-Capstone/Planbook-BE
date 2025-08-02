@@ -1,6 +1,6 @@
 package com.BE.mapper;
 
-import com.BE.model.AcademicResource;
+import com.BE.model.entity.AcademicResource;
 import com.BE.model.request.AcademicResourceCreateRequest;
 import com.BE.model.request.AcademicResourceUpdateRequest;
 import com.BE.model.response.AcademicResourceInternalResponse;

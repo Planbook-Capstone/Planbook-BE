@@ -1,6 +1,6 @@
 package com.BE.repository;
 
-import com.BE.model.ResourceTag;
+import com.BE.model.entity.ResourceTag;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
