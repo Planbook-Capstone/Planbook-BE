@@ -174,58 +174,7 @@ public class QuestionBankController {
         return ResponseEntity.status(HttpStatus.CREATED).body(dataResponse);
     }
 
-    @Operation(
-        summary = "Lấy danh sách tất cả câu hỏi của người dùng hiện tại",
-        description = """
-            Lấy danh sách tất cả câu hỏi trong ngân hàng câu hỏi do người dùng hiện tại tạo ra.
 
-            **Tham số:**
-            - page: Số trang (bắt đầu từ 0, mặc định 0)
-            - size: Số lượng câu hỏi mỗi trang (mặc định 20, nếu = 0 thì lấy tất cả)
-
-            **Kết quả trả về:**
-            - Danh sách câu hỏi được sắp xếp theo thời gian tạo (mới nhất trước)
-            - Chỉ hiển thị câu hỏi đang active (isActive = true)
-            - Bao gồm đầy đủ thông tin: nội dung, metadata, thống kê sử dụng
-
-            **Lưu ý:** Người dùng chỉ có thể xem câu hỏi do chính họ tạo ra.
-            """
-    )
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200",
-                    description = "Lấy danh sách câu hỏi thành công",
-                    content = @Content(mediaType = "application/json",
-                                     schema = @Schema(implementation = DataResponseDTO.class))),
-        @ApiResponse(responseCode = "401",
-                    description = "Chưa đăng nhập hoặc token không hợp lệ",
-                    content = @Content(mediaType = "application/json"))
-    })
-    @GetMapping
-    public ResponseEntity<DataResponseDTO<List<QuestionBankResponse>>> getQuestionBanks(
-            @Parameter(description = "Page number (0-based)", example = "0")
-            @RequestParam(defaultValue = "0") int page,
-            @Parameter(description = "Page size", example = "20")
-            @RequestParam(defaultValue = "20") int size) {
-
-        if (size > 0) {
-            Pageable pageable = PageRequest.of(page, size);
-            Page<QuestionBankResponse> questionBanks = questionBankService.getQuestionBanksByCurrentUser(pageable);
-            DataResponseDTO<List<QuestionBankResponse>> dataResponse = new DataResponseDTO<>(
-                HttpStatus.OK.value(),
-                "Lấy danh sách câu hỏi thành công",
-                questionBanks.getContent()
-            );
-            return ResponseEntity.ok(dataResponse);
-        } else {
-            List<QuestionBankResponse> questionBanks = questionBankService.getQuestionBanksByCurrentUser();
-            DataResponseDTO<List<QuestionBankResponse>> dataResponse = new DataResponseDTO<>(
-                HttpStatus.OK.value(),
-                "Lấy danh sách câu hỏi thành công",
-                questionBanks
-            );
-            return ResponseEntity.ok(dataResponse);
-        }
-    }
 
     @Operation(
         summary = "Lấy thông tin chi tiết một câu hỏi theo ID",
@@ -374,69 +323,7 @@ public class QuestionBankController {
         return ResponseEntity.ok(dataResponse);
     }
 
-    @Operation(
-        summary = "Tìm kiếm câu hỏi theo từ khóa",
-        description = """
-            Tìm kiếm câu hỏi trong ngân hàng câu hỏi dựa trên từ khóa.
 
-            **Phạm vi tìm kiếm:**
-            - title: Tiêu đề câu hỏi
-            - topic: Chủ đề
-            - chapter: Chương
-            - keywords: Từ khóa đã lưu
-
-            **Tham số:**
-            - keyword: Từ khóa tìm kiếm (bắt buộc)
-            - page: Số trang (bắt đầu từ 0, mặc định 0)
-            - size: Số lượng kết quả mỗi trang (mặc định 20, nếu = 0 thì lấy tất cả)
-
-            **Đặc điểm tìm kiếm:**
-            - Không phân biệt hoa thường (case-insensitive)
-            - Tìm kiếm theo pattern LIKE '%keyword%'
-            - Chỉ tìm trong câu hỏi đang active (isActive = true)
-            - Kết quả sắp xếp theo thời gian tạo (mới nhất trước)
-            - Chỉ tìm trong câu hỏi của người dùng hiện tại
-            """
-    )
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200",
-                    description = "Tìm kiếm hoàn tất thành công",
-                    content = @Content(mediaType = "application/json",
-                                     schema = @Schema(implementation = DataResponseDTO.class))),
-        @ApiResponse(responseCode = "401",
-                    description = "Chưa đăng nhập hoặc token không hợp lệ",
-                    content = @Content(mediaType = "application/json"))
-    })
-    @GetMapping("/search")
-    public ResponseEntity<DataResponseDTO<List<QuestionBankResponse>>> searchQuestionBanks(
-            @Parameter(description = "Search keyword", example = "nguyên tử")
-            @RequestParam String keyword,
-            @Parameter(description = "Page number (0-based)", example = "0")
-            @RequestParam(defaultValue = "0") int page,
-            @Parameter(description = "Page size (0 for no pagination)", example = "20")
-            @RequestParam(defaultValue = "20") int size) {
-
-        log.info("Searching question banks with keyword: {}", keyword);
-
-        if (size > 0) {
-            Pageable pageable = PageRequest.of(page, size);
-            Page<QuestionBankResponse> questionBanks = questionBankService.searchQuestionBanks(keyword, pageable);
-            DataResponseDTO<List<QuestionBankResponse>> dataResponse = new DataResponseDTO<>(
-                HttpStatus.OK.value(),
-                "Tìm kiếm câu hỏi thành công",
-                questionBanks.getContent()
-            );
-            return ResponseEntity.ok(dataResponse);
-        } else {
-            List<QuestionBankResponse> questionBanks = questionBankService.searchQuestionBanks(keyword);
-            DataResponseDTO<List<QuestionBankResponse>> dataResponse = new DataResponseDTO<>(
-                HttpStatus.OK.value(),
-                "Tìm kiếm câu hỏi thành công",
-                questionBanks
-            );
-            return ResponseEntity.ok(dataResponse);
-        }
-    }
 
     @Operation(
         summary = "Filter question banks",
@@ -457,7 +344,7 @@ public class QuestionBankController {
         @ApiResponse(responseCode = "200", description = "Filter completed successfully"),
         @ApiResponse(responseCode = "401", description = "Unauthorized")
     })
-    @GetMapping("/filter")
+    @GetMapping("")
     public ResponseEntity<DataResponseDTO<List<QuestionBankResponse>>> filterQuestionBanks(
             @Parameter(description = "Lesson ID", example = "1")
             @RequestParam(required = false) Long lessonId,

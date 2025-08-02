@@ -17,17 +17,7 @@ import java.util.UUID;
 @Repository
 public interface QuestionBankRepository extends JpaRepository<QuestionBank, Long> {
     
-    /**
-     * Find all question banks created by a specific user, ordered by creation date descending
-     */
-    @Query("SELECT qb FROM QuestionBank qb WHERE qb.createdBy = :createdBy AND qb.isActive = true ORDER BY qb.createdAt DESC")
-    List<QuestionBank> findByCreatedByOrderByCreatedAtDesc(@Param("createdBy") UUID createdBy);
-    
-    /**
-     * Find question banks with pagination by creator
-     */
-    @Query("SELECT qb FROM QuestionBank qb WHERE qb.createdBy = :createdBy AND qb.isActive = true ORDER BY qb.createdAt DESC")
-    Page<QuestionBank> findByCreatedByOrderByCreatedAtDesc(@Param("createdBy") UUID createdBy, Pageable pageable);
+
     
     /**
      * Find question banks by creator and lesson ID
@@ -76,25 +66,7 @@ public interface QuestionBankRepository extends JpaRepository<QuestionBank, Long
                                    @Param("difficultyLevel") DifficultyLevel difficultyLevel,
                                    Pageable pageable);
     
-    /**
-     * Search question banks by keyword in explanation or reference source
-     */
-    @Query("SELECT qb FROM QuestionBank qb WHERE qb.createdBy = :createdBy " +
-           "AND qb.isActive = true " +
-           "AND (LOWER(qb.explanation) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
-           "OR LOWER(qb.referenceSource) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
-           "ORDER BY qb.createdAt DESC")
-    List<QuestionBank> searchByKeyword(@Param("createdBy") UUID createdBy, @Param("keyword") String keyword);
 
-    /**
-     * Search question banks by keyword with pagination
-     */
-    @Query("SELECT qb FROM QuestionBank qb WHERE qb.createdBy = :createdBy " +
-           "AND qb.isActive = true " +
-           "AND (LOWER(qb.explanation) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
-           "OR LOWER(qb.referenceSource) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
-           "ORDER BY qb.createdAt DESC")
-    Page<QuestionBank> searchByKeyword(@Param("createdBy") UUID createdBy, @Param("keyword") String keyword, Pageable pageable);
     
     /**
      * Find question bank by ID and creator (for authorization)

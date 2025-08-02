@@ -19,18 +19,7 @@ public interface IQuestionBankService {
      */
     QuestionBankResponse createQuestionBank(CreateQuestionBankRequest request);
 
-    /**
-     * Get all question banks created by the current user
-     * @return List of question bank responses
-     */
-    List<QuestionBankResponse> getQuestionBanksByCurrentUser();
 
-    /**
-     * Get question banks with pagination by current user
-     * @param pageable Pagination information
-     * @return Page of question bank responses
-     */
-    Page<QuestionBankResponse> getQuestionBanksByCurrentUser(Pageable pageable);
 
     /**
      * Get question bank by ID
@@ -120,20 +109,7 @@ public interface IQuestionBankService {
 
 
 
-    /**
-     * Search question banks by keyword
-     * @param keyword The search keyword
-     * @return List of question bank responses
-     */
-    List<QuestionBankResponse> searchQuestionBanks(String keyword);
 
-    /**
-     * Search question banks by keyword with pagination
-     * @param keyword The search keyword
-     * @param pageable Pagination information
-     * @return Page of question bank responses
-     */
-    Page<QuestionBankResponse> searchQuestionBanks(String keyword, Pageable pageable);
 
 
 

@@ -50,34 +50,7 @@ public class QuestionBankServiceImpl implements IQuestionBankService {
         }
     }
 
-    @Override
-    public List<QuestionBankResponse> getQuestionBanksByCurrentUser() {
-        try {
-            UUID currentUserId = accountUtils.getCurrentUserId();
-            List<QuestionBank> questionBanks = questionBankRepository.findByCreatedByOrderByCreatedAtDesc(currentUserId);
-            log.info("Found {} question banks for user {}", questionBanks.size(), currentUserId);
-            return questionBanks.stream()
-                    .map(questionBankMapper::toResponse)
-                    .toList();
-        } catch (Exception e) {
-            log.error("Error getting question banks for current user: {}", e.getMessage(), e);
-            throw new BadRequestException("Lỗi khi lấy danh sách câu hỏi: " + e.getMessage());
-        }
-    }
 
-    @Override
-    public Page<QuestionBankResponse> getQuestionBanksByCurrentUser(Pageable pageable) {
-        try {
-            UUID currentUserId = accountUtils.getCurrentUserId();
-            Page<QuestionBank> questionBanks = questionBankRepository.findByCreatedByOrderByCreatedAtDesc(currentUserId, pageable);
-            log.info("Found {} question banks for user {} (page {}, size {})",
-                    questionBanks.getTotalElements(), currentUserId, pageable.getPageNumber(), pageable.getPageSize());
-            return questionBanks.map(questionBankMapper::toResponse);
-        } catch (Exception e) {
-            log.error("Error getting question banks for current user with pagination: {}", e.getMessage(), e);
-            throw new BadRequestException("Lỗi khi lấy danh sách câu hỏi: " + e.getMessage());
-        }
-    }
 
     @Override
     public QuestionBankResponse getQuestionBankById(Long id) {
@@ -229,35 +202,7 @@ public class QuestionBankServiceImpl implements IQuestionBankService {
         }
     }
 
-    @Override
-    public List<QuestionBankResponse> searchQuestionBanks(String keyword) {
-        try {
-            UUID currentUserId = accountUtils.getCurrentUserId();
-            List<QuestionBank> questionBanks = questionBankRepository.searchByKeyword(currentUserId, keyword);
-            log.info("Found {} question banks for keyword '{}' by user {}", questionBanks.size(), keyword, currentUserId);
-            return questionBanks.stream()
-                    .map(questionBankMapper::toResponse)
-                    .toList();
-        } catch (Exception e) {
-            log.error("Error searching question banks with keyword '{}': {}", keyword, e.getMessage(), e);
-            throw new BadRequestException("Lỗi khi tìm kiếm câu hỏi: " + e.getMessage());
-        }
-    }
 
-    @Override
-    public Page<QuestionBankResponse> searchQuestionBanks(String keyword, Pageable pageable) {
-        try {
-            UUID currentUserId = accountUtils.getCurrentUserId();
-            Page<QuestionBank> questionBanks = questionBankRepository.searchByKeyword(currentUserId, keyword, pageable);
-            log.info("Found {} question banks for keyword '{}' by user {} (page {}, size {})",
-                    questionBanks.getTotalElements(), keyword, currentUserId,
-                    pageable.getPageNumber(), pageable.getPageSize());
-            return questionBanks.map(questionBankMapper::toResponse);
-        } catch (Exception e) {
-            log.error("Error searching question banks with keyword '{}' with pagination: {}", keyword, e.getMessage(), e);
-            throw new BadRequestException("Lỗi khi tìm kiếm câu hỏi: " + e.getMessage());
-        }
-    }
 
 
 
@@ -269,7 +214,7 @@ public class QuestionBankServiceImpl implements IQuestionBankService {
             UUID currentUserId = accountUtils.getCurrentUserId();
 
             // Get all active question banks for current user
-            List<QuestionBank> allQuestionBanks = questionBankRepository.findByCreatedByOrderByCreatedAtDesc(currentUserId);
+            List<QuestionBank> allQuestionBanks = questionBankRepository.findByFilters(currentUserId, null, null, null);
 
             // Calculate basic statistics
             Long totalQuestions = (long) allQuestionBanks.size();
