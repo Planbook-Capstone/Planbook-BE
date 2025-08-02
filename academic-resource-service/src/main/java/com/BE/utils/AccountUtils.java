@@ -14,11 +14,11 @@ import java.util.stream.Collectors;
 public class AccountUtils {
 
 
-    public String getCurrentUserId(){
-        String userId =  SecurityContextHolder.getContext().getAuthentication().getName();
+    public UUID getCurrentUserId(){
+        String userId =  SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
 //        User user = userRepository.findByUsername(userName).orElseThrow();
 
-        return userId;
+        return UUID.fromString(userId);
         }
 
     public List<String> getCurrentUserRoles() {

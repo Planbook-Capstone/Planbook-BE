@@ -1,5 +1,8 @@
 package com.BE.controller;
 
+import com.BE.enums.AcademicResourceEnum;
+import com.BE.enums.SortBy;
+import com.BE.enums.SortDirection;
 import com.BE.model.request.AcademicResourceCreateRequest;
 import com.BE.model.request.AcademicResourceCreateWithFileRequest;
 import com.BE.model.request.AcademicResourceSearchRequest;
@@ -12,6 +15,7 @@ import com.BE.service.interfaceServices.SupabaseStorageService;
 import com.BE.utils.ResponseHandler;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -23,6 +27,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.Set;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/academic-resources")
@@ -112,35 +117,33 @@ public class AcademicResourceController {
         @GetMapping("/search")
         @Operation(summary = "Search academic resources", description = "Search and filter academic resources with pagination")
         public ResponseEntity<Object> searchResources(
-                        @Parameter(description = "Search keyword") @RequestParam(required = false) String keyword,
-                        @Parameter(description = "Filter by type") @RequestParam(required = false) String type,
-                        @Parameter(description = "Filter by tag IDs") @RequestParam(required = false) Set<Long> tagIds,
-                        @Parameter(description = "Page number") @RequestParam(defaultValue = "0") Integer page,
-                        @Parameter(description = "Page size") @RequestParam(defaultValue = "10") Integer size,
-                        @Parameter(description = "Sort field") @RequestParam(defaultValue = "createdAt") String sortBy,
-                        @Parameter(description = "Sort direction") @RequestParam(defaultValue = "desc") String sortDirection) {
-
+                @Parameter(description = "ID của giáo viên tạo") @RequestParam(required = false) UUID createdBy,
+                @Parameter(description = "Từ khóa tìm kiếm") @RequestParam(required = false) String keyword,
+                @Parameter(description = "Loại tài nguyên") @RequestParam(required = false) String type,
+                @Parameter(description = "Danh sách tagId") @RequestParam(required = false) Set<Long> tagIds,
+                @Parameter(description = "Số trang (bắt đầu từ 1)") @RequestParam(defaultValue = "1") Integer page,
+                @Parameter(description = "Kích thước trang") @RequestParam(defaultValue = "10") Integer size,
+                @Parameter(description = "Trường sắp xếp", schema = @Schema(implementation = SortBy.class))
+                @RequestParam(defaultValue = "CREATED_AT") SortBy sortBy,
+                @Parameter(description = "Hướng sắp xếp", schema = @Schema(implementation = SortDirection.class))
+                @RequestParam(defaultValue = "DESC") SortDirection sortDirection,
+                @Parameter(description = "Phạm vi hiển thị", schema = @Schema(implementation = AcademicResourceEnum.class))
+                @RequestParam(required = false) AcademicResourceEnum visibility
+        ) {
                 AcademicResourceSearchRequest searchRequest = new AcademicResourceSearchRequest();
+                searchRequest.setCreatedBy(createdBy);
                 searchRequest.setKeyword(keyword);
                 searchRequest.setType(type);
                 searchRequest.setTagIds(tagIds);
-
                 searchRequest.setPage(page);
                 searchRequest.setSize(size);
                 searchRequest.setSortBy(sortBy);
                 searchRequest.setSortDirection(sortDirection);
+                searchRequest.setVisibility(visibility);
 
-                PagedResponse<AcademicResourceResponse> response = academicResourceService
-                                .searchResources(searchRequest);
+                PagedResponse<AcademicResourceResponse> response = academicResourceService.searchResources(searchRequest);
                 return responseHandler.response(200, "Academic resources retrieved successfully", response);
         }
 
-        @PostMapping("/search")
-        @Operation(summary = "Advanced search academic resources", description = "Advanced search with complex filters using request body")
-        public ResponseEntity<Object> advancedSearchResources(
-                        @Valid @RequestBody AcademicResourceSearchRequest request) {
 
-                PagedResponse<AcademicResourceResponse> response = academicResourceService.searchResources(request);
-                return responseHandler.response(200, "Academic resources retrieved successfully", response);
-        }
 }

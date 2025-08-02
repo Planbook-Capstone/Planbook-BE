@@ -2,7 +2,7 @@ package com.BE.service.implementServices;
 
 import com.BE.exception.AcademicResourceException;
 import com.BE.exception.ResourceNotFoundException;
-import com.BE.model.Tag;
+import com.BE.model.entity.Tag;
 import com.BE.model.request.TagCreateRequest;
 import com.BE.model.response.PagedResponse;
 import com.BE.model.response.TagResponse;

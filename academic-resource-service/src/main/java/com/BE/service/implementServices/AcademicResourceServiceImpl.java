@@ -1,13 +1,13 @@
 package com.BE.service.implementServices;
 
 import com.BE.enums.AcademicResourceEnum;
-import com.BE.enums.RoleEnum;
+
 import com.BE.exception.ResourceNotFoundException;
 import com.BE.exception.exceptions.BadRequestException;
 import com.BE.mapper.AcademicResourceMapper;
-import com.BE.model.AcademicResource;
-import com.BE.model.ResourceTag;
-import com.BE.model.Tag;
+import com.BE.model.entity.AcademicResource;
+import com.BE.model.entity.ResourceTag;
+import com.BE.model.entity.Tag;
 import com.BE.model.request.AcademicResourceCreateRequest;
 import com.BE.model.request.AcademicResourceCreateWithFileRequest;
 import com.BE.model.request.AcademicResourceSearchRequest;
@@ -20,22 +20,25 @@ import com.BE.service.interfaceServices.AcademicResourceService;
 import com.BE.service.interfaceServices.SupabaseStorageService;
 import com.BE.utils.AccountUtils;
 import com.BE.utils.DateNowUtils;
+import com.BE.utils.PageUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -50,24 +53,22 @@ public class AcademicResourceServiceImpl implements AcademicResourceService {
     private final DateNowUtils dateNowUtils;
     private final AccountUtils accountUtils;
     private final AcademicResourceMapper academicResourceMapper;
+    private final PageUtil pageUtil;
 
     @Transactional
     public AcademicResourceResponse createResource(AcademicResourceCreateRequest request) {
 
         // Create academic resource
         AcademicResource resource = new AcademicResource();
+        resource.setLessonId(request.getLessonId());
         resource.setType(request.getType());
         resource.setName(request.getName());
         resource.setDescription(request.getDescription());
         resource.setUrl(request.getUrl());
-        resource.setCreatedAt(dateNowUtils.dateNow());
         resource.setCreatedBy(accountUtils.getCurrentUserId());
         //
-        List<String> roles = accountUtils.getCurrentUserRoles();
-        System.out.println("Current user roles: " + roles);
-        if (roles.contains(RoleEnum.ROLE_ADMIN.name()) || roles.contains(RoleEnum.ROLE_STAFF.name())) {
-            resource.setVisibility(AcademicResourceEnum.EXTERNAL);
-        }
+        resource.setVisibility(AcademicResourceEnum.EXTERNAL);
+
         // Save resource
         resource = academicResourceRepository.save(resource);
 
@@ -83,14 +84,12 @@ public class AcademicResourceServiceImpl implements AcademicResourceService {
     public AcademicResourceInternalResponse createResourceInternal(MultipartFile file){
         FileUploadResponse uploadResponse = null;
         uploadResponse = supabaseStorageService.uploadFile(file);
-        String userId = accountUtils.getCurrentUserId();
-        List<String> roles = accountUtils.getCurrentUserRoles();
+        UUID userId = accountUtils.getCurrentUserId();
         AcademicResource resource = new AcademicResource();
         resource.setName("user_" + userId + "_resource_" + dateNowUtils.getCurrentDateTimeHCM());
         resource.setDescription("Uploaded by user " + userId);
         resource.setVisibility(AcademicResourceEnum.INTERNAL);
         resource.setCreatedBy(userId);
-        resource.setCreatedAt(dateNowUtils.dateNow());
         resource.setUrl(uploadResponse.getFileUrl());
         resource = academicResourceRepository.save(resource);
         return academicResourceMapper.toInternalResponse(resource);
@@ -143,7 +142,6 @@ public class AcademicResourceServiceImpl implements AcademicResourceService {
         if (request.getUrl() != null) {
             resource.setUrl(request.getUrl());
         }
-        resource.setUpdatedAt(dateNowUtils.dateNow());
         // Save resource
         resource = academicResourceRepository.save(resource);
 
@@ -178,52 +176,79 @@ public class AcademicResourceServiceImpl implements AcademicResourceService {
 
     public PagedResponse<AcademicResourceInternalResponse> getResourcesByCreatorId(int page, int size){
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-        String creatorId = accountUtils.getCurrentUserId();
+        UUID creatorId = accountUtils.getCurrentUserId();
         Page<AcademicResource> resourcePage = academicResourceRepository.findAcademicResourceByCreatedBy(creatorId, pageable);
         return convertToInternalPagedResponse(resourcePage);
     }
 
     public PagedResponse<AcademicResourceResponse> searchResources(AcademicResourceSearchRequest request) {
+        pageUtil.checkOffset(request.getPage());
         // Create pageable
-        Sort sort = Sort.by(Sort.Direction.fromString(request.getSortDirection()), request.getSortBy());
-        Pageable pageable = PageRequest.of(request.getPage(), request.getSize(), sort);
+        Sort sort = Sort.by(Sort.Direction.fromString(request.getSortDirection().name()), request.getSortBy().name());
+        Pageable pageable = PageRequest.of(request.getPage() - 1, request.getSize(), sort);
 
-        Page<AcademicResource> resourcePage;
+        Specification<AcademicResource> spec = buildSpecification(request);
+        Page<AcademicResource> resourcePage = academicResourceRepository.findAll(spec, pageable);
 
-        // Perform search based on filters
-        if (hasMultipleFilters(request)) {
-            resourcePage = academicResourceRepository.findByFilters(
-                    request.getKeyword(),
-                    request.getType(),
-                    request.getTagIds(),
-                    pageable);
-        } else if (request.getKeyword() != null && !request.getKeyword().trim().isEmpty()) {
-            resourcePage = academicResourceRepository.findByKeyword(request.getKeyword(), pageable);
-        } else if (request.getType() != null && !request.getType().trim().isEmpty()) {
-            resourcePage = academicResourceRepository.findByTypeIgnoreCase(request.getType(), pageable);
-        } else if (request.getTagIds() != null && !request.getTagIds().isEmpty()) {
-            resourcePage = academicResourceRepository.findByTagIds(request.getTagIds(), pageable);
-        } else {
-            resourcePage = academicResourceRepository.findAll(pageable);
-        }
+        List<AcademicResourceResponse> responses = resourcePage.getContent().stream()
+                .map(this::convertToResponse)
+                .toList();
 
-        return convertToPagedResponse(resourcePage);
+        PagedResponse<AcademicResourceResponse> response = new PagedResponse<>();
+        response.setContent(responses);
+        response.setPage(resourcePage.getNumber() + 1);
+        response.setSize(resourcePage.getSize());
+        response.setTotalElements(resourcePage.getTotalElements());
+        response.setTotalPages(resourcePage.getTotalPages());
+        response.setFirst(resourcePage.isFirst());
+        response.setLast(resourcePage.isLast());
+        response.setHasNext(resourcePage.hasNext());
+        response.setHasPrevious(resourcePage.hasPrevious());
+
+        return response;
+
     }
 
-    private boolean hasMultipleFilters(AcademicResourceSearchRequest request) {
-        int filterCount = 0;
-        if (request.getKeyword() != null && !request.getKeyword().trim().isEmpty())
-            filterCount++;
-        if (request.getType() != null && !request.getType().trim().isEmpty())
-            filterCount++;
-        if (request.getTagIds() != null && !request.getTagIds().isEmpty())
-            filterCount++;
+    public static Specification<AcademicResource> buildSpecification(AcademicResourceSearchRequest request) {
+        return (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
 
-        return filterCount > 1;
+            if (request.getKeyword() != null && !request.getKeyword().isBlank()) {
+                String kw = "%" + request.getKeyword().toLowerCase() + "%";
+                predicates.add(cb.or(
+                        cb.like(cb.lower(root.get("name")), kw),
+                        cb.like(cb.lower(root.get("description")), kw)
+                ));
+            }
+
+            if (request.getType() != null && !request.getType().isBlank()) {
+                predicates.add(cb.equal(root.get("type"), request.getType()));
+            }
+
+            if (request.getLessonId() != null) {
+                predicates.add(cb.equal(root.get("lessonId"), request.getLessonId()));
+            }
+
+            if (request.getCreatedBy() != null) {
+                predicates.add(cb.equal(root.get("createdBy"), request.getCreatedBy()));
+            }
+
+            if (request.getVisibility() != null) {
+                predicates.add(cb.equal(root.get("visibility"), request.getVisibility()));
+            }
+
+            if (request.getTagIds() != null && !request.getTagIds().isEmpty()) {
+                Join<AcademicResource, ResourceTag> tagJoin = root.join("resourceTags", JoinType.INNER);
+                predicates.add(tagJoin.get("tag").get("id").in(request.getTagIds()));
+                query.distinct(true); // tránh trùng do join
+            }
+
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
     }
 
-    @Transactional
-    protected void assignTagsToResource(Long resourceId, Set<Long> tagIds) {
+
+    private void assignTagsToResource(Long resourceId, Set<Long> tagIds) {
         List<Tag> tags = tagRepository.findByIdIn(tagIds);
 
         // Get the resource entity
@@ -240,6 +265,7 @@ public class AcademicResourceServiceImpl implements AcademicResourceService {
 
     private AcademicResourceResponse convertToResponse(AcademicResource resource) {
         AcademicResourceResponse response = new AcademicResourceResponse();
+        response.setLessonId(resource.getLessonId());
         response.setId(resource.getId());
         response.setType(resource.getType());
         response.setName(resource.getName());
@@ -271,24 +297,7 @@ public class AcademicResourceServiceImpl implements AcademicResourceService {
         return response;
     }
 
-    private PagedResponse<AcademicResourceResponse> convertToPagedResponse(Page<AcademicResource> page) {
-        List<AcademicResourceResponse> content = page.getContent().stream()
-                .map(this::convertToResponse)
-                .collect(Collectors.toList());
 
-        PagedResponse<AcademicResourceResponse> response = new PagedResponse<>();
-        response.setContent(content);
-        response.setPage(page.getNumber());
-        response.setSize(page.getSize());
-        response.setTotalElements(page.getTotalElements());
-        response.setTotalPages(page.getTotalPages());
-        response.setFirst(page.isFirst());
-        response.setLast(page.isLast());
-        response.setHasNext(page.hasNext());
-        response.setHasPrevious(page.hasPrevious());
-
-        return response;
-    }
     private PagedResponse<AcademicResourceInternalResponse> convertToInternalPagedResponse(Page<AcademicResource> page) {
         List<AcademicResourceInternalResponse> content = page.getContent().stream()
                 .map(academicResourceMapper::toInternalResponse)

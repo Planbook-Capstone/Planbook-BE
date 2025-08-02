@@ -8,6 +8,7 @@ import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDateTime;
 import java.util.Set;
+import java.util.UUID;
 
 @Data
 @AllArgsConstructor
@@ -16,12 +17,13 @@ import java.util.Set;
 public class AcademicResourceResponse {
     
     Long id;
+    Long lessonId;
     String type;
     String name;
     String description;
     String url;
     String visibility;
-    String createdBy;
+    UUID createdBy;
     String createdAt;
     String updatedAt;
     Set<TagResponse> tags;

@@ -18,6 +18,12 @@ import java.util.Set;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class AcademicResourceCreateRequest {
 
+    @Schema(
+            description = "ID của bài học",
+            example = "1"
+    )
+    Long lessonId;
+
     @Schema(example = "image", description = "Resource type: image, gif, video, webp, iframe")
     @NotBlank(message = "Type is required")
     @Size(max = 20, message = "Type must not exceed 20 characters")
