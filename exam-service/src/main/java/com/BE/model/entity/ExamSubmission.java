@@ -50,7 +50,7 @@ public class ExamSubmission {
     private Float maxScore;
 
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "answers_json", columnDefinition = "JSON", nullable = false)
+    @Column(name = "answers_json", nullable = false)
     private Map<String, Object> answersJson;
     
     @Column(name = "submitted_at", nullable = false, updatable = false)
