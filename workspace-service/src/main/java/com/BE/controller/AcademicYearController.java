@@ -6,6 +6,7 @@ import com.BE.model.response.AcademicYearResponse;
 import com.BE.service.interfaceServices.IAcademicYearService;
 import com.BE.utils.ResponseHandler;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -79,19 +80,31 @@ public class AcademicYearController {
 
     @Operation(
             summary = "Cập nhật trạng thái năm học",
-            description = "Cập nhật trạng thái năm học (ACTIVE, INACTIVE, UPCOMING).\n- Chỉ được phép có 1 năm học ACTIVE tại một thời điểm.\n- Nếu muốn kích hoạt năm mới, phải dừng kích hoạt năm hiện tại trước (chuyển về INACTIVE hoặc UPCOMING).\n- Nếu đã có năm học ACTIVE khác, hệ thống sẽ báo lỗi."
+            description = """
+                    Cập nhật trạng thái năm học (ACTIVE, INACTIVE, UPCOMING).
+                    - Chỉ được phép có 1 năm học ACTIVE tại một thời điểm.
+                    - Nếu muốn kích hoạt năm mới, phải dừng kích hoạt năm hiện tại trước (chuyển về INACTIVE hoặc UPCOMING).
+                    - Nếu đã có năm học ACTIVE khác, hệ thống sẽ báo lỗi.
+                    """
     )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Cập nhật thành công.", content = @Content(schema = @Schema(implementation = AcademicYearResponse.class))),
-            @ApiResponse(responseCode = "404", description = "Không tìm thấy năm học.")
+            @ApiResponse(responseCode = "404", description = "Không tìm thấy năm học."),
+            @ApiResponse(responseCode = "400", description = "Trạng thái không hợp lệ.")
     })
-    @PutMapping("/{id}/status")
-    public ResponseEntity updateStatus(
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<?> updateStatus(
             @PathVariable UUID id,
+            @Parameter(description = "Trạng thái mới (ACTIVE, INACTIVE, UPCOMING)", required = true)
             @RequestParam AcademicYearStatusEnum status) {
-        return responseHandler.response(200, "Cập nhật trạng thái năm học thành công!",
-                academicYearService.updateStatus(id, status));
+
+        return responseHandler.response(
+                200,
+                "Cập nhật trạng thái năm học thành công!",
+                academicYearService.updateStatus(id, status)
+        );
     }
+
 
     @Operation(summary = "Xóa năm học", description = "Xóa năm học theo id.")
     @ApiResponses({
