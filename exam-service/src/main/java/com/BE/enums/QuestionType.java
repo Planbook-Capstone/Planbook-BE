@@ -29,46 +29,8 @@ public enum QuestionType {
         this.description = description;
     }
 
-    /**
-     * Check if this question type supports multiple choice options
-     */
-    public boolean hasOptions() {
-        return this == PART_I;
-    }
 
-    /**
-     * Check if this question type supports true/false statements
-     */
-    public boolean hasStatements() {
-        return this == PART_II;
-    }
 
-    /**
-     * Check if this question type is essay-based
-     */
-    public boolean isEssay() {
-        return this == PART_III;
-    }
 
-    /**
-     * Get the part name for JSON structure
-     */
-    public String getPartName() {
-        return switch (this) {
-            case PART_I -> "PHẦN I";
-            case PART_II -> "PHẦN II";
-            case PART_III -> "PHẦN III";
-        };
-    }
 
-    /**
-     * Get default title for this question type
-     */
-    public String getDefaultTitle() {
-        return switch (this) {
-            case PART_I -> "Câu trắc nghiệm nhiều phương án lựa chọn";
-            case PART_II -> "Câu trắc nghiệm đúng sai";
-            case PART_III -> "Câu trả lời ngắn";
-        };
-    }
 }

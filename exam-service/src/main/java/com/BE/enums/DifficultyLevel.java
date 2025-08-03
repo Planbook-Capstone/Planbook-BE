@@ -36,50 +36,5 @@ public enum DifficultyLevel {
         this.description = description;
     }
 
-    /**
-     * Check if this is a basic level (Knowledge, Comprehension)
-     */
-    public boolean isBasicLevel() {
-        return this == KNOWLEDGE || this == COMPREHENSION;
-    }
 
-    /**
-     * Check if this is an application level (Application, Analysis)
-     */
-    public boolean isApplicationLevel() {
-        return this == APPLICATION || this == ANALYSIS;
-    }
-
-    /**
-     * Check if this is the highest difficulty level
-     */
-    public boolean isHighestLevel() {
-        return this == ANALYSIS;
-    }
-
-    /**
-     * Get difficulty score for weighting questions
-     */
-    public double getDifficultyScore() {
-        return switch (this) {
-            case KNOWLEDGE -> 1.0;
-            case COMPREHENSION -> 1.2;
-            case APPLICATION -> 1.5;
-            case ANALYSIS -> 2.0;
-        };
-    }
-
-    /**
-     * Compare difficulty levels
-     */
-    public boolean isHarderThan(DifficultyLevel other) {
-        return this.level > other.level;
-    }
-
-    /**
-     * Compare difficulty levels
-     */
-    public boolean isEasierThan(DifficultyLevel other) {
-        return this.level < other.level;
-    }
 }
