@@ -1,5 +1,6 @@
 package com.BE.service.implementServices;
 
+import com.BE.enums.ToolResultStatus;
 import com.BE.mapper.ToolResultMapper;
 import com.BE.model.entity.ToolResult;
 import com.BE.model.request.CreateToolResultRequest;
@@ -137,16 +138,14 @@ public class ToolResultServiceImpl implements IToolResultService {
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public boolean existsById(Long id) {
-        return toolResultRepository.existsById(id);
+    public ToolResultResponse updateStatus(Long id, ToolResultStatus status) {
+        ToolResult existingEntity = toolResultRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy ToolResult với id: " + id));
+        existingEntity.setStatus(status);
+        return toolResultMapper.toResponse(toolResultRepository.save(existingEntity));
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public long count() {
-        return toolResultRepository.count();
-    }
+
 
 
 }
