@@ -2,6 +2,7 @@ package com.BE.service.implementServices;
 
 import com.BE.enums.AcademicResourceEnum;
 
+import com.BE.enums.SortBy;
 import com.BE.exception.ResourceNotFoundException;
 import com.BE.exception.exceptions.BadRequestException;
 import com.BE.mapper.AcademicResourceMapper;
@@ -184,9 +185,11 @@ public class AcademicResourceServiceImpl implements AcademicResourceService {
     public PagedResponse<AcademicResourceResponse> searchResources(AcademicResourceSearchRequest request) {
         pageUtil.checkOffset(request.getPage());
         // Create pageable
-        Sort sort = Sort.by(Sort.Direction.fromString(request.getSortDirection().name()), request.getSortBy().name());
+        Sort sort = Sort.by(
+                Sort.Direction.fromString(request.getSortDirection().name()),
+                getSortField(request.getSortBy())
+        );
         Pageable pageable = PageRequest.of(request.getPage() - 1, request.getSize(), sort);
-
         Specification<AcademicResource> spec = buildSpecification(request);
         Page<AcademicResource> resourcePage = academicResourceRepository.findAll(spec, pageable);
 
@@ -207,6 +210,14 @@ public class AcademicResourceServiceImpl implements AcademicResourceService {
 
         return response;
 
+    }
+
+    private String getSortField(SortBy sortBy) {
+        return switch (sortBy) {
+            case CREATED_AT -> "createdAt";
+            case UPDATED_AT -> "updatedAt";
+            case NAME -> "name";
+        };
     }
 
     public static Specification<AcademicResource> buildSpecification(AcademicResourceSearchRequest request) {
