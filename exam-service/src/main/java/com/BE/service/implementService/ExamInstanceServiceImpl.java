@@ -255,7 +255,43 @@ public class ExamInstanceServiceImpl implements IExamInstanceService {
         // Fetch submissions with result details for detailed analysis
         List<ExamSubmission> submissions = examSubmissionRepository.findByExamInstanceIdWithDetailsOrderBySubmittedAtDesc(instanceId);
         return submissions.stream()
-                .map(examSubmissionMapper::toResponse)
+                .map(submission -> {
+                    ExamSubmissionResponse response = examSubmissionMapper.toResponse(submission);
+                    // Sort result details by part and question number
+                    if (response.getResultDetails() != null) {
+                        response.getResultDetails().sort((a, b) -> {
+                            // First sort by part order (PHẦN I, II, III)
+                            int partComparison = Integer.compare(getPartOrder(a.getPartName()), getPartOrder(b.getPartName()));
+                            if (partComparison != 0) {
+                                return partComparison;
+                            }
+                            // Then sort by question number
+                            if (a.getQuestionNumber() != null && b.getQuestionNumber() != null) {
+                                int questionComparison = Integer.compare(a.getQuestionNumber(), b.getQuestionNumber());
+                                if (questionComparison != 0) {
+                                    return questionComparison;
+                                }
+                            } else if (a.getQuestionNumber() != null) {
+                                return -1; // a has number, b doesn't - a comes first
+                            } else if (b.getQuestionNumber() != null) {
+                                return 1; // b has number, a doesn't - b comes first
+                            }
+
+                            // For Part II statements, sort by statement key (a, b, c, d)
+                            if (a.getStatementKey() != null && b.getStatementKey() != null) {
+                                return a.getStatementKey().compareTo(b.getStatementKey());
+                            } else if (a.getStatementKey() != null) {
+                                return 1; // statements come after main question
+                            } else if (b.getStatementKey() != null) {
+                                return -1; // statements come after main question
+                            }
+
+                            // Both null, sort by questionId as fallback
+                            return a.getQuestionId().compareTo(b.getQuestionId());
+                        });
+                    }
+                    return response;
+                })
                 .collect(Collectors.toList());
     }
 
@@ -371,6 +407,22 @@ public class ExamInstanceServiceImpl implements IExamInstanceService {
     private void saveDetailedResults(ExamSubmission submission, List<ExamResultDetailData> details) {
         List<ExamResultDetail> resultDetails = examResultDetailMapper.toEntityList(details, submission);
         examResultDetailRepository.saveAll(resultDetails);
+    }
+
+    /**
+     * Get part order for sorting (PHẦN I = 1, PHẦN II = 2, PHẦN III = 3)
+     */
+    private int getPartOrder(String partName) {
+        if (partName == null) return 999; // Put null parts at the end
+
+        if (partName.contains("I") && !partName.contains("II") && !partName.contains("III")) {
+            return 1; // PHẦN I
+        } else if (partName.contains("II")) {
+            return 2; // PHẦN II
+        } else if (partName.contains("III")) {
+            return 3; // PHẦN III
+        }
+        return 999; // Unknown parts at the end
     }
 
 

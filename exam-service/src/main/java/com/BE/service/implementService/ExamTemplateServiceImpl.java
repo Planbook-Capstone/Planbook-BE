@@ -33,9 +33,6 @@ public class ExamTemplateServiceImpl implements IExamTemplateService {
     @Override
     public ExamTemplateResponse createExamTemplate(CreateExamTemplateRequest request) {
         try {
-            // Validate content structure
-//            examUtils.validateExamContent(request.getContentJson());
-
             UUID teacherId = accountUtils.getCurrentUserId();
             ExamTemplate template = examTemplateMapper.toEntity(request, teacherId);
             ExamTemplate savedTemplate = examTemplateRepository.save(template);

@@ -32,7 +32,19 @@ public class ExamResultDetail {
     
     @Column(name = "question_id", nullable = false)
     private String questionId;
-    
+
+    @Column(name = "question_number")
+    private Integer questionNumber;
+
+    @Column(name = "part_name")
+    private String partName;
+
+    @Column(name = "statement_key", length = 10)
+    private String statementKey;
+
+    @Column(name = "question", length = 2000)
+    private String question;
+
     @Column(name = "student_answer")
     private String studentAnswer;
     

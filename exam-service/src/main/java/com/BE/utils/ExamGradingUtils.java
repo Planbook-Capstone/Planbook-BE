@@ -76,17 +76,22 @@ public class ExamGradingUtils {
                     List<Map<String, Object>> templateQuestions = (List<Map<String, Object>>) templatePart.get("questions");
 
                     if (templateQuestions != null && !templateQuestions.isEmpty()) {
-                        for (Map<String, Object> templateQuestion : templateQuestions) {
+                        for (int questionIndex = 0; questionIndex < templateQuestions.size(); questionIndex++) {
+                            Map<String, Object> templateQuestion = templateQuestions.get(questionIndex);
                             String questionId = (String) templateQuestion.get("id");
                             if (questionId == null) {
                                 log.warn("Template question has no id, skipping");
                                 continue;
                             }
 
+                            // Extract question number and question text
+                            Integer questionNumber = extractQuestionNumber(templateQuestion, questionIndex);
+                            String questionText = extractQuestionText(templateQuestion);
+
                             // Handle different question types
                             if (templateQuestion.containsKey("statements")) {
                                 // True/False questions with statements (Part II)
-                                Map<String, Integer> statementResult = gradeStatementQuestionWithCounts(templateQuestion, studentAnswers, partName, details);
+                                Map<String, Integer> statementResult = gradeStatementQuestionWithCounts(templateQuestion, studentAnswers, partName, details, questionNumber, questionText);
                                 boolean isCorrect = statementResult.get("isCorrect") == 1;
                                 int correctStatements = statementResult.get("correctStatements");
                                 int totalStatements = statementResult.get("totalStatements");
@@ -110,7 +115,7 @@ public class ExamGradingUtils {
                                 }
 
                                 String fullQuestionId = partName + "_Q" + questionId;
-                                details.add(new ExamResultDetailData(fullQuestionId, studentAnswer,
+                                details.add(new ExamResultDetailData(fullQuestionId, questionNumber, partName, questionText, studentAnswer,
                                     correctAnswer != null ? correctAnswer : "N/A", isCorrect));
 
                                 // Determine part and calculate score
@@ -163,7 +168,9 @@ public class ExamGradingUtils {
     private Map<String, Integer> gradeStatementQuestionWithCounts(Map<String, Object> templateQuestion,
                                                                 List<Map<String, Object>> studentAnswers,
                                                                 String partName,
-                                                                List<ExamResultDetailData> details) {
+                                                                List<ExamResultDetailData> details,
+                                                                Integer questionNumber,
+                                                                String questionText) {
         String questionId = (String) templateQuestion.get("id");
 
         // Find student answer for this question
@@ -219,7 +226,17 @@ public class ExamGradingUtils {
             String studentAnswerStr = studentAnswer != null ? studentAnswer.toString() : "null";
             String correctAnswerStr = correctAnswer != null ? correctAnswer.toString() : "null";
 
-            details.add(new ExamResultDetailData(fullQuestionId, studentAnswerStr, correctAnswerStr, isStatementCorrect));
+            // Extract the actual statement text from the statement data
+            String statementText = extractStatementText(statementData);
+            String statementQuestionText = statementText != null ?
+                statementText : (questionText != null ? questionText + " (" + statementKey + ")" : null);
+
+            // Create ExamResultDetailData with all fields including statementKey
+            ExamResultDetailData statementDetail = new ExamResultDetailData(
+                fullQuestionId, questionNumber, partName, statementKey,
+                statementQuestionText, studentAnswerStr, correctAnswerStr, isStatementCorrect
+            );
+            details.add(statementDetail);
             totalStatements++;
         }
 
@@ -246,5 +263,71 @@ public class ExamGradingUtils {
         }
         return null;
     }
+
+    /**
+     * Extract question number from template question
+     */
+    private Integer extractQuestionNumber(Map<String, Object> templateQuestion, int questionIndex) {
+        String questionId = (String) templateQuestion.get("id");
+
+        // Try to get questionNumber field first (from randomized content)
+        if (templateQuestion.containsKey("questionNumber")) {
+            Object questionNumberObj = templateQuestion.get("questionNumber");
+            if (questionNumberObj instanceof Integer) {
+                return (Integer) questionNumberObj;
+            } else if (questionNumberObj instanceof String) {
+                try {
+                    return Integer.parseInt((String) questionNumberObj);
+                } catch (NumberFormatException e) {
+                    log.warn("Invalid questionNumber format for question {}: {}", questionId, questionNumberObj);
+                }
+            }
+        }
+
+        // Try to get originalQuestionNumber field (from randomized content)
+        if (templateQuestion.containsKey("originalQuestionNumber")) {
+            Object originalQuestionNumberObj = templateQuestion.get("originalQuestionNumber");
+            if (originalQuestionNumberObj instanceof Integer) {
+                return (Integer) originalQuestionNumberObj;
+            } else if (originalQuestionNumberObj instanceof String) {
+                try {
+                    return Integer.parseInt((String) originalQuestionNumberObj);
+                } catch (NumberFormatException e) {
+                    log.warn("Invalid originalQuestionNumber format for question {}: {}", questionId, originalQuestionNumberObj);
+                }
+            }
+        }
+
+        // No valid question number found - log warning and return null
+        log.warn("No valid questionNumber or originalQuestionNumber found for question {} at index {}", questionId, questionIndex);
+        return null;
+    }
+
+    /**
+     * Extract question text from template question
+     */
+    private String extractQuestionText(Map<String, Object> templateQuestion) {
+        if (templateQuestion.containsKey("question")) {
+            Object questionObj = templateQuestion.get("question");
+            if (questionObj != null) {
+                return questionObj.toString();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Extract statement text from statement data
+     */
+    private String extractStatementText(Map<String, Object> statementData) {
+        if (statementData != null && statementData.containsKey("text")) {
+            Object textObj = statementData.get("text");
+            if (textObj != null) {
+                return textObj.toString();
+            }
+        }
+        return null;
+    }
+
 
 }

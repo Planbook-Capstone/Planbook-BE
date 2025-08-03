@@ -169,19 +169,7 @@ public class QuestionBankUtils {
         log.debug("Part III question content validated successfully");
     }
 
-    /**
-     * Validate question content structure for updates
-     * Only validates if content is provided (not null)
-     * VALIDATION DISABLED FOR TESTING
-     */
-    public void validateQuestionContentForUpdate(Map<String, Object> questionContent, QuestionType questionType) {
-        // Validation disabled - skip all checks
-        /*
-        if (questionContent != null) {
-            validateQuestionContent(questionContent, questionType);
-        }
-        */
-    }
+
 
     /**
      * Get required fields for a question type

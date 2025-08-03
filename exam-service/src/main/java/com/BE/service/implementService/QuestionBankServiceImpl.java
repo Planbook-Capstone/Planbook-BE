@@ -33,9 +33,6 @@ public class QuestionBankServiceImpl implements IQuestionBankService {
     @Override
     public QuestionBankResponse createQuestionBank(CreateQuestionBankRequest request) {
         try {
-            // VALIDATION TẠM THỜI TẮT ĐỂ KIỂM THỬ
-            // questionBankUtils.validateQuestionContent(request.getQuestionContent(), request.getQuestionType());
-
             UUID currentUserId = accountUtils.getCurrentUserId();
             QuestionBank questionBank = questionBankMapper.toEntity(request, currentUserId);
 
@@ -54,8 +51,6 @@ public class QuestionBankServiceImpl implements IQuestionBankService {
             throw new BadRequestException("Lỗi khi tạo câu hỏi: " + e.getMessage());
         }
     }
-
-
 
     @Override
     public QuestionBankResponse getQuestionBankById(Long id) {
@@ -176,6 +171,4 @@ public class QuestionBankServiceImpl implements IQuestionBankService {
             throw new BadRequestException("Lỗi khi lọc câu hỏi: " + e.getMessage());
         }
     }
-
-
 }
