@@ -20,12 +20,6 @@ public interface ExamSubmissionRepository extends JpaRepository<ExamSubmission, 
     @Query("SELECT es FROM ExamSubmission es LEFT JOIN FETCH es.resultDetails WHERE es.examInstance.id = :examInstanceId ORDER BY es.submittedAt DESC")
     List<ExamSubmission> findByExamInstanceIdWithDetailsOrderBySubmittedAtDesc(@Param("examInstanceId") UUID examInstanceId);
 
-    @Query("SELECT es FROM ExamSubmission es WHERE es.examInstance.code = :code AND es.studentName = :studentName")
-    Optional<ExamSubmission> findByExamCodeAndStudentName(@Param("code") String code, @Param("studentName") String studentName);
-
-    @Query("SELECT COUNT(es) FROM ExamSubmission es WHERE es.examInstance.id = :examInstanceId")
-    Long countByExamInstanceId(@Param("examInstanceId") UUID examInstanceId);
-
     @Modifying
     @Query("DELETE FROM ExamSubmission es WHERE es.examInstance.id = :examInstanceId")
     void deleteByExamInstanceId(@Param("examInstanceId") UUID examInstanceId);

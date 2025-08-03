@@ -12,13 +12,6 @@ import java.util.UUID;
 
 @Repository
 public interface ExamResultDetailRepository extends JpaRepository<ExamResultDetail, UUID> {
-
-    @Query("SELECT erd FROM ExamResultDetail erd WHERE erd.submission.id = :submissionId")
-    List<ExamResultDetail> findBySubmissionId(@Param("submissionId") UUID submissionId);
-
-    @Query("SELECT erd FROM ExamResultDetail erd WHERE erd.submission.examInstance.id = :examInstanceId")
-    List<ExamResultDetail> findByExamInstanceId(@Param("examInstanceId") UUID examInstanceId);
-
     @Modifying
     @Query("DELETE FROM ExamResultDetail erd WHERE erd.submission.id = :submissionId")
     void deleteBySubmissionId(@Param("submissionId") UUID submissionId);

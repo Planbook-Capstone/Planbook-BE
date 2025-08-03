@@ -55,11 +55,11 @@ public class ExamTemplate {
     private UUID createdBy;
     
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "content_json", columnDefinition = "JSON", nullable = false)
+    @Column(name = "content_json", nullable = false)
     private Map<String, Object> contentJson;
 
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "scoring_config", columnDefinition = "JSON")
+    @Column(name = "scoring_config")
     private Map<String, Object> scoringConfig;
 
     @Column(name = "total_score")

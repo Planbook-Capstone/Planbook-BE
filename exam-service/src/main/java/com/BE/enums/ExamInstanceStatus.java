@@ -59,12 +59,6 @@ public enum ExamInstanceStatus {
         return this == ACTIVE;
     }
 
-    /**
-     * Check if teacher can modify exam in this status
-     */
-    public boolean isModifiable() {
-        return this == DRAFT || this == SCHEDULED;
-    }
 
     /**
      * Check if exam can be started manually

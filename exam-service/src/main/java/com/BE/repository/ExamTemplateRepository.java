@@ -14,7 +14,5 @@ public interface ExamTemplateRepository extends JpaRepository<ExamTemplate, UUID
     
     @Query("SELECT et FROM ExamTemplate et WHERE et.createdBy = :createdBy ORDER BY et.createdAt DESC")
     List<ExamTemplate> findByCreatedByOrderByCreatedAtDesc(@Param("createdBy") UUID createdBy);
-    
-    @Query("SELECT et FROM ExamTemplate et WHERE et.createdBy = :createdBy AND et.subject = :subject ORDER BY et.createdAt DESC")
-    List<ExamTemplate> findByCreatedByAndSubjectOrderByCreatedAtDesc(@Param("createdBy") UUID createdBy, @Param("subject") String subject);
+
 }
