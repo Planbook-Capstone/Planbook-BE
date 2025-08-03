@@ -21,8 +21,8 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         // Public endpoints for students (no authentication required)
-                        .requestMatchers("/api/exams/instances/*/submit").permitAll()
-                        .requestMatchers("/api/exams/instances/*").permitAll()
+                        .requestMatchers("GET", "/api/exam-instances/code/**").permitAll()
+                        .requestMatchers("POST", "/api/exam-instances/code/**/submit").permitAll()
                         // Swagger and actuator endpoints
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/actuator/**").permitAll()
                         // All other endpoints require authentication (teacher endpoints)

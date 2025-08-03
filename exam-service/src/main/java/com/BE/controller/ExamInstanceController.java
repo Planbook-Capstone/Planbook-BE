@@ -522,6 +522,7 @@ public class ExamInstanceController {
     // Student Exam Access APIs (Public - No Authentication Required)
     
     @GetMapping("/code/{code}")
+    @SecurityRequirement(name = "")  // Override controller-level security requirement - this endpoint is public
     @Operation(
         summary = "Get exam by code (Student API)",
         description = """
@@ -667,6 +668,7 @@ public class ExamInstanceController {
     }
     
     @PostMapping("/code/{code}/submit")
+    @SecurityRequirement(name = "")  // Override controller-level security requirement - this endpoint is public
     @Operation(
         summary = "Submit exam (Student API)",
         description = """
