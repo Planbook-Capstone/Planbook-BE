@@ -9,7 +9,7 @@ import lombok.Getter;
         Difficulty level enum representing the cognitive complexity of questions.
         Based on Bloom's taxonomy for educational assessment.
         """,
-    example = "BIET"
+    example = "KNOWLEDGE"
 )
 public enum DifficultyLevel {
     @Schema(description = "Knowledge level: recall of facts, terms, basic concepts")
@@ -35,6 +35,5 @@ public enum DifficultyLevel {
         this.level = level;
         this.description = description;
     }
-
 
 }

@@ -32,19 +32,6 @@ import java.util.List;
 @RequiredArgsConstructor
 @SecurityRequirement(name = "api")
 @Slf4j
-@Tag(name = "Question Bank Management",
-     description = """
-         APIs for managing question banks with support for 3 question types:
-         - PART_I: Multiple choice questions (Câu trắc nghiệm nhiều phương án lựa chọn)
-         - PART_II: True/False questions (Câu trắc nghiệm đúng sai)
-         - PART_III: Short answer questions (Câu trả lời ngắn)
-
-         Each question has 4 difficulty levels:
-         - KNOWLEDGE: Knowledge level
-         - COMPREHENSION: Comprehension level
-         - APPLICATION: Application level
-         - ANALYSIS: Higher-order application
-         """)
 public class QuestionBankController {
 
     private final IQuestionBankService questionBankService;
