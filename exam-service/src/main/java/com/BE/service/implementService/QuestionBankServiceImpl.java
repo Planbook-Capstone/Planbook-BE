@@ -33,7 +33,7 @@ public class QuestionBankServiceImpl implements IQuestionBankService {
     @Override
     public QuestionBankResponse createQuestionBank(CreateQuestionBankRequest request) {
         try {
-            // VALIDATION DISABLED FOR TESTING
+            // VALIDATION TẠM THỜI TẮT ĐỂ KIỂM THỬ
             // questionBankUtils.validateQuestionContent(request.getQuestionContent(), request.getQuestionType());
 
             UUID currentUserId = accountUtils.getCurrentUserId();
@@ -44,13 +44,13 @@ public class QuestionBankServiceImpl implements IQuestionBankService {
             questionBank.setVisibility(QuestionBankVisibility.getByUserRole(isStaff));
 
             QuestionBank savedQuestionBank = questionBankRepository.save(questionBank);
-            log.info("Created question bank {} with visibility {} by user {}",
+            log.info("Đã tạo ngân hàng câu hỏi {} với quyền truy cập {} bởi người dùng {}",
                     savedQuestionBank.getId(), savedQuestionBank.getVisibility(), currentUserId);
 
             return questionBankMapper.toResponse(savedQuestionBank);
 
         } catch (Exception e) {
-            log.error("Error creating question bank: {}", e.getMessage(), e);
+            log.error("Lỗi khi tạo ngân hàng câu hỏi: {}", e.getMessage(), e);
             throw new BadRequestException("Lỗi khi tạo câu hỏi: " + e.getMessage());
         }
     }
@@ -62,11 +62,11 @@ public class QuestionBankServiceImpl implements IQuestionBankService {
         try {
             UUID currentUserId = accountUtils.getCurrentUserId();
             QuestionBank questionBank = questionBankRepository.findByIdAndAccessible(id, currentUserId)
-                .orElseThrow(() -> new ResourceNotFoundException("Question bank not found with id: " + id + " or you don't have permission to access it"));
-            log.info("Retrieved question bank {} for user {}", id, currentUserId);
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy ngân hàng câu hỏi với id: " + id + " hoặc bạn không có quyền truy cập"));
+            log.info("Đã lấy thông tin ngân hàng câu hỏi {} cho người dùng {}", id, currentUserId);
             return questionBankMapper.toResponse(questionBank);
         } catch (Exception e) {
-            log.error("Error getting question bank by id {}: {}", id, e.getMessage(), e);
+            log.error("Lỗi khi lấy thông tin ngân hàng câu hỏi với id {}: {}", id, e.getMessage(), e);
             throw new BadRequestException("Lỗi khi lấy thông tin câu hỏi: " + e.getMessage());
         }
     }
@@ -76,7 +76,7 @@ public class QuestionBankServiceImpl implements IQuestionBankService {
         try {
             UUID currentUserId = accountUtils.getCurrentUserId();
             QuestionBank questionBank = questionBankRepository.findByIdAndCreatedBy(id, currentUserId)
-                .orElseThrow(() -> new ResourceNotFoundException("Question bank not found with id: " + id + " or you don't have permission to access it"));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy ngân hàng câu hỏi với id: " + id + " hoặc bạn không có quyền truy cập"));
 
             // Update fields if provided
             if (request.getLessonId() != null) {
@@ -99,14 +99,14 @@ public class QuestionBankServiceImpl implements IQuestionBankService {
             if (request.getReferenceSource() != null) {
                 questionBank.setReferenceSource(request.getReferenceSource());
             }
-            // Note: Visibility cannot be updated after creation to maintain data integrity
+            // Lưu ý: Quyền truy cập không thể được cập nhật sau khi tạo để duy trì tính toàn vẹn dữ liệu
 
             questionBank.setUpdatedBy(currentUserId);
             QuestionBank savedQuestionBank = questionBankRepository.save(questionBank);
-            log.info("Updated question bank {} by user {}", id, currentUserId);
+            log.info("Đã cập nhật ngân hàng câu hỏi {} bởi người dùng {}", id, currentUserId);
             return questionBankMapper.toResponse(savedQuestionBank);
         } catch (Exception e) {
-            log.error("Error updating question bank {}: {}", id, e.getMessage(), e);
+            log.error("Lỗi khi cập nhật ngân hàng câu hỏi {}: {}", id, e.getMessage(), e);
             throw new BadRequestException("Lỗi khi cập nhật câu hỏi: " + e.getMessage());
         }
     }
@@ -116,13 +116,13 @@ public class QuestionBankServiceImpl implements IQuestionBankService {
         try {
             UUID currentUserId = accountUtils.getCurrentUserId();
             QuestionBank questionBank = questionBankRepository.findByIdAndCreatedBy(id, currentUserId)
-                .orElseThrow(() -> new ResourceNotFoundException("Question bank not found with id: " + id + " or you don't have permission to access it"));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy ngân hàng câu hỏi với id: " + id + " hoặc bạn không có quyền truy cập"));
 
-            // Hard delete the question bank
+            // Xóa vĩnh viễn ngân hàng câu hỏi
             questionBankRepository.delete(questionBank);
-            log.info("Deleted question bank {} by user {}", id, currentUserId);
+            log.info("Đã xóa ngân hàng câu hỏi {} bởi người dùng {}", id, currentUserId);
         } catch (Exception e) {
-            log.error("Error deleting question bank {}: {}", id, e.getMessage(), e);
+            log.error("Lỗi khi xóa ngân hàng câu hỏi {}: {}", id, e.getMessage(), e);
             throw new BadRequestException("Lỗi khi xóa câu hỏi: " + e.getMessage());
         }
     }
@@ -143,16 +143,16 @@ public class QuestionBankServiceImpl implements IQuestionBankService {
             UUID currentUserId = accountUtils.getCurrentUserId();
             List<QuestionBank> questionBanks = questionBankRepository.findByMultipleFilters(currentUserId, lessonId, questionTypes, difficultyLevels);
             if (lessonId == null && (questionTypes == null || questionTypes.isEmpty()) && (difficultyLevels == null || difficultyLevels.isEmpty())) {
-                log.info("Found {} question banks (all accessible) for user {}", questionBanks.size(), currentUserId);
+                log.info("Tìm thấy {} ngân hàng câu hỏi (tất cả có thể truy cập) cho người dùng {}", questionBanks.size(), currentUserId);
             } else {
-                log.info("Found {} question banks with filters (lesson: {}, types: {}, difficulties: {}) for user {}",
+                log.info("Tìm thấy {} ngân hàng câu hỏi với bộ lọc (bài học: {}, loại: {}, độ khó: {}) cho người dùng {}",
                         questionBanks.size(), lessonId, questionTypes, difficultyLevels, currentUserId);
             }
             return questionBanks.stream()
                     .map(questionBankMapper::toResponse)
                     .toList();
         } catch (Exception e) {
-            log.error("Error getting question banks by multiple filters: {}", e.getMessage(), e);
+            log.error("Lỗi khi lấy ngân hàng câu hỏi theo nhiều bộ lọc: {}", e.getMessage(), e);
             throw new BadRequestException("Lỗi khi lọc câu hỏi: " + e.getMessage());
         }
     }
@@ -163,16 +163,16 @@ public class QuestionBankServiceImpl implements IQuestionBankService {
             UUID currentUserId = accountUtils.getCurrentUserId();
             Page<QuestionBank> questionBanks = questionBankRepository.findByMultipleFilters(currentUserId, lessonId, questionTypes, difficultyLevels, pageable);
             if (lessonId == null && (questionTypes == null || questionTypes.isEmpty()) && (difficultyLevels == null || difficultyLevels.isEmpty())) {
-                log.info("Found {} question banks (all accessible) for user {} (page {}, size {})",
+                log.info("Tìm thấy {} ngân hàng câu hỏi (tất cả có thể truy cập) cho người dùng {} (trang {}, kích thước {})",
                         questionBanks.getTotalElements(), currentUserId, pageable.getPageNumber(), pageable.getPageSize());
             } else {
-                log.info("Found {} question banks with filters (lesson: {}, types: {}, difficulties: {}) for user {} (page {}, size {})",
+                log.info("Tìm thấy {} ngân hàng câu hỏi với bộ lọc (bài học: {}, loại: {}, độ khó: {}) cho người dùng {} (trang {}, kích thước {})",
                         questionBanks.getTotalElements(), lessonId, questionTypes, difficultyLevels, currentUserId,
                         pageable.getPageNumber(), pageable.getPageSize());
             }
             return questionBanks.map(questionBankMapper::toResponse);
         } catch (Exception e) {
-            log.error("Error getting question banks by multiple filters with pagination: {}", e.getMessage(), e);
+            log.error("Lỗi khi lấy ngân hàng câu hỏi theo nhiều bộ lọc với phân trang: {}", e.getMessage(), e);
             throw new BadRequestException("Lỗi khi lọc câu hỏi: " + e.getMessage());
         }
     }
