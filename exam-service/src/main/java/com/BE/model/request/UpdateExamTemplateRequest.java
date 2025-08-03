@@ -37,7 +37,10 @@ public class UpdateExamTemplateRequest {
     @Schema(description = "Updated atomic masses information", example = "H=1, C=12, O=16")
     private String atomicMasses;
 
-    @Schema(description = "Updated exam content with questions and answers")
+    @Schema(description = """
+            Updated exam content with questions and answers in parts format.
+            Same structure as CreateExamTemplateRequest contentJson field.
+            """)
     private Map<String, Object> contentJson;
 
     @Schema(description = "Updated scoring configuration for the exam",

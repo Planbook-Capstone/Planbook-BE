@@ -43,7 +43,55 @@ public class CreateExamTemplateRequest {
     @Schema(description = "Atomic masses information", example = "H=1, C=12, O=16")
     private String atomicMasses;
 
-    @Schema(description = "Exam content with questions and answers", required = true)
+    @Schema(description = """
+            Exam content with questions and answers in parts format.
+
+            Structure:
+            {
+                "parts": [
+                    {
+                        "part": "PHẦN I",
+                        "title": "Câu trắc nghiệm nhiều phương án lựa chọn",
+                        "questions": [
+                            {
+                                "id": "uuid",
+                                "questionNumber": 1,
+                                "question": "Question text",
+                                "options": {"A": "Option A", "B": "Option B", "C": "Option C", "D": "Option D"},
+                                "answer": "C"
+                            }
+                        ]
+                    },
+                    {
+                        "part": "PHẦN II",
+                        "title": "Câu hỏi Đúng/Sai",
+                        "questions": [
+                            {
+                                "id": "uuid",
+                                "questionNumber": 1,
+                                "question": "Main question",
+                                "statements": {
+                                    "a": {"text": "Statement A", "answer": true},
+                                    "b": {"text": "Statement B", "answer": false}
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "part": "PHẦN III",
+                        "title": "Câu hỏi tự luận",
+                        "questions": [
+                            {
+                                "id": "uuid",
+                                "questionNumber": 1,
+                                "question": "Question text",
+                                "answer": "Expected answer"
+                            }
+                        ]
+                    }
+                ]
+            }
+            """, required = true)
     @NotNull(message = "Nội dung đề thi là bắt buộc")
     private Map<String, Object> contentJson;
 
