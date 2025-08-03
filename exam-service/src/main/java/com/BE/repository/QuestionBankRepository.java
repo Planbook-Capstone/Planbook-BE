@@ -49,11 +49,6 @@ public interface QuestionBankRepository extends JpaRepository<QuestionBank, Long
            "ORDER BY qb.createdAt DESC")
     List<QuestionBank> findByQuestionTypeAndAccessible(@Param("currentUserId") UUID currentUserId, @Param("questionType") QuestionType questionType);
 
-    /**
-     * Find question banks by creator and difficulty level (for personal use)
-     */
-    @Query("SELECT qb FROM QuestionBank qb WHERE qb.createdBy = :createdBy AND qb.difficultyLevel = :difficultyLevel ORDER BY qb.createdAt DESC")
-    List<QuestionBank> findByCreatedByAndDifficultyLevelOrderByCreatedAtDesc(@Param("createdBy") UUID createdBy, @Param("difficultyLevel") DifficultyLevel difficultyLevel);
 
     /**
      * Find question banks by difficulty level that user can access (public + own private)
@@ -106,13 +101,6 @@ public interface QuestionBankRepository extends JpaRepository<QuestionBank, Long
      */
     @Query("SELECT qb FROM QuestionBank qb WHERE qb.id = :id AND (qb.visibility = 'PUBLIC' OR qb.createdBy = :currentUserId)")
     Optional<QuestionBank> findByIdAndAccessible(@Param("id") Long id, @Param("currentUserId") UUID currentUserId);
-
-    /**
-     * Count question banks by creator
-     */
-    @Query("SELECT COUNT(qb) FROM QuestionBank qb WHERE qb.createdBy = :createdBy")
-    Long countByCreatedBy(@Param("createdBy") UUID createdBy);
-    
 
 
     /**

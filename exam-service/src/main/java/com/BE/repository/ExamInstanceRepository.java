@@ -19,15 +19,6 @@ public interface ExamInstanceRepository extends JpaRepository<ExamInstance, UUID
     
     @Query("SELECT ei FROM ExamInstance ei WHERE ei.template.createdBy = :teacherId ORDER BY ei.createdAt DESC")
     List<ExamInstance> findByTeacherIdOrderByCreatedAtDesc(@Param("teacherId") UUID teacherId);
-    
-    @Query("SELECT ei FROM ExamInstance ei WHERE ei.code = :code AND ei.startAt <= :now AND ei.endAt >= :now")
-    Optional<ExamInstance> findActiveExamByCode(@Param("code") String code, @Param("now") LocalDateTime now);
-
-    @Query("SELECT ei FROM ExamInstance ei WHERE ei.code = :code AND ei.status = :status")
-    Optional<ExamInstance> findByCodeAndStatus(@Param("code") String code, @Param("status") ExamInstanceStatus status);
-
-    @Query("SELECT ei FROM ExamInstance ei WHERE ei.template.createdBy = :teacherId AND ei.status = :status ORDER BY ei.createdAt DESC")
-    List<ExamInstance> findByTeacherIdAndStatusOrderByCreatedAtDesc(@Param("teacherId") UUID teacherId, @Param("status") ExamInstanceStatus status);
 
     boolean existsByCode(String code);
 }
