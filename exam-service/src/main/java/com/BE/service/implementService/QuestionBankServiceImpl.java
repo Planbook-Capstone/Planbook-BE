@@ -20,7 +20,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -136,58 +135,7 @@ public class QuestionBankServiceImpl implements IQuestionBankService {
 
 
 
-    @Override
-    public QuestionBankStatistics getQuestionBankStatistics() {
-        try {
-            UUID currentUserId = accountUtils.getCurrentUserId();
 
-            // Get all question banks accessible to current user (public + own private)
-            List<QuestionBank> allQuestionBanks = questionBankRepository.findByFilters(currentUserId, null, null, null);
-
-            // Calculate basic statistics
-            Long totalQuestions = (long) allQuestionBanks.size();
-            Long availableQuestions = allQuestionBanks.stream()
-                    .filter(QuestionBank::isAvailable)
-                    .count();
-            // Group by question type
-            Map<QuestionType, Long> questionsByType = allQuestionBanks.stream()
-                    .filter(QuestionBank::isAvailable)
-                    .collect(Collectors.groupingBy(
-                            QuestionBank::getQuestionType,
-                            Collectors.counting()
-                    ));
-
-            // Group by difficulty level
-            Map<DifficultyLevel, Long> questionsByDifficulty = allQuestionBanks.stream()
-                    .filter(QuestionBank::isAvailable)
-                    .collect(Collectors.groupingBy(
-                            QuestionBank::getDifficultyLevel,
-                            Collectors.counting()
-                    ));
-
-            // Group by lesson
-            Map<Long, Long> questionsByLesson = allQuestionBanks.stream()
-                    .filter(QuestionBank::isAvailable)
-                    .collect(Collectors.groupingBy(
-                            QuestionBank::getLessonId,
-                            Collectors.counting()
-                    ));
-
-            log.info("Generated statistics for user {}: total={}, available={}",
-                    currentUserId, totalQuestions, availableQuestions);
-
-            return new QuestionBankStatistics(
-                    totalQuestions,
-                    availableQuestions,
-                    questionsByType,
-                    questionsByDifficulty,
-                    questionsByLesson
-            );
-        } catch (Exception e) {
-            log.error("Error getting question bank statistics: {}", e.getMessage(), e);
-            throw new BadRequestException("Lỗi khi lấy thống kê câu hỏi: " + e.getMessage());
-        }
-    }
 
     @Override
     public List<QuestionBankResponse> getQuestionBanksByFilters(Long lessonId, List<QuestionType> questionTypes, List<DifficultyLevel> difficultyLevels) {

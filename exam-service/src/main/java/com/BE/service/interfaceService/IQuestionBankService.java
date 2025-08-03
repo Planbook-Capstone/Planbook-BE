@@ -72,54 +72,5 @@ public interface IQuestionBankService {
 
 
 
-    /**
-     * Get question bank statistics for current user
-     * @return Statistics object containing counts by type, difficulty, etc.
-     */
-    QuestionBankStatistics getQuestionBankStatistics();
 
-
-
-
-
-    /**
-     * Statistics inner class
-     */
-    class QuestionBankStatistics {
-        private Long totalQuestions;
-        private Long activeQuestions;
-        private java.util.Map<QuestionType, Long> questionsByType;
-        private java.util.Map<DifficultyLevel, Long> questionsByDifficulty;
-        private java.util.Map<Long, Long> questionsByLesson;
-
-        // Constructors, getters, setters
-        public QuestionBankStatistics() {}
-
-        public QuestionBankStatistics(Long totalQuestions, Long activeQuestions,
-                                    java.util.Map<QuestionType, Long> questionsByType,
-                                    java.util.Map<DifficultyLevel, Long> questionsByDifficulty,
-                                    java.util.Map<Long, Long> questionsByLesson) {
-            this.totalQuestions = totalQuestions;
-            this.activeQuestions = activeQuestions;
-            this.questionsByType = questionsByType;
-            this.questionsByDifficulty = questionsByDifficulty;
-            this.questionsByLesson = questionsByLesson;
-        }
-
-        // Getters and setters
-        public Long getTotalQuestions() { return totalQuestions; }
-        public void setTotalQuestions(Long totalQuestions) { this.totalQuestions = totalQuestions; }
-
-        public Long getActiveQuestions() { return activeQuestions; }
-        public void setActiveQuestions(Long activeQuestions) { this.activeQuestions = activeQuestions; }
-
-        public java.util.Map<QuestionType, Long> getQuestionsByType() { return questionsByType; }
-        public void setQuestionsByType(java.util.Map<QuestionType, Long> questionsByType) { this.questionsByType = questionsByType; }
-
-        public java.util.Map<DifficultyLevel, Long> getQuestionsByDifficulty() { return questionsByDifficulty; }
-        public void setQuestionsByDifficulty(java.util.Map<DifficultyLevel, Long> questionsByDifficulty) { this.questionsByDifficulty = questionsByDifficulty; }
-
-        public java.util.Map<Long, Long> getQuestionsByLesson() { return questionsByLesson; }
-        public void setQuestionsByLesson(java.util.Map<Long, Long> questionsByLesson) { this.questionsByLesson = questionsByLesson; }
-    }
 }

@@ -399,24 +399,5 @@ public class QuestionBankController {
 
 
 
-    @Operation(
-        summary = "Get question bank statistics",
-        description = "Get statistics about question banks for the current user"
-    )
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Statistics retrieved successfully"),
-        @ApiResponse(responseCode = "401", description = "Unauthorized")
-    })
-    @GetMapping("/statistics")
-    public ResponseEntity<DataResponseDTO<IQuestionBankService.QuestionBankStatistics>> getQuestionBankStatistics() {
 
-        log.info("Getting question bank statistics");
-        IQuestionBankService.QuestionBankStatistics statistics = questionBankService.getQuestionBankStatistics();
-        DataResponseDTO<IQuestionBankService.QuestionBankStatistics> dataResponse = new DataResponseDTO<>(
-            HttpStatus.OK.value(),
-            "Lấy thống kê câu hỏi thành công",
-            statistics
-        );
-        return ResponseEntity.ok(dataResponse);
-    }
 }
