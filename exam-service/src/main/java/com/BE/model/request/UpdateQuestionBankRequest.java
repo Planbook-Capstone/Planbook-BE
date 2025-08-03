@@ -37,11 +37,12 @@ public class UpdateQuestionBankRequest {
             - answer: The correct option key (A, B, C, or D)
 
             **PART_II (True/False):**
-            - statements: Object with statement keys and their text
-            - answers: Object with statement keys and true/false values
+            - statements: Object with statement keys (a, b, c, d) containing:
+              - text: The statement text
+              - answer: Boolean value (true/false)
 
             **PART_III (Short Answer):**
-            - answer: The expected answer text
+            - answer: The expected answer text or number
             - keywords: Array of keywords for grading (optional)
             """,
             example = """

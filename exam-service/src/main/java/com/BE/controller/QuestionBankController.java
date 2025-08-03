@@ -110,22 +110,27 @@ public class QuestionBankController {
                                     "questionType": "PART_II",
                                     "difficultyLevel": "COMPREHENSION",
                                     "questionContent": {
-                                        "question": "Xét tính đúng sai của các phát biểu sau:",
-                                        "image": "https://example.com/images/atomic-structure.png",
+                                        "question": "Xét một nguyên tử X bất kỳ. Cho biết các phát biểu sau đúng hay sai:",
                                         "statements": {
-                                            "a": "Nguyên tử có cấu tạo đặc khít",
-                                            "b": "Hạt nhân nguyên tử mang điện tích dương",
-                                            "c": "Electron chuyển động quanh hạt nhân",
-                                            "d": "Khối lượng nguyên tử tập trung ở electron"
-                                        },
-                                        "answers": {
-                                            "a": false,
-                                            "b": true,
-                                            "c": true,
-                                            "d": false
+                                            "a": {
+                                                "text": "Nguyên tử X được cấu tạo từ ba loại hạt cơ bản: electron, proton và neutron.",
+                                                "answer": true
+                                            },
+                                            "b": {
+                                                "text": "Trong nguyên tử X, số proton luôn bằng số neutron.",
+                                                "answer": false
+                                            },
+                                            "c": {
+                                                "text": "Khối lượng của electron đóng góp đáng kể vào khối lượng của nguyên tử X.",
+                                                "answer": false
+                                            },
+                                            "d": {
+                                                "text": "Nguyên tử X luôn trung hòa về điện.",
+                                                "answer": true
+                                            }
                                         }
                                     },
-                                    "explanation": "Nguyên tử có cấu tạo rỗng, hạt nhân mang điện dương, electron chuyển động quanh hạt nhân, khối lượng tập trung ở hạt nhân"
+                                    "explanation": "Nguyên tử được cấu tạo từ electron, proton và neutron. Số proton không luôn bằng số neutron. Khối lượng tập trung chủ yếu ở hạt nhân. Nguyên tử trung hòa về điện."
                                 }
                                 """
                         ),
@@ -137,12 +142,10 @@ public class QuestionBankController {
                                     "questionType": "PART_III",
                                     "difficultyLevel": "APPLICATION",
                                     "questionContent": {
-                                        "question": "Tính khối lượng nguyên tử của carbon biết carbon có 6 proton và 6 neutron",
-                                        "image": "https://example.com/images/carbon-atom.png",
-                                        "answer": "Khối lượng nguyên tử carbon = 6 + 6 = 12 amu",
-                                        "keywords": ["proton", "neutron", "khối lượng nguyên tử", "12 amu"]
+                                        "question": "Một nguyên tử X có 13 proton và 14 neutron. Tính khối lượng gần đúng của nguyên tử X theo đơn vị amu.",
+                                        "answer": "27"
                                     },
-                                    "explanation": "Khối lượng nguyên tử bằng tổng số proton và neutron"
+                                    "explanation": "Khối lượng nguyên tử gần đúng = số proton + số neutron = 13 + 14 = 27 amu"
                                 }
                                 """
                         )

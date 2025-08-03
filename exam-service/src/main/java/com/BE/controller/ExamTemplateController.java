@@ -176,12 +176,49 @@ public class ExamTemplateController {
                                             "title": "Câu trắc nghiệm nhiều phương án lựa chọn",
                                             "questions": [
                                                 {
-                                                    "id": 1,
-                                                    "question": "Đơn vị đo khối lượng nguyên tử?",
+                                                    "id": "97327ca2-3878-45d5-98b8-0d5bd3d35971",
+                                                    "questionNumber": 1,
+                                                    "question": "Đơn vị nào sau đây được sử dụng để đo khối lượng nguyên tử?",
                                                     "options": {
-                                                        "A": "kg", "B": "g", "C": "amu", "D": "Å"
+                                                        "A": "Kilogam (kg)",
+                                                        "B": "Gam (g)",
+                                                        "C": "Đơn vị khối lượng nguyên tử (amu)",
+                                                        "D": "Ångström (Å)"
                                                     },
                                                     "answer": "C"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "part": "PHẦN II",
+                                            "title": "Câu hỏi Đúng/Sai",
+                                            "questions": [
+                                                {
+                                                    "id": "2976731a-32ca-4183-8aab-6cdd3998abee",
+                                                    "questionNumber": 1,
+                                                    "question": "Xét một nguyên tử X bất kỳ. Cho biết các phát biểu sau đúng hay sai:",
+                                                    "statements": {
+                                                        "a": {
+                                                            "text": "Nguyên tử X được cấu tạo từ ba loại hạt cơ bản: electron, proton và neutron.",
+                                                            "answer": true
+                                                        },
+                                                        "b": {
+                                                            "text": "Trong nguyên tử X, số proton luôn bằng số neutron.",
+                                                            "answer": false
+                                                        }
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "part": "PHẦN III",
+                                            "title": "Câu hỏi tự luận",
+                                            "questions": [
+                                                {
+                                                    "id": "cdf22701-360d-4ce7-9275-92f470d2d0e5",
+                                                    "questionNumber": 3,
+                                                    "question": "Một nguyên tử X có 13 proton và 14 neutron. Tính khối lượng gần đúng của nguyên tử X theo đơn vị amu.",
+                                                    "answer": "27"
                                                 }
                                             ]
                                         }
