@@ -2,6 +2,7 @@ package com.BE.service.implementService;
 
 import com.BE.enums.DifficultyLevel;
 import com.BE.enums.QuestionType;
+import com.BE.enums.QuestionBankVisibility;
 import com.BE.exception.BadRequestException;
 import com.BE.exception.ResourceNotFoundException;
 import com.BE.mapper.QuestionBankMapper;
@@ -39,8 +40,13 @@ public class QuestionBankServiceImpl implements IQuestionBankService {
             UUID currentUserId = accountUtils.getCurrentUserId();
             QuestionBank questionBank = questionBankMapper.toEntity(request, currentUserId);
 
+            // Set visibility based on user role
+            boolean isStaff = accountUtils.isCurrentUserStaff();
+            questionBank.setVisibility(QuestionBankVisibility.getByUserRole(isStaff));
+
             QuestionBank savedQuestionBank = questionBankRepository.save(questionBank);
-            log.info("Created question bank {} by user {}", savedQuestionBank.getId(), currentUserId);
+            log.info("Created question bank {} with visibility {} by user {}",
+                    savedQuestionBank.getId(), savedQuestionBank.getVisibility(), currentUserId);
 
             return questionBankMapper.toResponse(savedQuestionBank);
 
@@ -56,7 +62,7 @@ public class QuestionBankServiceImpl implements IQuestionBankService {
     public QuestionBankResponse getQuestionBankById(Long id) {
         try {
             UUID currentUserId = accountUtils.getCurrentUserId();
-            QuestionBank questionBank = questionBankRepository.findByIdAndCreatedBy(id, currentUserId)
+            QuestionBank questionBank = questionBankRepository.findByIdAndAccessible(id, currentUserId)
                 .orElseThrow(() -> new ResourceNotFoundException("Question bank not found with id: " + id + " or you don't have permission to access it"));
             log.info("Retrieved question bank {} for user {}", id, currentUserId);
             return questionBankMapper.toResponse(questionBank);
@@ -94,9 +100,7 @@ public class QuestionBankServiceImpl implements IQuestionBankService {
             if (request.getReferenceSource() != null) {
                 questionBank.setReferenceSource(request.getReferenceSource());
             }
-            if (request.getIsActive() != null) {
-                questionBank.setIsActive(request.getIsActive());
-            }
+            // Note: Visibility cannot be updated after creation to maintain data integrity
 
             questionBank.setUpdatedBy(currentUserId);
             QuestionBank savedQuestionBank = questionBankRepository.save(questionBank);
@@ -115,11 +119,9 @@ public class QuestionBankServiceImpl implements IQuestionBankService {
             QuestionBank questionBank = questionBankRepository.findByIdAndCreatedBy(id, currentUserId)
                 .orElseThrow(() -> new ResourceNotFoundException("Question bank not found with id: " + id + " or you don't have permission to access it"));
 
-            // Soft delete by setting isActive to false
-            questionBank.setIsActive(false);
-            questionBank.setUpdatedBy(currentUserId);
-            questionBankRepository.save(questionBank);
-            log.info("Soft deleted question bank {} by user {}", id, currentUserId);
+            // Hard delete the question bank
+            questionBankRepository.delete(questionBank);
+            log.info("Deleted question bank {} by user {}", id, currentUserId);
         } catch (Exception e) {
             log.error("Error deleting question bank {}: {}", id, e.getMessage(), e);
             throw new BadRequestException("Lỗi khi xóa câu hỏi: " + e.getMessage());
@@ -130,8 +132,8 @@ public class QuestionBankServiceImpl implements IQuestionBankService {
     public List<QuestionBankResponse> getQuestionBanksByLessonId(Long lessonId) {
         try {
             UUID currentUserId = accountUtils.getCurrentUserId();
-            List<QuestionBank> questionBanks = questionBankRepository.findByCreatedByAndLessonIdOrderByCreatedAtDesc(currentUserId, lessonId);
-            log.info("Found {} question banks for lesson {} by user {}", questionBanks.size(), lessonId, currentUserId);
+            List<QuestionBank> questionBanks = questionBankRepository.findByLessonIdAndAccessible(currentUserId, lessonId);
+            log.info("Found {} question banks for lesson {} accessible to user {}", questionBanks.size(), lessonId, currentUserId);
             return questionBanks.stream()
                     .map(questionBankMapper::toResponse)
                     .toList();
@@ -145,8 +147,8 @@ public class QuestionBankServiceImpl implements IQuestionBankService {
     public List<QuestionBankResponse> getQuestionBanksByQuestionType(QuestionType questionType) {
         try {
             UUID currentUserId = accountUtils.getCurrentUserId();
-            List<QuestionBank> questionBanks = questionBankRepository.findByCreatedByAndQuestionTypeOrderByCreatedAtDesc(currentUserId, questionType);
-            log.info("Found {} question banks for type {} by user {}", questionBanks.size(), questionType, currentUserId);
+            List<QuestionBank> questionBanks = questionBankRepository.findByQuestionTypeAndAccessible(currentUserId, questionType);
+            log.info("Found {} question banks for type {} accessible to user {}", questionBanks.size(), questionType, currentUserId);
             return questionBanks.stream()
                     .map(questionBankMapper::toResponse)
                     .toList();
@@ -160,8 +162,8 @@ public class QuestionBankServiceImpl implements IQuestionBankService {
     public List<QuestionBankResponse> getQuestionBanksByDifficultyLevel(DifficultyLevel difficultyLevel) {
         try {
             UUID currentUserId = accountUtils.getCurrentUserId();
-            List<QuestionBank> questionBanks = questionBankRepository.findByCreatedByAndDifficultyLevelOrderByCreatedAtDesc(currentUserId, difficultyLevel);
-            log.info("Found {} question banks for difficulty {} by user {}", questionBanks.size(), difficultyLevel, currentUserId);
+            List<QuestionBank> questionBanks = questionBankRepository.findByDifficultyLevelAndAccessible(currentUserId, difficultyLevel);
+            log.info("Found {} question banks for difficulty {} accessible to user {}", questionBanks.size(), difficultyLevel, currentUserId);
             return questionBanks.stream()
                     .map(questionBankMapper::toResponse)
                     .toList();
@@ -171,12 +173,14 @@ public class QuestionBankServiceImpl implements IQuestionBankService {
         }
     }
 
+
+
     @Override
     public List<QuestionBankResponse> getQuestionBanksByFilters(Long lessonId, QuestionType questionType, DifficultyLevel difficultyLevel) {
         try {
             UUID currentUserId = accountUtils.getCurrentUserId();
             List<QuestionBank> questionBanks = questionBankRepository.findByFilters(currentUserId, lessonId, questionType, difficultyLevel);
-            log.info("Found {} question banks with filters (lesson: {}, type: {}, difficulty: {}) by user {}",
+            log.info("Found {} question banks with filters (lesson: {}, type: {}, difficulty: {}) accessible to user {}",
                     questionBanks.size(), lessonId, questionType, difficultyLevel, currentUserId);
             return questionBanks.stream()
                     .map(questionBankMapper::toResponse)
@@ -192,7 +196,7 @@ public class QuestionBankServiceImpl implements IQuestionBankService {
         try {
             UUID currentUserId = accountUtils.getCurrentUserId();
             Page<QuestionBank> questionBanks = questionBankRepository.findByFilters(currentUserId, lessonId, questionType, difficultyLevel, pageable);
-            log.info("Found {} question banks with filters (lesson: {}, type: {}, difficulty: {}) by user {} (page {}, size {})",
+            log.info("Found {} question banks with filters (lesson: {}, type: {}, difficulty: {}) accessible to user {} (page {}, size {})",
                     questionBanks.getTotalElements(), lessonId, questionType, difficultyLevel, currentUserId,
                     pageable.getPageNumber(), pageable.getPageSize());
             return questionBanks.map(questionBankMapper::toResponse);
@@ -213,17 +217,17 @@ public class QuestionBankServiceImpl implements IQuestionBankService {
         try {
             UUID currentUserId = accountUtils.getCurrentUserId();
 
-            // Get all active question banks for current user
+            // Get all question banks accessible to current user (public + own private)
             List<QuestionBank> allQuestionBanks = questionBankRepository.findByFilters(currentUserId, null, null, null);
 
             // Calculate basic statistics
             Long totalQuestions = (long) allQuestionBanks.size();
-            Long activeQuestions = allQuestionBanks.stream()
-                    .filter(qb -> qb.getIsActive() != null && qb.getIsActive())
+            Long availableQuestions = allQuestionBanks.stream()
+                    .filter(QuestionBank::isAvailable)
                     .count();
             // Group by question type
             Map<QuestionType, Long> questionsByType = allQuestionBanks.stream()
-                    .filter(qb -> qb.getIsActive() != null && qb.getIsActive())
+                    .filter(QuestionBank::isAvailable)
                     .collect(Collectors.groupingBy(
                             QuestionBank::getQuestionType,
                             Collectors.counting()
@@ -231,7 +235,7 @@ public class QuestionBankServiceImpl implements IQuestionBankService {
 
             // Group by difficulty level
             Map<DifficultyLevel, Long> questionsByDifficulty = allQuestionBanks.stream()
-                    .filter(qb -> qb.getIsActive() != null && qb.getIsActive())
+                    .filter(QuestionBank::isAvailable)
                     .collect(Collectors.groupingBy(
                             QuestionBank::getDifficultyLevel,
                             Collectors.counting()
@@ -239,18 +243,18 @@ public class QuestionBankServiceImpl implements IQuestionBankService {
 
             // Group by lesson
             Map<Long, Long> questionsByLesson = allQuestionBanks.stream()
-                    .filter(qb -> qb.getIsActive() != null && qb.getIsActive())
+                    .filter(QuestionBank::isAvailable)
                     .collect(Collectors.groupingBy(
                             QuestionBank::getLessonId,
                             Collectors.counting()
                     ));
 
-            log.info("Generated statistics for user {}: total={}, active={}",
-                    currentUserId, totalQuestions, activeQuestions);
+            log.info("Generated statistics for user {}: total={}, available={}",
+                    currentUserId, totalQuestions, availableQuestions);
 
             return new QuestionBankStatistics(
                     totalQuestions,
-                    activeQuestions,
+                    availableQuestions,
                     questionsByType,
                     questionsByDifficulty,
                     questionsByLesson
@@ -266,8 +270,12 @@ public class QuestionBankServiceImpl implements IQuestionBankService {
         try {
             UUID currentUserId = accountUtils.getCurrentUserId();
             List<QuestionBank> questionBanks = questionBankRepository.findByMultipleFilters(currentUserId, lessonId, questionTypes, difficultyLevels);
-            log.info("Found {} question banks with multiple filters (lesson: {}, types: {}, difficulties: {}) by user {}",
-                    questionBanks.size(), lessonId, questionTypes, difficultyLevels, currentUserId);
+            if (lessonId == null && (questionTypes == null || questionTypes.isEmpty()) && (difficultyLevels == null || difficultyLevels.isEmpty())) {
+                log.info("Found {} question banks (all accessible) for user {}", questionBanks.size(), currentUserId);
+            } else {
+                log.info("Found {} question banks with filters (lesson: {}, types: {}, difficulties: {}) for user {}",
+                        questionBanks.size(), lessonId, questionTypes, difficultyLevels, currentUserId);
+            }
             return questionBanks.stream()
                     .map(questionBankMapper::toResponse)
                     .toList();
@@ -282,9 +290,14 @@ public class QuestionBankServiceImpl implements IQuestionBankService {
         try {
             UUID currentUserId = accountUtils.getCurrentUserId();
             Page<QuestionBank> questionBanks = questionBankRepository.findByMultipleFilters(currentUserId, lessonId, questionTypes, difficultyLevels, pageable);
-            log.info("Found {} question banks with multiple filters (lesson: {}, types: {}, difficulties: {}) by user {} (page {}, size {})",
-                    questionBanks.getTotalElements(), lessonId, questionTypes, difficultyLevels, currentUserId,
-                    pageable.getPageNumber(), pageable.getPageSize());
+            if (lessonId == null && (questionTypes == null || questionTypes.isEmpty()) && (difficultyLevels == null || difficultyLevels.isEmpty())) {
+                log.info("Found {} question banks (all accessible) for user {} (page {}, size {})",
+                        questionBanks.getTotalElements(), currentUserId, pageable.getPageNumber(), pageable.getPageSize());
+            } else {
+                log.info("Found {} question banks with filters (lesson: {}, types: {}, difficulties: {}) for user {} (page {}, size {})",
+                        questionBanks.getTotalElements(), lessonId, questionTypes, difficultyLevels, currentUserId,
+                        pageable.getPageNumber(), pageable.getPageSize());
+            }
             return questionBanks.map(questionBankMapper::toResponse);
         } catch (Exception e) {
             log.error("Error getting question banks by multiple filters with pagination: {}", e.getMessage(), e);

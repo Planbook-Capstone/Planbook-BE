@@ -2,6 +2,7 @@ package com.BE.model.response;
 
 import com.BE.enums.DifficultyLevel;
 import com.BE.enums.QuestionType;
+import com.BE.enums.QuestionBankVisibility;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -67,8 +68,8 @@ public class QuestionBankResponse {
     @Schema(description = "Reference source", example = "Sách giáo khoa Hóa học 10 - Trang 25")
     private String referenceSource;
 
-    @Schema(description = "Whether the question is active", example = "true")
-    private Boolean isActive;
+    @Schema(description = "Visibility level of the question bank", example = "PUBLIC")
+    private QuestionBankVisibility visibility;
 
     @Schema(description = "ID of the user who created this question", example = "550e8400-e29b-41d4-a716-446655440002")
     private UUID createdBy;

@@ -37,10 +37,12 @@ public interface IQuestionBankService {
     QuestionBankResponse updateQuestionBank(Long questionBankId, UpdateQuestionBankRequest request);
 
     /**
-     * Delete question bank (soft delete by setting isActive to false)
+     * Delete question bank
      * @param questionBankId The question bank ID
      */
     void deleteQuestionBank(Long questionBankId);
+
+
 
     /**
      * Get question banks by lesson ID

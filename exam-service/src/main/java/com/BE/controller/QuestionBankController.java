@@ -192,7 +192,9 @@ public class QuestionBankController {
               + Thống kê: (removed usage tracking)
               + Audit: createdBy, updatedBy, createdAt, updatedAt
 
-            **Bảo mật:** Chỉ có thể xem câu hỏi do chính mình tạo ra.
+            **Quyền truy cập:**
+            - Có thể xem câu hỏi công khai (PUBLIC) của bất kỳ ai
+            - Có thể xem câu hỏi riêng tư (PRIVATE) do chính mình tạo ra
             """
     )
     @ApiResponses(value = {
@@ -240,7 +242,7 @@ public class QuestionBankController {
             - explanation: Giải thích đáp án
             - referenceSource: Nguồn tham khảo (tối đa 300 ký tự)
             - estimatedTimeMinutes: Thời gian ước tính (tối thiểu 1 phút)
-            - isActive: Trạng thái hoạt động (true/false)
+            - visibility: Mức độ hiển thị (PUBLIC/PRIVATE) - không thể thay đổi sau khi tạo
 
             **Lưu ý quan trọng:**
             - Nếu thay đổi questionType, phải đảm bảo questionContent phù hợp với loại mới
@@ -280,15 +282,14 @@ public class QuestionBankController {
     }
 
     @Operation(
-        summary = "Xóa câu hỏi khỏi ngân hàng câu hỏi (soft delete)",
+        summary = "Xóa câu hỏi khỏi ngân hàng câu hỏi",
         description = """
-            Xóa mềm một câu hỏi bằng cách đặt trạng thái isActive = false.
+            Xóa vĩnh viễn một câu hỏi khỏi ngân hàng câu hỏi.
 
-            **Đặc điểm của soft delete:**
-            - Câu hỏi không bị xóa vĩnh viễn khỏi database
-            - Chỉ đặt isActive = false để ẩn khỏi danh sách
-            - Có thể khôi phục lại bằng cách update isActive = true
-            - Dữ liệu thống kê và lịch sử sử dụng được giữ nguyên
+            **Đặc điểm:**
+            - Câu hỏi sẽ bị xóa vĩnh viễn khỏi database
+            - Không thể khôi phục sau khi xóa
+            - Tất cả dữ liệu liên quan sẽ bị mất
 
             **Bảo mật:** Chỉ có thể xóa câu hỏi do chính mình tạo ra.
 
@@ -326,18 +327,30 @@ public class QuestionBankController {
 
 
     @Operation(
-        summary = "Filter question banks",
+        summary = "Lấy danh sách câu hỏi với khả năng lọc",
         description = """
-            Filter question banks by lesson ID, question types, and difficulty levels.
+            Lấy danh sách câu hỏi có thể truy cập với khả năng lọc theo các tiêu chí.
 
-            **Multiple Selection Support:**
-            - questionTypes: Can select multiple question types (PART_I, PART_II, PART_III)
-            - difficultyLevels: Can select multiple difficulty levels (BIET, HIEU, VAN_DUNG, VAN_DUNG_CAO)
+            **Quyền truy cập:**
+            - Hiển thị câu hỏi PUBLIC (kho chung) + câu hỏi PRIVATE của bản thân (kho cá nhân)
 
-            **Examples:**
-            - Single type: ?questionTypes=PART_I
-            - Multiple types: ?questionTypes=PART_I,PART_II
-            - Multiple difficulties: ?difficultyLevels=KNOWLEDGE,COMPREHENSION
+            **Chức năng:**
+            - Không có filter: Trả về TẤT CẢ câu hỏi có thể truy cập
+            - Có filter: Lọc theo các tiêu chí được cung cấp
+
+            **Hỗ trợ lọc đa lựa chọn:**
+            - lessonId: Lọc theo bài học cụ thể
+            - questionTypes: Có thể chọn nhiều loại câu hỏi (PART_I, PART_II, PART_III)
+            - difficultyLevels: Có thể chọn nhiều mức độ khó (KNOWLEDGE, COMPREHENSION, APPLICATION, ANALYSIS)
+            - Hỗ trợ phân trang với page và size
+
+            **Ví dụ sử dụng:**
+            - GET /api/v1/question-banks/filter (lấy tất cả)
+            - GET /api/v1/question-banks/filter?questionTypes=PART_I
+            - GET /api/v1/question-banks/filter?questionTypes=PART_I,PART_II
+            - GET /api/v1/question-banks/filter?difficultyLevels=KNOWLEDGE,COMPREHENSION
+            - GET /api/v1/question-banks/filter?lessonId=1&questionTypes=PART_I
+            - GET /api/v1/question-banks/filter?page=0&size=20 (phân trang)
             """
     )
     @ApiResponses(value = {

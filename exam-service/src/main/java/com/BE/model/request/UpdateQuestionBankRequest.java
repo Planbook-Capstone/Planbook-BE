@@ -2,6 +2,7 @@ package com.BE.model.request;
 
 import com.BE.enums.DifficultyLevel;
 import com.BE.enums.QuestionType;
+import com.BE.enums.QuestionBankVisibility;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -65,6 +66,6 @@ public class UpdateQuestionBankRequest {
     @Schema(description = "Updated reference source", example = "Sách giáo khoa Hóa học 10 - Trang 25-27")
     private String referenceSource;
 
-    @Schema(description = "Whether the question is active", example = "true")
-    private Boolean isActive;
+    @Schema(description = "Visibility level of the question bank", example = "PUBLIC")
+    private QuestionBankVisibility visibility;
 }

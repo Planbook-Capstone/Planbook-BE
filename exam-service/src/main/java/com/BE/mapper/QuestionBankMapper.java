@@ -17,7 +17,7 @@ public interface QuestionBankMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "createdBy", source = "createdBy")
     @Mapping(target = "updatedBy", ignore = true)
-    @Mapping(target = "isActive", constant = "true")
+    @Mapping(target = "visibility", ignore = true) // Will be set in service layer based on user role
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     QuestionBank toEntity(CreateQuestionBankRequest request, UUID createdBy);
@@ -38,6 +38,7 @@ public interface QuestionBankMapper {
     @Mapping(target = "updatedBy", source = "updatedBy")
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "visibility", ignore = true) // Visibility should not be updated after creation
     void updateEntity(@MappingTarget QuestionBank entity, UpdateQuestionBankRequest request, UUID updatedBy);
 
     /**
@@ -51,6 +52,7 @@ public interface QuestionBankMapper {
     @Mapping(target = "questionContent", ignore = true)
     @Mapping(target = "questionType", ignore = true)
     @Mapping(target = "difficultyLevel", ignore = true)
+    @Mapping(target = "visibility", ignore = true) // Visibility should not be updated after creation
     void updateBasicInfo(@MappingTarget QuestionBank entity, UpdateQuestionBankRequest request, UUID updatedBy);
 
 

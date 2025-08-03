@@ -3,6 +3,7 @@ package com.BE.model.entity;
 import com.BE.config.TimestampEntityListener;
 import com.BE.enums.DifficultyLevel;
 import com.BE.enums.QuestionType;
+import com.BE.enums.QuestionBankVisibility;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -50,8 +51,9 @@ public class QuestionBank {
     @Column(name = "reference_source", length = 300)
     private String referenceSource;
 
-    @Column(name = "is_active", nullable = false)
-    private Boolean isActive = true;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "visibility", nullable = false)
+    private QuestionBankVisibility visibility;
     
     @Column(name = "created_by", nullable = false)
     private UUID createdBy;
@@ -73,7 +75,21 @@ public class QuestionBank {
      * Check if question is available for use
      */
     public boolean isAvailable() {
-        return this.isActive != null && this.isActive;
+        return this.visibility != null;
+    }
+
+    /**
+     * Check if question bank is public
+     */
+    public boolean isPublic() {
+        return this.visibility == QuestionBankVisibility.PUBLIC;
+    }
+
+    /**
+     * Check if question bank is private
+     */
+    public boolean isPrivate() {
+        return this.visibility == QuestionBankVisibility.PRIVATE;
     }
     
     /**
