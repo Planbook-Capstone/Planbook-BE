@@ -1,5 +1,6 @@
 package com.BE.service.interfaceServices;
 
+import com.BE.enums.ToolResultStatus;
 import com.BE.model.request.CreateToolResultRequest;
 import com.BE.model.request.ToolResultFilterRequest;
 import com.BE.model.request.UpdateToolResultRequest;
@@ -46,16 +47,5 @@ public interface IToolResultService {
      */
     void delete(Long id);
 
-    /**
-     * Kiểm tra tồn tại ToolResult theo id
-     * @param id id của ToolResult
-     * @return boolean
-     */
-    boolean existsById(Long id);
-
-    /**
-     * Đếm tổng số ToolResult
-     * @return long
-     */
-    long count();
+    ToolResultResponse updateStatus(Long id, ToolResultStatus status);
 }

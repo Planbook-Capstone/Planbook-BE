@@ -1,5 +1,6 @@
 package com.BE.controller;
 
+import com.BE.enums.ToolResultStatus;
 import com.BE.model.request.CreateToolResultRequest;
 import com.BE.model.request.ToolResultFilterRequest;
 import com.BE.model.request.UpdateToolResultRequest;
@@ -223,6 +224,26 @@ public class ToolResultController {
         toolResultService.delete(id);
         return responseHandler.response(200, "Xóa kết quả công cụ AI thành công!", null);
     }
+
+    @PatchMapping("/{id}/status")
+    @Operation(
+            summary = "Cập nhật trạng thái kết quả công cụ AI",
+            description = "Cập nhật trạng thái (DRAFT, ARCHIVED, DELETED) cho ToolResult bằng ID và status param"
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Cập nhật trạng thái thành công."),
+            @ApiResponse(responseCode = "404", description = "Không tìm thấy kết quả công cụ."),
+            @ApiResponse(responseCode = "400", description = "Trạng thái không hợp lệ.")
+    })
+    public ResponseEntity updateToolResultStatus(
+            @PathVariable Long id,
+            @Parameter(description = "Trường trạng thái", schema = @Schema(implementation = ToolResultStatus.class))
+            @RequestParam ToolResultStatus status
+    ) {
+        ToolResultResponse updated = toolResultService.updateStatus(id, status);
+        return responseHandler.response(200, "Cập nhật trạng thái thành công", updated);
+    }
+
 
 
 }
