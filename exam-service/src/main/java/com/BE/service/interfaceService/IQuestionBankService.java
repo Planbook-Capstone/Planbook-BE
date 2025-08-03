@@ -43,50 +43,6 @@ public interface IQuestionBankService {
     void deleteQuestionBank(Long questionBankId);
 
 
-
-    /**
-     * Get question banks by lesson ID
-     * @param lessonId The lesson ID
-     * @return List of question bank responses
-     */
-    List<QuestionBankResponse> getQuestionBanksByLessonId(Long lessonId);
-
-    /**
-     * Get question banks by question type
-     * @param questionType The question type
-     * @return List of question bank responses
-     */
-    List<QuestionBankResponse> getQuestionBanksByQuestionType(QuestionType questionType);
-
-    /**
-     * Get question banks by difficulty level
-     * @param difficultyLevel The difficulty level
-     * @return List of question bank responses
-     */
-    List<QuestionBankResponse> getQuestionBanksByDifficultyLevel(DifficultyLevel difficultyLevel);
-
-    /**
-     * Get question banks with multiple filters
-     * @param lessonId The lesson ID (optional)
-     * @param questionType The question type (optional)
-     * @param difficultyLevel The difficulty level (optional)
-     * @return List of question bank responses
-     */
-    List<QuestionBankResponse> getQuestionBanksByFilters(Long lessonId, QuestionType questionType,
-                                                        DifficultyLevel difficultyLevel);
-
-    /**
-     * Get question banks with multiple filters and pagination
-     * @param lessonId The lesson ID (optional)
-     * @param questionType The question type (optional)
-     * @param difficultyLevel The difficulty level (optional)
-     * @param pageable Pagination information
-     * @return Page of question bank responses
-     */
-    Page<QuestionBankResponse> getQuestionBanksByFilters(Long lessonId, QuestionType questionType,
-                                                        DifficultyLevel difficultyLevel,
-                                                        Pageable pageable);
-
     /**
      * Get question banks with multiple filters (supports multiple types and difficulties)
      * @param lessonId The lesson ID (optional)
@@ -108,7 +64,6 @@ public interface IQuestionBankService {
     Page<QuestionBankResponse> getQuestionBanksByFilters(Long lessonId, List<QuestionType> questionTypes,
                                                         List<DifficultyLevel> difficultyLevels,
                                                         Pageable pageable);
-
 
 
 
