@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
 import java.util.Map;
 
 @Data
@@ -16,8 +17,8 @@ import java.util.Map;
 @Schema(description = "Request to update an existing question bank entry")
 public class UpdateQuestionBankRequest {
 
-    @Schema(description = "Lesson ID that this question belongs to", example = "2")
-    private Long lessonId;
+    @Schema(description = "List of lesson IDs that this question belongs to", example = "[2, 3, 4]")
+    private List<Long> lessonIds;
 
     @Schema(description = "Question type (part)", example = "PART_II")
     private QuestionType questionType;

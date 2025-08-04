@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
 import java.util.Map;
 
 @Data
@@ -15,8 +16,8 @@ import java.util.Map;
 @Schema(description = "Request to create a new question bank entry")
 public class CreateQuestionBankRequest {
 
-    @Schema(description = "Lesson ID that this question belongs to", example = "1", required = true)
-    private Long lessonId;
+    @Schema(description = "List of lesson IDs that this question belongs to", example = "[1, 2, 3]", required = true)
+    private List<Long> lessonIds;
 
     @Schema(description = "Question type (part)", example = "PART_I", required = true)
     private QuestionType questionType;

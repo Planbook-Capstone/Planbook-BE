@@ -42,7 +42,7 @@ public class QuestionBankController {
             Tạo một câu hỏi mới với các thông tin:
 
             **Thông tin cơ bản:**
-            - lessonId: ID của bài học (bắt buộc)
+            - lessonIds: Danh sách ID của các bài học (bắt buộc)
             - questionType: Loại câu hỏi (PART_I/PART_II/PART_III)
             - difficultyLevel: Mức độ khó (KNOWLEDGE/COMPREHENSION/APPLICATION/ANALYSIS)
 
@@ -83,7 +83,7 @@ public class QuestionBankController {
                             name = "Part I - Multiple Choice",
                             value = """
                                 {
-                                    "lessonId": 1,
+                                    "lessonIds": [1, 2],
                                     "questionType": "PART_I",
                                     "difficultyLevel": "KNOWLEDGE",
                                     "questionContent": {
@@ -106,7 +106,7 @@ public class QuestionBankController {
                             name = "Part II - True/False",
                             value = """
                                 {
-                                    "lessonId": 1,
+                                    "lessonIds": [1],
                                     "questionType": "PART_II",
                                     "difficultyLevel": "COMPREHENSION",
                                     "questionContent": {
@@ -138,7 +138,7 @@ public class QuestionBankController {
                             name = "Part III - Short Answer",
                             value = """
                                 {
-                                    "lessonId": 1,
+                                    "lessonIds": [1],
                                     "questionType": "PART_III",
                                     "difficultyLevel": "APPLICATION",
                                     "questionContent": {
@@ -329,7 +329,7 @@ public class QuestionBankController {
             - Có filter: Lọc theo các tiêu chí được cung cấp
 
             **Hỗ trợ lọc đa lựa chọn:**
-            - lessonId: Lọc theo bài học cụ thể
+            - lessonId: Lọc theo bài học cụ thể (để tương thích ngược)
             - questionTypes: Có thể chọn nhiều loại câu hỏi (PART_I, PART_II, PART_III)
             - difficultyLevels: Có thể chọn nhiều mức độ khó (KNOWLEDGE, COMPREHENSION, APPLICATION, ANALYSIS)
             - Hỗ trợ phân trang với page và size
@@ -349,8 +349,8 @@ public class QuestionBankController {
     })
     @GetMapping("")
     public ResponseEntity<DataResponseDTO<List<QuestionBankResponse>>> filterQuestionBanks(
-            @Parameter(description = "Lesson ID", example = "1")
-            @RequestParam(required = false) Long lessonId,
+            @Parameter(description = "Lesson IDs (comma-separated)", example = "1,2,3")
+            @RequestParam(required = false) List<Long> lessonIds,
             @Parameter(description = "Question types (comma-separated)", example = "PART_I,PART_II")
             @RequestParam(required = false) List<QuestionType> questionTypes,
             @Parameter(description = "Difficulty levels (comma-separated)", example = "KNOWLEDGE,COMPREHENSION")
@@ -360,13 +360,13 @@ public class QuestionBankController {
             @Parameter(description = "Page size (0 for no pagination)", example = "20")
             @RequestParam(defaultValue = "20") int size) {
 
-        log.info("Filtering question banks with lessonId: {}, types: {}, difficulties: {}",
-                lessonId, questionTypes, difficultyLevels);
+        log.info("Filtering question banks with lessonIds: {}, types: {}, difficulties: {}",
+                lessonIds, questionTypes, difficultyLevels);
 
         if (size > 0) {
             Pageable pageable = PageRequest.of(page, size);
             Page<QuestionBankResponse> questionBanks = questionBankService.getQuestionBanksByFilters(
-                lessonId, questionTypes, difficultyLevels, pageable);
+                lessonIds, questionTypes, difficultyLevels, pageable);
             DataResponseDTO<List<QuestionBankResponse>> dataResponse = new DataResponseDTO<>(
                 HttpStatus.OK.value(),
                 "Lọc câu hỏi thành công",
@@ -375,7 +375,7 @@ public class QuestionBankController {
             return ResponseEntity.ok(dataResponse);
         } else {
             List<QuestionBankResponse> questionBanks = questionBankService.getQuestionBanksByFilters(
-                lessonId, questionTypes, difficultyLevels);
+                lessonIds, questionTypes, difficultyLevels);
             DataResponseDTO<List<QuestionBankResponse>> dataResponse = new DataResponseDTO<>(
                 HttpStatus.OK.value(),
                 "Lọc câu hỏi thành công",
