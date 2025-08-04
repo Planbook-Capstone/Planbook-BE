@@ -39,7 +39,10 @@ public class PublicEndpointConfig {
             "/*/api/sendMessage",
             "/*/api/auth/register",
             "/*/api/orders/webhook/payOs",
-            "/*/api/payments/confirm-webhook"
+            "/*/api/payments/confirm-webhook",
+            "/*/api/exam-instances/code/**",
+            "/*/api/exam-instances/code/*/submit"
+
     );
 
     private final List<String> publicGetEndpoints = Arrays.asList(
