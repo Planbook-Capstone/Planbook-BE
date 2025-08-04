@@ -74,8 +74,8 @@ public class QuestionBankServiceImpl implements IQuestionBankService {
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy ngân hàng câu hỏi với id: " + id + " hoặc bạn không có quyền truy cập"));
 
             // Update fields if provided
-            if (request.getLessonId() != null) {
-                questionBank.setLessonId(request.getLessonId());
+            if (request.getLessonIds() != null) {
+                questionBank.setLessonIds(request.getLessonIds());
             }
             if (request.getQuestionType() != null) {
                 questionBank.setQuestionType(request.getQuestionType());
@@ -133,15 +133,35 @@ public class QuestionBankServiceImpl implements IQuestionBankService {
 
 
     @Override
-    public List<QuestionBankResponse> getQuestionBanksByFilters(Long lessonId, List<QuestionType> questionTypes, List<DifficultyLevel> difficultyLevels) {
+    public List<QuestionBankResponse> getQuestionBanksByFilters(List<Long> lessonIds, List<QuestionType> questionTypes, List<DifficultyLevel> difficultyLevels) {
         try {
             UUID currentUserId = accountUtils.getCurrentUserId();
-            List<QuestionBank> questionBanks = questionBankRepository.findByMultipleFilters(currentUserId, lessonId, questionTypes, difficultyLevels);
-            if (lessonId == null && (questionTypes == null || questionTypes.isEmpty()) && (difficultyLevels == null || difficultyLevels.isEmpty())) {
+
+            // Convert enums to strings for native query
+            List<String> questionTypeStrings = questionTypes != null ?
+                questionTypes.stream().map(Enum::name).toList() : null;
+            List<String> difficultyLevelStrings = difficultyLevels != null ?
+                difficultyLevels.stream().map(Enum::name).toList() : null;
+
+            // Convert lesson IDs to JSON string for MySQL JSON_OVERLAPS function
+            String lessonIdsJson = null;
+            if (lessonIds != null && !lessonIds.isEmpty()) {
+                try {
+                    lessonIdsJson = new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(lessonIds);
+                } catch (Exception e) {
+                    log.error("Error converting lesson IDs to JSON: {}", e.getMessage());
+                    throw new BadRequestException("Invalid lesson IDs format");
+                }
+            }
+
+            List<QuestionBank> questionBanks = questionBankRepository.findByMultipleFilters(
+                currentUserId, lessonIdsJson, questionTypeStrings, difficultyLevelStrings);
+
+            if ((lessonIds == null || lessonIds.isEmpty()) && (questionTypes == null || questionTypes.isEmpty()) && (difficultyLevels == null || difficultyLevels.isEmpty())) {
                 log.info("Tìm thấy {} ngân hàng câu hỏi (tất cả có thể truy cập) cho người dùng {}", questionBanks.size(), currentUserId);
             } else {
                 log.info("Tìm thấy {} ngân hàng câu hỏi với bộ lọc (bài học: {}, loại: {}, độ khó: {}) cho người dùng {}",
-                        questionBanks.size(), lessonId, questionTypes, difficultyLevels, currentUserId);
+                        questionBanks.size(), lessonIds, questionTypes, difficultyLevels, currentUserId);
             }
             return questionBanks.stream()
                     .map(questionBankMapper::toResponse)
@@ -153,16 +173,36 @@ public class QuestionBankServiceImpl implements IQuestionBankService {
     }
 
     @Override
-    public Page<QuestionBankResponse> getQuestionBanksByFilters(Long lessonId, List<QuestionType> questionTypes, List<DifficultyLevel> difficultyLevels, Pageable pageable) {
+    public Page<QuestionBankResponse> getQuestionBanksByFilters(List<Long> lessonIds, List<QuestionType> questionTypes, List<DifficultyLevel> difficultyLevels, Pageable pageable) {
         try {
             UUID currentUserId = accountUtils.getCurrentUserId();
-            Page<QuestionBank> questionBanks = questionBankRepository.findByMultipleFilters(currentUserId, lessonId, questionTypes, difficultyLevels, pageable);
-            if (lessonId == null && (questionTypes == null || questionTypes.isEmpty()) && (difficultyLevels == null || difficultyLevels.isEmpty())) {
+
+            // Convert enums to strings for native query
+            List<String> questionTypeStrings = questionTypes != null ?
+                questionTypes.stream().map(Enum::name).toList() : null;
+            List<String> difficultyLevelStrings = difficultyLevels != null ?
+                difficultyLevels.stream().map(Enum::name).toList() : null;
+
+            // Convert lesson IDs to JSON string for MySQL JSON_OVERLAPS function
+            String lessonIdsJson = null;
+            if (lessonIds != null && !lessonIds.isEmpty()) {
+                try {
+                    lessonIdsJson = new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(lessonIds);
+                } catch (Exception e) {
+                    log.error("Error converting lesson IDs to JSON: {}", e.getMessage());
+                    throw new BadRequestException("Invalid lesson IDs format");
+                }
+            }
+
+            Page<QuestionBank> questionBanks = questionBankRepository.findByMultipleFilters(
+                currentUserId, lessonIdsJson, questionTypeStrings, difficultyLevelStrings, pageable);
+
+            if ((lessonIds == null || lessonIds.isEmpty()) && (questionTypes == null || questionTypes.isEmpty()) && (difficultyLevels == null || difficultyLevels.isEmpty())) {
                 log.info("Tìm thấy {} ngân hàng câu hỏi (tất cả có thể truy cập) cho người dùng {} (trang {}, kích thước {})",
                         questionBanks.getTotalElements(), currentUserId, pageable.getPageNumber(), pageable.getPageSize());
             } else {
                 log.info("Tìm thấy {} ngân hàng câu hỏi với bộ lọc (bài học: {}, loại: {}, độ khó: {}) cho người dùng {} (trang {}, kích thước {})",
-                        questionBanks.getTotalElements(), lessonId, questionTypes, difficultyLevels, currentUserId,
+                        questionBanks.getTotalElements(), lessonIds, questionTypes, difficultyLevels, currentUserId,
                         pageable.getPageNumber(), pageable.getPageSize());
             }
             return questionBanks.map(questionBankMapper::toResponse);

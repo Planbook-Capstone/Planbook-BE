@@ -10,6 +10,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -22,8 +23,8 @@ public class QuestionBankResponse {
     @Schema(description = "Question bank ID", example = "1")
     private Long id;
 
-    @Schema(description = "Lesson ID that this question belongs to", example = "1")
-    private Long lessonId;
+    @Schema(description = "List of lesson IDs that this question belongs to", example = "[1, 2, 3]")
+    private List<Long> lessonIds;
 
     @Schema(description = "Question type (part)", example = "PART_I")
     private QuestionType questionType;

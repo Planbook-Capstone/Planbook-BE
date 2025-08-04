@@ -45,23 +45,23 @@ public interface IQuestionBankService {
 
     /**
      * Get question banks with multiple filters (supports multiple types and difficulties)
-     * @param lessonId The lesson ID (optional)
+     * @param lessonIds List of lesson IDs (optional)
      * @param questionTypes List of question types (optional)
      * @param difficultyLevels List of difficulty levels (optional)
      * @return List of question bank responses
      */
-    List<QuestionBankResponse> getQuestionBanksByFilters(Long lessonId, List<QuestionType> questionTypes,
+    List<QuestionBankResponse> getQuestionBanksByFilters(List<Long> lessonIds, List<QuestionType> questionTypes,
                                                         List<DifficultyLevel> difficultyLevels);
 
     /**
      * Get question banks with multiple filters and pagination (supports multiple types and difficulties)
-     * @param lessonId The lesson ID (optional)
+     * @param lessonIds List of lesson IDs (optional)
      * @param questionTypes List of question types (optional)
      * @param difficultyLevels List of difficulty levels (optional)
      * @param pageable Pagination information
      * @return Page of question bank responses
      */
-    Page<QuestionBankResponse> getQuestionBanksByFilters(Long lessonId, List<QuestionType> questionTypes,
+    Page<QuestionBankResponse> getQuestionBanksByFilters(List<Long> lessonIds, List<QuestionType> questionTypes,
                                                         List<DifficultyLevel> difficultyLevels,
                                                         Pageable pageable);
 

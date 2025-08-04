@@ -1,6 +1,7 @@
 package com.BE.model.entity;
 
 import com.BE.config.TimestampEntityListener;
+import com.BE.convert.LongListToJsonConverter;
 import com.BE.enums.DifficultyLevel;
 import com.BE.enums.QuestionType;
 import com.BE.enums.QuestionBankVisibility;
@@ -13,6 +14,8 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -30,8 +33,9 @@ public class QuestionBank {
     @Column(name = "id", updatable = false, nullable = false)
     private Long id;
 
-    @Column(name = "lesson_id", nullable = false)
-    private Long lessonId;
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Convert(converter = LongListToJsonConverter.class)
+    List<Long> lessonIds;
     
     @Enumerated(EnumType.STRING)
     @Column(name = "question_type", nullable = false)
@@ -68,34 +72,51 @@ public class QuestionBank {
     private LocalDateTime updatedAt;
     
     // Helper methods
-    
 
-    
     /**
-     * Check if question is available for use
+     * Check if this question bank belongs to a specific lesson
      */
-    public boolean isAvailable() {
-        return this.visibility != null;
+    public boolean belongsToLesson(Long lessonId) {
+        return lessonIds != null && lessonIds.contains(lessonId);
     }
 
     /**
-     * Check if question bank is public
+     * Add a lesson ID to this question bank
      */
+    public void addLessonId(Long lessonId) {
+        if (lessonIds == null) {
+            lessonIds = new ArrayList<>();
+        }
+        if (!lessonIds.contains(lessonId)) {
+            lessonIds.add(lessonId);
+        }
+    }
+
+    /**
+     * Remove a lesson ID from this question bank
+     */
+    public void removeLessonId(Long lessonId) {
+        if (lessonIds != null) {
+            lessonIds.remove(lessonId);
+        }
+    }
+
+    /**
+     * Get the number of lessons this question bank belongs to
+     */
+    public int getLessonCount() {
+        return lessonIds != null ? lessonIds.size() : 0;
+    }
+
+
     public boolean isPublic() {
         return this.visibility == QuestionBankVisibility.PUBLIC;
     }
 
-    /**
-     * Check if question bank is private
-     */
+
     public boolean isPrivate() {
         return this.visibility == QuestionBankVisibility.PRIVATE;
     }
-    
-    /**
-     * Get display name combining type and lesson ID
-     */
-    public String getDisplayName() {
-        return String.format("[%s] Lesson %d Question", questionType.getDescription(), lessonId);
-    }
+
+
 }
