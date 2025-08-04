@@ -14,6 +14,6 @@ import lombok.NoArgsConstructor;
 public class WorkSpaceRequest {
 
     @NotNull(message = "academicYearId cannot be blank")
-    private UUID academicYearId;
+    private Long academicYearId;
 
 }

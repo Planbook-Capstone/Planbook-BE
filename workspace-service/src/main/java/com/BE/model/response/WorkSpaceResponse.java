@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 public class WorkSpaceResponse {
     private Long id;
     private AcademicYearResponse academicYear;
-    private UUID userId;
+//    private UUID userId;
     private String createdAt;
     private String updatedAt;
 }

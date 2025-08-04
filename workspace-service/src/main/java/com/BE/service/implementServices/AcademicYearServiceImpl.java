@@ -69,7 +69,7 @@ public class AcademicYearServiceImpl implements IAcademicYearService {
     }
 
     @Override
-    public AcademicYearResponse update(UUID id, AcademicYearRequest request) {
+    public AcademicYearResponse update(Long id, AcademicYearRequest request) {
         dateNowUtils.validateAcademicYear(request);
         AcademicYear academicYear = academicYearRepository.findById(id)
                 .orElseThrow(() -> new BadRequestException("Không tìm thấy năm học"));
@@ -81,7 +81,7 @@ public class AcademicYearServiceImpl implements IAcademicYearService {
     }
 
     @Override
-    public AcademicYearResponse updateStatus(UUID id, AcademicYearStatusEnum status) {
+    public AcademicYearResponse updateStatus(Long id, AcademicYearStatusEnum status) {
         if (status == AcademicYearStatusEnum.ACTIVE) {
             AcademicYear currentActive = getActiveAcademicYear();
             if (currentActive != null && !currentActive.getId().equals(id)) {
@@ -97,7 +97,7 @@ public class AcademicYearServiceImpl implements IAcademicYearService {
     }
 
     @Override
-    public void delete(UUID id) {
+    public void delete(Long id) {
         academicYearRepository.deleteById(id);
     }
 

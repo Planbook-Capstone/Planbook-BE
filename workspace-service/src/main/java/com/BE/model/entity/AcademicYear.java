@@ -18,9 +18,8 @@ import lombok.Setter;
 @Setter
 public class AcademicYear {
     @Id
-    @GeneratedValue
-    @UuidGenerator
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     private LocalDateTime startDate;
     private LocalDateTime endDate;

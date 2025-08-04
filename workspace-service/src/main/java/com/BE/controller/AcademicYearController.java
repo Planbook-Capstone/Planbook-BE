@@ -73,7 +73,7 @@ public class AcademicYearController {
     })
     @PutMapping("/{id}")
     public ResponseEntity update(
-            @PathVariable UUID id,
+            @PathVariable Long id,
             @Valid @RequestBody AcademicYearRequest request) {
         return responseHandler.response(200, "Cập nhật năm học thành công!", academicYearService.update(id, request));
     }
@@ -94,7 +94,7 @@ public class AcademicYearController {
     })
     @PatchMapping("/{id}/status")
     public ResponseEntity<?> updateStatus(
-            @PathVariable UUID id,
+            @PathVariable Long id,
             @Parameter(description = "Trạng thái mới (ACTIVE, INACTIVE, UPCOMING)", required = true)
             @RequestParam AcademicYearStatusEnum status) {
 
@@ -112,7 +112,7 @@ public class AcademicYearController {
             @ApiResponse(responseCode = "404", description = "Không tìm thấy năm học.")
     })
     @DeleteMapping("/{id}")
-    public ResponseEntity delete(@PathVariable UUID id) {
+    public ResponseEntity delete(@PathVariable Long id) {
         academicYearService.delete(id);
         return responseHandler.response(200, "Xóa năm học thành công!", 1);
     }

@@ -50,9 +50,9 @@ public class WorkSpaceController {
         return responseHandler.response(200, "Lấy workspace theo id thành công!", workSpaceService.getById(id));
     }
 
-    @Operation(summary = "Tạo mới workspace", description = "Tạo mới workspace cho user trong năm học nhất định.", requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Dữ liệu tạo workspace mới", required = true, content = @Content(schema = @Schema(implementation = WorkSpaceRequest.class), examples = @ExampleObject(value = "{\"academicYearId\":\"UUid\"}"))))
+    @Operation(summary = "Tạo mới workspace", description = "Tạo mới workspace cho user trong năm học nhất định.", requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Dữ liệu tạo workspace mới", required = true, content = @Content(schema = @Schema(implementation = WorkSpaceRequest.class), examples = @ExampleObject(value = "{\"academicYearId\":\"1\"}"))))
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Tạo thành công.", content = @Content(schema = @Schema(implementation = WorkSpaceResponse.class), examples = @ExampleObject(value = "{\"id\":\"long\",\"name\":\"Workspace 2024\",\"academicYearId\":\"uuid-nam-hoc\",\"userId\":\"uuid-user\"}"))),
+            @ApiResponse(responseCode = "200", description = "Tạo thành công.", content = @Content(schema = @Schema(implementation = WorkSpaceResponse.class), examples = @ExampleObject(value = "{\"id\":\"long\",\"name\":\"Workspace 2024\",\"academicYearId\":\"long-nam-hoc\",\"userId\":\"uuid-user\"}"))),
             @ApiResponse(responseCode = "400", description = "Dữ liệu không hợp lệ hoặc thiếu trường bắt buộc."),
             @ApiResponse(responseCode = "404", description = "Không tìm thấy user hoặc năm học.")
     })
