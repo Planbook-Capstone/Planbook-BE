@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class AcademicYearResponse {
-    private UUID id;
+    private Long id;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
     private String yearLabel;

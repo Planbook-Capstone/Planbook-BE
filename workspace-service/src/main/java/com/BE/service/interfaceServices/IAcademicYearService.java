@@ -14,11 +14,11 @@ public interface IAcademicYearService {
 
     AcademicYearResponse create(AcademicYearRequest request);
 
-    AcademicYearResponse update(UUID id, AcademicYearRequest request);
+    AcademicYearResponse update(Long id, AcademicYearRequest request);
 
-    AcademicYearResponse updateStatus(UUID id, AcademicYearStatusEnum status);
+    AcademicYearResponse updateStatus(Long id, AcademicYearStatusEnum status);
 
-    void delete(UUID id);
+    void delete(Long id);
 
     AcademicYear getActiveAcademicYear();
 
