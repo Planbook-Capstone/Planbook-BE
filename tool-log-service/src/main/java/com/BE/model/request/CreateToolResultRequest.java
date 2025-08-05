@@ -1,8 +1,10 @@
 package com.BE.model.request;
 
+import com.BE.enums.ToolResultSource;
 import com.BE.enums.ToolResultStatus;
 import com.BE.enums.ToolResultType;
 import com.BE.exception.EnumValidator;
+import com.fasterxml.jackson.databind.JsonNode;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -34,10 +36,8 @@ public class CreateToolResultRequest {
 
     @Schema(
             description = "Danh sách ID của các bài học được gọi",
-            example = "[123, 456, 789]",
-            required = true
+            example = "[123, 456, 789]"
     )
-    @NotNull(message = "Danh sách ID bài học không được để trống")
     private List<Long> lessonIds;
 
     @NotBlank(message = "name không được để trống")
@@ -52,4 +52,11 @@ public class CreateToolResultRequest {
     @NotNull(message = "status không được để trống")
     @EnumValidator(enumClass = ToolResultStatus.class, message = "status phải là một trong các giá trị: DRAFT, PUBLISHED, ARCHIVED, DELETED, IN_REVIEW, APPROVED, REJECTED")
     private ToolResultStatus status;
+
+    @Schema(description = "Nguồn tạo kết quả", example = "AI")
+    @EnumValidator(
+            enumClass = ToolResultSource.class,
+            message = "source phải là một trong các giá trị: AI, USER_UPLOAD, SYSTEM"
+    )
+    private ToolResultSource source;
 }

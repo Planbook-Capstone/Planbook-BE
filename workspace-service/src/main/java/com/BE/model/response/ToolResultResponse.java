@@ -1,5 +1,6 @@
 package com.BE.model.response;
 
+import com.BE.enums.ToolResultSource;
 import com.BE.enums.ToolResultStatus;
 import com.BE.enums.ToolResultType;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -26,6 +27,8 @@ public class ToolResultResponse {
     private Long workspaceId;
 
     private ToolResultType type;
+
+    private ToolResultSource source;
 
     private Long templateId;
 

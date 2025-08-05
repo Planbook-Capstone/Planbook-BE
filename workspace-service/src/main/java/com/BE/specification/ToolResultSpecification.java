@@ -1,5 +1,6 @@
 package com.BE.specification;
 
+import com.BE.enums.ToolResultSource;
 import com.BE.enums.ToolResultStatus;
 import com.BE.enums.ToolResultType;
 import com.BE.model.entity.ToolResult;
@@ -23,6 +24,7 @@ public class ToolResultSpecification {
             Long workspaceId,
             ToolResultType type,
             ToolResultStatus status,
+            ToolResultSource source,
             Long templateId,
             String nameContains,
             String descriptionContains,
@@ -49,6 +51,10 @@ public class ToolResultSpecification {
             // Filter theo status
             if (status != null) {
                 predicates.add(criteriaBuilder.equal(root.get("status"), status));
+            }
+
+            if (source != null) {
+                predicates.add(criteriaBuilder.equal(root.get("source"), source));
             }
 
             // Filter theo templateId

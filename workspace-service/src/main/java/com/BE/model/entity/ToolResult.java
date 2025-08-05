@@ -2,6 +2,7 @@ package com.BE.model.entity;
 
 import com.BE.convert.LongListToJsonConverter;
 import com.BE.convert.ObjectToJsonConverter;
+import com.BE.enums.ToolResultSource;
 import com.BE.enums.ToolResultStatus;
 import com.BE.enums.ToolResultType;
 import jakarta.persistence.*;
@@ -37,6 +38,10 @@ public class ToolResult {
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     ToolResultType type; // Ví dụ: LESSON_PLAN, SLIDE, EXAM,...
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    ToolResultSource source;
 
     @Column
     Long templateId; // Nếu có, dùng để truy ngược Template
