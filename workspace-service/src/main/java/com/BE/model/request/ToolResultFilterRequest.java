@@ -1,9 +1,6 @@
 package com.BE.model.request;
 
-import com.BE.enums.SortDirection;
-import com.BE.enums.ToolResultSortBy;
-import com.BE.enums.ToolResultStatus;
-import com.BE.enums.ToolResultType;
+import com.BE.enums.*;
 import com.BE.exception.EnumValidator;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -36,6 +33,10 @@ public class ToolResultFilterRequest {
     @EnumValidator(enumClass = ToolResultStatus.class, message = "status phải là một trong các giá trị hợp lệ")
     @Schema(description = "Trạng thái kết quả", example = "ARCHIVED")
     private ToolResultStatus status;
+
+    @EnumValidator(enumClass = ToolResultSource.class, message = "source phải là một trong các giá trị: AI, USER_UPLOAD, SYSTEM")
+    @Schema(description = "Nguồn tạo kết quả", example = "AI")
+    private ToolResultSource source;
 
     @Schema(description = "ID của template nếu có", example = "789")
     private Long templateId;
@@ -81,6 +82,11 @@ public class ToolResultFilterRequest {
         return status != null;
     }
 
+
+    public boolean hasSource() {
+        return source != null;
+    }
+
     public boolean hasTemplateId() {
         return templateId != null;
     }
@@ -98,7 +104,7 @@ public class ToolResultFilterRequest {
     }
 
     public boolean hasAnyFilter() {
-        return hasUserId() || hasWorkspaceId() || hasType() || hasStatus()
+        return hasUserId() || hasWorkspaceId() || hasType() || hasStatus() || hasSource()
                 || hasTemplateId() || hasNameContains() || hasDescriptionContains()
                 || hasLessonIds();
     }

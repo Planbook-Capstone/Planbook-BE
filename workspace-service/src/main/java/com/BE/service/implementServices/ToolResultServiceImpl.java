@@ -88,22 +88,23 @@ public class ToolResultServiceImpl implements IToolResultService {
             // Validate và tạo Pageable từ PageUtil
             pageUtil.checkOffset(filterRequest.getPage());
             Pageable pageable = pageUtil.getPageable(
-                filterRequest.getPage() - 1, // Convert từ 1-based sang 0-based
-                filterRequest.getSize(),
-                filterRequest.getSortBy().getFieldName(), // Convert enum to string
-                filterRequest.getSortDirection().name().toLowerCase() // Convert enum to string
+                    filterRequest.getPage() - 1, // Convert từ 1-based sang 0-based
+                    filterRequest.getSize(),
+                    filterRequest.getSortBy().getFieldName(), // Convert enum to string
+                    filterRequest.getSortDirection().name().toLowerCase() // Convert enum to string
             );
 
             // Build Specification từ filter request
             Specification<ToolResult> specification = ToolResultSpecification.buildSpecification(
-                filterRequest.getUserId(),
-                filterRequest.getWorkspaceId(),
-                filterRequest.getType(),
-                filterRequest.getStatus(),
-                filterRequest.getTemplateId(),
-                filterRequest.getNameContains(),
-                filterRequest.getDescriptionContains(),
-                filterRequest.getLessonIds()
+                    filterRequest.getUserId(),
+                    filterRequest.getWorkspaceId(),
+                    filterRequest.getType(),
+                    filterRequest.getStatus(),
+                    filterRequest.getSource(),
+                    filterRequest.getTemplateId(),
+                    filterRequest.getNameContains(),
+                    filterRequest.getDescriptionContains(),
+                    filterRequest.getLessonIds()
             );
 
             // Query với Specification
@@ -144,8 +145,6 @@ public class ToolResultServiceImpl implements IToolResultService {
         existingEntity.setStatus(status);
         return toolResultMapper.toResponse(toolResultRepository.save(existingEntity));
     }
-
-
 
 
 }

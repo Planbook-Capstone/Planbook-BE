@@ -180,6 +180,7 @@ public class ToolResultController {
                                             "userId": "0d29b45a-5d6a-44e2-b58d-d7aa5180cb0f",
                                             "workspaceId": 101,
                                             "type": "LESSON_PLAN",
+                                            "source": "AI",
                                             "name": "Giáo án bài 3",
                                             "description": "Giáo án thử nghiệm với chương 2",
                                             "lessonIds": [456, 457],
