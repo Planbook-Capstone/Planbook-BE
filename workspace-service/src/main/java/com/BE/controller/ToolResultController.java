@@ -48,7 +48,7 @@ public class ToolResultController {
                                     value = """
                                             {
                                               "userId": "0d29b45a-5d6a-44e2-b58d-d7aa5180cb0f",
-                                              "workspaceId": 101,
+                                              "academicYearId": 101,
                                               "type": "LESSON_PLAN",
                                               "templateId": 5,
                                               "name": "Giáo án bài 3",
@@ -79,7 +79,7 @@ public class ToolResultController {
                                               "data": {
                                                 "id": 123,
                                                 "userId": "0d29b45a-5d6a-44e2-b58d-d7aa5180cb0f",
-                                                "workspaceId": 101,
+                                                "academicYearId": 101,
                                                 "type": "LESSON_PLAN",
                                                 "templateId": 5,
                                                 "name": "Giáo án bài 3",
@@ -178,7 +178,7 @@ public class ToolResultController {
                                           {
                                             "id": 123,
                                             "userId": "0d29b45a-5d6a-44e2-b58d-d7aa5180cb0f",
-                                            "workspaceId": 101,
+                                            "academicYearId": 101,
                                             "type": "LESSON_PLAN",
                                             "source": "AI",
                                             "name": "Giáo án bài 3",

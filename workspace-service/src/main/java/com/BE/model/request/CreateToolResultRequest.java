@@ -27,8 +27,8 @@ public class CreateToolResultRequest {
     @NotNull(message = "userId không được để trống")
     private UUID userId;
 
-    @NotNull(message = "workspaceId không được để trống")
-    private Long workspaceId;
+    @NotNull(message = "academicYearId không được để trống")
+    private Long academicYearId;
 
     @NotNull(message = "type không được để trống")
     @EnumValidator(enumClass = ToolResultType.class, message = "type phải là một trong các giá trị: LESSON_PLAN, SLIDE, EXAM, QUIZ, WORKSHEET, ASSIGNMENT, RUBRIC, CURRICULUM, ACTIVITY, ASSESSMENT, OTHER")

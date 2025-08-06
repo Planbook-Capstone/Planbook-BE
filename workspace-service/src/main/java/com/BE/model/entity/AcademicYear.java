@@ -31,7 +31,7 @@ public class AcademicYear {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    @OneToMany(mappedBy = "academicYear", cascade = CascadeType.ALL)
-    private Set<WorkSpace> workSpaces = new HashSet<>();
+//    @OneToMany(mappedBy = "academicYear", cascade = CascadeType.ALL)
+//    private Set<WorkSpace> workSpaces = new HashSet<>();
 
 }

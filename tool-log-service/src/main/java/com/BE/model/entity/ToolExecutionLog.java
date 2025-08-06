@@ -41,7 +41,7 @@ public class ToolExecutionLog {
     List<Long> lessonIds;
 
     @Column(nullable = false)
-    Long workspaceId;
+    Long academicYearId;
 
     Long resultId;
 

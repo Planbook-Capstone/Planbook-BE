@@ -35,7 +35,7 @@ public class ToolResultServiceImpl implements IToolResultService {
     @Override
     public ToolResultResponse create(CreateToolResultRequest request) {
         log.info("Tạo mới ToolResult với userId: {}, workspaceId: {}, type: {}",
-                request.getUserId(), request.getWorkspaceId(), request.getType());
+                request.getUserId(), request.getAcademicYearId(), request.getType());
 
         try {
             ToolResult entity = toolResultMapper.toEntity(request);
@@ -97,7 +97,7 @@ public class ToolResultServiceImpl implements IToolResultService {
             // Build Specification từ filter request
             Specification<ToolResult> specification = ToolResultSpecification.buildSpecification(
                     filterRequest.getUserId(),
-                    filterRequest.getWorkspaceId(),
+                    filterRequest.getAcademicYearId(),
                     filterRequest.getType(),
                     filterRequest.getStatus(),
                     filterRequest.getSource(),

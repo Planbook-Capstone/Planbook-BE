@@ -23,8 +23,8 @@ public class ToolResultFilterRequest {
     @Schema(description = "ID người dùng", example = "0d29b45a-5d6a-44e2-b58d-d7aa5180cb0f")
     private UUID userId;
 
-    @Schema(description = "ID workspace", example = "101")
-    private Long workspaceId;
+    @Schema(description = "ID AcademicYear", example = "101")
+    private Long academicYearId;
 
     @EnumValidator(enumClass = ToolResultType.class, message = "type phải là một trong các giá trị hợp lệ")
     @Schema(description = "Loại kết quả công cụ", example = "LESSON_PLAN")
@@ -70,8 +70,8 @@ public class ToolResultFilterRequest {
         return userId != null;
     }
 
-    public boolean hasWorkspaceId() {
-        return workspaceId != null;
+    public boolean hasAcademicYearId() {
+        return academicYearId != null;
     }
 
     public boolean hasType() {
@@ -104,7 +104,7 @@ public class ToolResultFilterRequest {
     }
 
     public boolean hasAnyFilter() {
-        return hasUserId() || hasWorkspaceId() || hasType() || hasStatus() || hasSource()
+        return hasUserId() || hasAcademicYearId() || hasType() || hasStatus() || hasSource()
                 || hasTemplateId() || hasNameContains() || hasDescriptionContains()
                 || hasLessonIds();
     }
