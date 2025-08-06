@@ -1,5 +1,6 @@
 package com.BE.model.request;
 
+import com.BE.enums.ExecutionStatus;
 import com.BE.enums.ToolTypeEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
@@ -35,4 +36,13 @@ public class ToolExecutionLogSearchRequest {
 
     @Schema(description = "Lọc theo người dùng tạo")
     UUID userId;
+
+    @Schema(description = "Lọc theo năm học (academicYearId)")
+    Long academicYearId;
+
+    @Schema(description = "Lọc theo toolId (ExternalToolConfig ID, BookType ID, ...)")
+    UUID toolId;
+
+    @Schema(description = "Lọc theo trạng thái xử lý", allowableValues = {"PENDING", "SUCCESS", "FAILED"}, example = "SUCCESS")
+    ExecutionStatus status;
 }

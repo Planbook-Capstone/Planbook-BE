@@ -160,6 +160,18 @@ public class ToolExecutionLogServiceImpl implements IToolExecutionLogService {
             spec = spec.and((root, query, cb) -> cb.equal(root.get("userId"), request.getUserId()));
         }
 
+        if (request.getAcademicYearId() != null) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("academicYearId"), request.getAcademicYearId()));
+        }
+
+        if (request.getToolId() != null) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("toolId"), request.getToolId()));
+        }
+
+        if (request.getStatus() != null) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("status"), request.getStatus()));
+        }
+
         return spec;
     }
 
