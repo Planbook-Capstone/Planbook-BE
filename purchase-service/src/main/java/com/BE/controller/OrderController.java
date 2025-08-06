@@ -165,6 +165,7 @@ public class OrderController {
             parameters = {
                     @Parameter(name = "status", description = "Trạng thái đơn hàng", schema = @Schema(implementation = StatusEnum.class, allowableValues = {"PENDING", "PAID", "FAILED", "CANCELLED", "EXPIRED"})),
                     @Parameter(name = "userId", description = "ID người dùng", schema = @Schema(type = "string", format = "uuid")),
+                    @Parameter(name = "packageId", description = "ID gói dịch vụ", schema = @Schema(type = "string", format = "uuid")),
                     @Parameter(name = "sortBy", description = "Sắp xếp theo", schema = @Schema(allowableValues = {"createdAt", "updatedAt"}), example = "createdAt"),
                     @Parameter(name = "sortDirection", description = "Chiều sắp xếp", schema = @Schema(allowableValues = {"asc", "desc"}), example = "desc"),
                     @Parameter(name = "offset", description = "Số trang (bắt đầu từ 1)", schema = @Schema(example = "1")),
@@ -175,13 +176,14 @@ public class OrderController {
     public ResponseEntity getOrders(
             @RequestParam(required = false) StatusEnum status,
             @RequestParam(required = false) UUID userId,
+            @RequestParam(required = false) UUID packageId,
             @RequestParam(required = false, defaultValue = "createdAt") String sortBy,
             @RequestParam(required = false, defaultValue = "desc") String sortDirection,
             @RequestParam(defaultValue = "1") int offset,
             @RequestParam(defaultValue = "10") int pageSize
     ) {
         return ResponseEntity.ok(new DataResponseDTO<>(200, "Danh sách đơn hàng", orderService.getOrdersWithFilter(
-                status, userId, offset, pageSize, sortBy, sortDirection
+                status, userId, packageId, offset, pageSize, sortBy, sortDirection
         )));
     }
 

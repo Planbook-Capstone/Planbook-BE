@@ -19,7 +19,7 @@ public interface IOrderService {
     OrderResponseDTO updateOrderStatus(UUID orderId, StatusEnum newStatus, String note);
     void handlePaymentResult(ObjectNode body) throws Exception;
 
-    Page<OrderResponseDTO> getOrdersWithFilter(StatusEnum status, UUID userId,
+    Page<OrderResponseDTO> getOrdersWithFilter(StatusEnum status, UUID userId, UUID packageId,
                                                int offset, int pageSize,
                                                String sortBy, String sortDirection);
 

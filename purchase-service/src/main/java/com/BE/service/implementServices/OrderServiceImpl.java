@@ -236,7 +236,7 @@ public class OrderServiceImpl implements IOrderService {
 
 
     @Override
-    public Page<OrderResponseDTO> getOrdersWithFilter(StatusEnum status, UUID userId,
+    public Page<OrderResponseDTO> getOrdersWithFilter(StatusEnum status, UUID userId, UUID packageId,
                                                       int offset, int pageSize,
                                                       String sortBy, String sortDirection) {
         // Validate offset (bắt đầu từ 1)
@@ -253,6 +253,10 @@ public class OrderServiceImpl implements IOrderService {
 
         if (status != null) {
             spec = spec.and((root, query, cb) -> cb.equal(root.get("status"), status));
+        }
+
+        if (packageId != null) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("subscriptionPackage").get("id"), packageId));
         }
 
         if (userId != null) {
