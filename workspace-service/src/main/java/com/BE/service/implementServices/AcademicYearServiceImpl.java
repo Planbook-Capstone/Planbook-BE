@@ -7,7 +7,6 @@ import com.BE.model.entity.AcademicYear;
 import com.BE.model.request.AcademicYearRequest;
 import com.BE.model.response.AcademicYearResponse;
 import com.BE.repository.AcademicYearRepository;
-import com.BE.repository.WorkSpaceRepository;
 import com.BE.service.interfaceServices.IAcademicYearService;
 import com.BE.utils.DateNowUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,8 +26,8 @@ public class AcademicYearServiceImpl implements IAcademicYearService {
     private AcademicYearRepository academicYearRepository;
 //    @Autowired
 //    private AuthenRepository authenRepository;
-    @Autowired
-    private WorkSpaceRepository workSpaceRepository;
+//    @Autowired
+//    private WorkSpaceRepository workSpaceRepository;
     @Autowired
     private AcademicYearMapper academicYearMapper;
 

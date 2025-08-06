@@ -37,7 +37,7 @@ public class ToolExecutionLogResponse {
             example = "[123, 456, 789]")
     List<Long> lessonIds;
 
-    Long workspaceId;
+    Long academicYearId;
 
     Long resultId;
 

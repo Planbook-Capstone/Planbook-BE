@@ -21,7 +21,7 @@ public class ToolResultSpecification {
      */
     public static Specification<ToolResult> buildSpecification(
             UUID userId,
-            Long workspaceId,
+            Long academicYearId,
             ToolResultType type,
             ToolResultStatus status,
             ToolResultSource source,
@@ -39,8 +39,8 @@ public class ToolResultSpecification {
             }
 
             // Filter theo workspaceId
-            if (workspaceId != null) {
-                predicates.add(criteriaBuilder.equal(root.get("workspaceId"), workspaceId));
+            if (academicYearId != null) {
+                predicates.add(criteriaBuilder.equal(root.get("academicYearId"), academicYearId));
             }
 
             // Filter theo type

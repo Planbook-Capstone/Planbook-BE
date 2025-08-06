@@ -108,7 +108,7 @@ public class PaymentServiceImpl implements IPaymentService {
 
         // 3. Kiểm tra trạng thái
         if (StatusEnum.PAID.equals(latest.getStatus()) || StatusEnum.PENDING.equals(latest.getStatus()) || StatusEnum.RETRY.equals(latest.getStatus())) {
-            throw new BusinessException("Không thể retry khi giao dịch cuối cùng đang PENDING hoặc PAID hoặc đã RETRY.");
+            throw new BusinessException("Giao dịch trước đó vẫn đang hoạt động, vui lòng không tạo lại.");
         }
 
         // 4. Gọi tạo mới

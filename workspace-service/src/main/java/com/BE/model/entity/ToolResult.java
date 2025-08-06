@@ -33,7 +33,7 @@ public class ToolResult {
     UUID userId;
 
     @Column(nullable = false)
-    Long workspaceId;
+    Long academicYearId;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)

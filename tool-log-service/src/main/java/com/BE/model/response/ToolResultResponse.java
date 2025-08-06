@@ -24,7 +24,7 @@ public class ToolResultResponse {
 
     private UUID userId;
 
-    private Long workspaceId;
+    private Long academicYearId;
 
     private ToolResultType type;
 

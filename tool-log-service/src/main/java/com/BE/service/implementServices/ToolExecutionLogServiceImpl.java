@@ -178,10 +178,10 @@ public class ToolExecutionLogServiceImpl implements IToolExecutionLogService {
                 // 1. Tạo request tạo ToolResult từ dữ liệu của log
                 CreateToolResultRequest request = new CreateToolResultRequest();
                 request.setUserId(log.getUserId());
-                request.setWorkspaceId(log.getWorkspaceId());
+                request.setAcademicYearId(log.getAcademicYearId());
                 request.setType(convertToToolResultType(log.getCode())); // Mapping Enum nếu cùng tên
                 request.setLessonIds(log.getLessonIds());
-                request.setName("Auto Result từ ToolLog " + log.getId()); // Có thể tùy biến theo use-case
+                request.setName("Hệ thống tự động lưu kết quả " + log.getId()); // Có thể tùy biến theo use-case
                 request.setDescription("Tự động tạo từ tool execution log");
                 request.setSource(ToolResultSource.AI);
 //                request.setData(output.getOutput());
