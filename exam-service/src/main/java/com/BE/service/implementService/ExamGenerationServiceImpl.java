@@ -35,6 +35,10 @@ public class ExamGenerationServiceImpl implements IExamGenerationService {
                     for (Map<String, Object> q : questions) {
                         q.put("sourceType", "USER_UPLOAD");
                         q.put("sourceExamId", exam.getSourceExamId());
+                        // Gán id tạm nếu chưa có
+                        if (!q.containsKey("id")) {
+                            q.put("id", "TEMP_" + UUID.randomUUID());
+                        }
                         questionBank.computeIfAbsent(partName, k -> new ArrayList<>()).add(q);
                     }
                 }
