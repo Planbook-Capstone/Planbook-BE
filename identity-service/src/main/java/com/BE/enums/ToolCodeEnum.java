@@ -4,5 +4,6 @@ public enum ToolCodeEnum {
     LESSON_PLAN,
     SLIDE_GENERATOR,
     EXAM_CREATOR,
+    MANUAL_EXAM_CREATOR,
     QUIZ_GAME
 }

@@ -109,6 +109,8 @@ public class BookTypeServiceImpl implements IBookTypeService {
         existingBookType.setPriority(request.getPriority());
         existingBookType.setHref(request.getHref());
         existingBookType.setIcon(request.getIcon());
+        existingBookType.setCode(request.getCode());
+        existingBookType.setTokenCostPerQuery(request.getTokenCostPerQuery());
         existingBookType.setUpdatedAt(dateNowUtils.dateNow());
 
         try {
