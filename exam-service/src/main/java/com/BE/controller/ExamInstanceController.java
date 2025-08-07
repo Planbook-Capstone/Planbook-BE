@@ -32,7 +32,6 @@ import org.springframework.http.MediaType;
 @RequiredArgsConstructor
 @SecurityRequirement(name = "api")
 @Slf4j
-
 public class ExamInstanceController {
 
     private final IExamInstanceService examInstanceService;
