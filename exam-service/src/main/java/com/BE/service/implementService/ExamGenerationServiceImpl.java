@@ -82,6 +82,14 @@ public class ExamGenerationServiceImpl implements IExamGenerationService {
             // Chọn câu hỏi ngẫu nhiên từ pool
             List<Map<String, Object>> selectedQuestions = randomSelectByDifficulty(partPool, config);
 
+
+            for (int i = 0; i < selectedQuestions.size(); i++) {
+                Map<String, Object> q = selectedQuestions.get(i);
+                q.remove("questionNumber");  
+                q.put("questionNumber", i + 1);
+            }
+
+
             Map<String, Object> partJson = new LinkedHashMap<>();
             partJson.put("part", partName);
             partJson.put("questions", selectedQuestions);
@@ -161,10 +169,30 @@ public class ExamGenerationServiceImpl implements IExamGenerationService {
         map.put("id", dto.getId());
         map.put("difficultyLevel", dto.getDifficultyLevel());
         Map<String, Object> content = dto.getQuestionContent();
+        String questionType = dto.getQuestionType();
         if (content != null) {
             map.put("question", content.get("question"));
-            map.put("answer", content.get("answer"));
-            map.put("options", content.get("options"));
+
+            switch (questionType) {
+                case "PART_I":
+                    // Trắc nghiệm nhiều phương án lựa chọn
+                    map.put("answer", content.get("answer"));
+                    map.put("options", content.get("options"));
+                    break;
+
+                case "PART_II":
+                    // Câu đúng/sai: chỉ cần statements, không cần answer
+                    map.put("statements", content.get("statements"));
+                    break;
+
+                case "PART_III":
+                    // Tự luận: có answer
+                    map.put("answer", content.get("answer"));
+                    break;
+
+                default:
+                    throw new IllegalArgumentException("Không hỗ trợ questionType: " + questionType);
+            }
         }
         map.put("explanation", dto.getExplanation());
         map.put("lessonIds", dto.getLessonIds());
