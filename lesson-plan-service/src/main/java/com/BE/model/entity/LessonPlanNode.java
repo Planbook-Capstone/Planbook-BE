@@ -45,6 +45,10 @@ public class LessonPlanNode {
     @Column(nullable = false)
     String title;
 
+    @Lob
+    @Column(columnDefinition = "TEXT")
+    String description;
+
     @Column(columnDefinition = "TEXT")
     String content;
 

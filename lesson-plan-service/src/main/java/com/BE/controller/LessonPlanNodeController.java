@@ -82,17 +82,17 @@ public class LessonPlanNodeController {
                             @ExampleObject(
                                     name = "Tạo Section",
                                     summary = "Tạo một section chính",
-                                    value = "{\"lessonPlanId\": 101, \"parentId\": null, \"title\": \"Mục tiêu bài học\", \"content\": \"Học sinh hiểu được khái niệm cơ bản\", \"fieldType\": \"INPUT\", \"type\": \"SECTION\", \"orderIndex\": 1}"
+                                    value = "{\"lessonPlanId\": 101, \"parentId\": null, \"title\": \"Mục tiêu bài học\", \"content\": \"Học sinh hiểu được khái niệm cơ bản\", \"description\": \"Học sinh hiểu được khái niệm cơ bản\", \"fieldType\": \"INPUT\", \"type\": \"SECTION\", \"orderIndex\": 1}"
                             ),
                             @ExampleObject(
                                     name = "Tạo Subsection",
                                     summary = "Tạo một subsection con",
-                                    value = "{\"lessonPlanId\": 101, \"parentId\": 1, \"title\": \"Kiến thức cần đạt\", \"content\": \"Nắm vững lý thuyết\", \"fieldType\": \"UPLOAD\", \"type\": \"SUBSECTION\", \"orderIndex\": 1}"
+                                    value = "{\"lessonPlanId\": 101, \"parentId\": 1, \"title\": \"Kiến thức cần đạt\", \"content\": \"Nắm vững lý thuyết\", \"description\": \"Học sinh hiểu được khái niệm cơ bản\", \"fieldType\": \"UPLOAD\", \"type\": \"SUBSECTION\", \"orderIndex\": 1}"
                             ),
                             @ExampleObject(
                                     name = "Tạo List Item",
                                     summary = "Tạo một mục danh sách",
-                                    value = "{\"lessonPlanId\": 101, \"parentId\": 2, \"title\": \"Điểm 1\", \"content\": \"Hiểu khái niệm A\", \"fieldType\": \"SELECT\", \"type\": \"LIST_ITEM\", \"orderIndex\": 1}"
+                                    value = "{\"lessonPlanId\": 101, \"parentId\": 2, \"title\": \"Điểm 1\", \"content\": \"Hiểu khái niệm A\", \"description\": \"Học sinh hiểu được khái niệm cơ bản\", \"fieldType\": \"SELECT\", \"type\": \"LIST_ITEM\", \"orderIndex\": 1}"
                             )
                     }
             )
@@ -123,7 +123,7 @@ public class LessonPlanNodeController {
                             @ExampleObject(
                                     name = "Cập nhật tiêu đề và nội dung",
                                     summary = "Cập nhật tiêu đề và nội dung của node",
-                                    value = "{\"title\": \"Mục tiêu bài học đã cập nhật\", \"content\": \"Học sinh hiểu được khái niệm nâng cao\", \"fieldType\": \"INPUT\", \"type\": \"SUBSECTION\", \"orderIndex\": 2}"
+                                    value = "{\"title\": \"Mục tiêu bài học đã cập nhật\", \"content\": \"Học sinh hiểu được khái niệm nâng cao\", \"description\": \"Học sinh hiểu được khái niệm cơ bản\", \"fieldType\": \"INPUT\", \"type\": \"SUBSECTION\", \"orderIndex\": 2}"
                             ),
                             @ExampleObject(
                                     name = "Cập nhật thứ tự",
