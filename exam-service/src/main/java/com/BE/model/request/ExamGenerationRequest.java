@@ -25,6 +25,12 @@ public class ExamGenerationRequest {
     @NotNull(message = "AcademicYearId không được để trống")
     private Long academicYearId;
 
+    @Schema(description = "Tên lớp học", example = "Lớp 12A1")
+    private String grade;
+
+    @Schema(description = "Tên môn học", example = "Môn Hoá Học")
+    private String subject;
+
     @Schema(description = "Tên trường tổ chức kiểm tra", example = "THPT Lê Quý Đôn")
     private String school;
 

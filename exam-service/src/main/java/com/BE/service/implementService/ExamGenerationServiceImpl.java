@@ -119,6 +119,8 @@ public class ExamGenerationServiceImpl implements IExamGenerationService {
         exam.put("examTitle", request.getExamTitle());
         exam.put("school", request.getSchool());
         exam.put("duration", request.getDuration());
+        exam.put("grade", request.getGrade());
+        exam.put("subject", request.getSubject());
     }
 
 
