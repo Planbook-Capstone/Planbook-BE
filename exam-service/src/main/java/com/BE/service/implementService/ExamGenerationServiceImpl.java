@@ -64,49 +64,110 @@ public class ExamGenerationServiceImpl implements IExamGenerationService {
 
         for (int i = 0; i < request.getNumberOfExams(); i++) {
             Map<String, List<Map<String, Object>>> tempBank = deepCopyBank(questionBank);
-            Map<String, Object> exam = generateSingleExam(tempBank, request.getMatrixConfig(), usedQuestionIds);
+            Map<String, Object> both = generateSingleExam(tempBank, request.getMatrixConfig(), usedQuestionIds);
+            Map<String, Object> questionOnly = (Map<String, Object>) both.get("questionOnly");
+            Map<String, Object> answerOnly = (Map<String, Object>) both.get("answerOnly");
 
-            // Thêm metadata đề
-            exam.put("examCode", String.format("%04d", i + 1));
-            exam.put("examTitle", request.getExamTitle());
-            exam.put("school", request.getSchool());
-            exam.put("duration", request.getDuration());
 
-            results.add(exam);
+            addMetadataToExam(questionOnly, i, request);
+            addMetadataToExam(answerOnly, i, request);
+
+            results.add(Map.of(
+                    "questionOnly", questionOnly,
+                    "answerOnly", answerOnly
+            ));
         }
 
         return results;
     }
 
+    private void addMetadataToExam(Map<String, Object> exam,
+                                   int index,
+                                   ExamGenerationRequest request) {
+        exam.put("examCode", String.format("%04d", index + 1));
+        exam.put("examTitle", request.getExamTitle());
+        exam.put("school", request.getSchool());
+        exam.put("duration", request.getDuration());
+    }
+
+
     private Map<String, Object> generateSingleExam(Map<String, List<Map<String, Object>>> questionBank,
                                                    Map<String, DifficultyCountDTO> matrix,
                                                    Set<String> usedQuestionIds) {
-        Map<String, Object> exam = new LinkedHashMap<>();
-        List<Map<String, Object>> generatedParts = new ArrayList<>();
+        Map<String, Object> questionOnlyExam = new LinkedHashMap<>();
+        Map<String, Object> answerOnlyExam = new LinkedHashMap<>();
+        List<Map<String, Object>> questionParts = new ArrayList<>();
+        List<Map<String, Object>> answerParts = new ArrayList<>();
 
         for (String partName : matrix.keySet()) {
             DifficultyCountDTO config = matrix.get(partName);
             List<Map<String, Object>> partPool = questionBank.get(partName);
 
-            // Chọn ngẫu nhiên theo độ khó + tránh câu đã dùng
             List<Map<String, Object>> selectedQuestions = randomSelectByDifficultyAvoidingReuse(partPool, config, usedQuestionIds);
+            List<Map<String, Object>> questionList = new ArrayList<>();
+            List<Map<String, Object>> answerList = new ArrayList<>();
 
             for (int i = 0; i < selectedQuestions.size(); i++) {
-                Map<String, Object> q = selectedQuestions.get(i);
-                q.remove("questionNumber");
-                q.put("questionNumber", i + 1);
-                if (q.get("id") != null) usedQuestionIds.add(q.get("id").toString());
+                Map<String, Object> original = selectedQuestions.get(i);
+                original.put("questionNumber", i + 1);
+                if (original.get("id") != null) usedQuestionIds.add(original.get("id").toString());
+
+                // Clone cho question-only và answer-only
+                Map<String, Object> questionItem = new LinkedHashMap<>(original);
+                Map<String, Object> answerItem = new LinkedHashMap<>();
+                // Giữ explanation chỉ ở đáp án
+                Object explanation = questionItem.remove("explanation");
+                if (explanation != null) {
+                    answerItem.put("explanation", explanation);
+                }
+
+
+                // Remove answer khỏi đề, remove question khỏi đáp án
+                if ("PHẦN II".equals(partName)) {
+                    // xử lý statement: giữ text trong đề, answer trong đáp án
+                    Map<String, Map<String, Object>> statements = (Map<String, Map<String, Object>>) original.get("statements");
+
+                    Map<String, Map<String, Object>> questionStatements = new LinkedHashMap<>();
+                    Map<String, Boolean> answerStatements = new LinkedHashMap<>();
+
+                    for (Map.Entry<String, Map<String, Object>> entry : statements.entrySet()) {
+                        String key = entry.getKey();
+                        Map<String, Object> value = entry.getValue();
+                        questionStatements.put(key, Map.of("text", value.get("text")));
+                        answerStatements.put(key, (Boolean) value.get("answer"));
+                    }
+
+                    questionItem.put("statements", questionStatements);
+                    answerItem.put("statements", answerStatements);
+                } else {
+                    questionItem.remove("answer");
+                    answerItem.put("answer", original.get("answer"));
+                }
+
+                answerItem.put("questionNumber", i + 1);
+                answerItem.put("id", original.get("id"));
+                answerItem.put("difficultyLevel", original.get("difficultyLevel"));
+                answerItem.put("sourceType", original.get("sourceType"));
+                answerItem.put("sourceExamId", original.get("sourceExamId"));
+                answerItem.put("lessonIds", original.get("lessonIds"));
+
+                questionList.add(questionItem);
+                answerList.add(answerItem);
             }
 
-            Map<String, Object> partJson = new LinkedHashMap<>();
-            partJson.put("part", partName);
-            partJson.put("questions", selectedQuestions);
-            generatedParts.add(partJson);
+            questionParts.add(Map.of("part", partName, "questions", questionList));
+            answerParts.add(Map.of("part", partName, "questions", answerList));
         }
 
-        exam.put("parts", generatedParts);
-        return exam;
+        questionOnlyExam.put("parts", questionParts);
+        answerOnlyExam.put("parts", answerParts);
+
+        return Map.of(
+                "questionOnly", questionOnlyExam,
+                "answerOnly", answerOnlyExam
+        );
     }
+
 
     private List<Map<String, Object>> randomSelectByDifficultyAvoidingReuse(List<Map<String, Object>> questions,
                                                                             DifficultyCountDTO config,
