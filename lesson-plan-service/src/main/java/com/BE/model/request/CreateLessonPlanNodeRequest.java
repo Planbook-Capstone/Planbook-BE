@@ -38,6 +38,9 @@ public class CreateLessonPlanNodeRequest {
     @Schema(description = "Loại node", example = "SECTION", required = true)
     NodeType type;
 
+    @Schema(description = "Nội dung mô tả của node", example = "Học sinh hiểu được khái niệm cơ bản")
+    String description;
+
 
     @Schema(description = "Loại input", example = "INPUT, UPLOAD", required = true)
     String fieldType;

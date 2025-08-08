@@ -24,6 +24,9 @@ public class UpdateLessonPlanNodeRequest {
     @Schema(description = "Nội dung của node", example = "Học sinh hiểu được khái niệm nâng cao")
     String content;
 
+    @Schema(description = "Nội dung mô tả của node", example = "Học sinh hiểu được khái niệm cơ bản")
+    String description;
+
     @Schema(description = "Loại input", example = "INPUT, UPLOAD", required = true)
     String fieldType;
 
