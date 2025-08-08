@@ -32,16 +32,13 @@ public class ToolExecutionLogRequest {
     @Schema(description = "ID của công cụ được gọi", example = "123", required = true)
     UUID toolId;
 
-    @NotNull(message = "ID sách không được để trống")
-    @Schema(description = "ID của sách được gọi", example = "456", required = true)
+    @Schema(description = "ID của sách được gọi", example = "456")
     Long bookId;
 
     @Schema(
             description = "Danh sách ID của các bài học được gọi",
-            example = "[123, 456, 789]",
-            required = true
+            example = "[123, 456, 789]"
     )
-    @NotNull(message = "Danh sách ID bài học không được để trống")
     List<Long> lessonIds;
 
     @Schema(description = "AcademicYearId", example = "456", required = true)
@@ -60,7 +57,7 @@ public class ToolExecutionLogRequest {
     ToolTypeEnum toolType;
 
     @NotNull(message = "Số lượng token bị trừ mỗi khi người dùng gọi một truy vấn (query).")
-    @Min(value = 1, message = "Giá trị tối thiểu: 1.")
+    @Min(value = 0, message = "Giá trị tối thiểu: 0.")
     @Max(value = 1000, message = "Giá trị tối đa đề xuất: 1000.")
     Integer tokenUsed;
 
