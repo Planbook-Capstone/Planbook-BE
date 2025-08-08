@@ -1,12 +1,23 @@
 package com.BE.service.implementService;
 
+import com.BE.enums.ToolCodeEnum;
+import com.BE.enums.ToolTypeEnum;
 import com.BE.exception.BadRequestException;
+import com.BE.feign.ToolLogServiceClient;
 import com.BE.model.dto.DifficultyCountDTO;
 import com.BE.model.dto.IndividualBankExamDTO;
 import com.BE.model.dto.SystemBankQuestionDTO;
 import com.BE.model.request.ExamGenerationRequest;
+import com.BE.model.request.ToolExecutionLogRequest;
+import com.BE.model.response.DataResponseDTO;
+import com.BE.model.response.ToolExecutionLogResponse;
 import com.BE.service.interfaceService.IExamGenerationService;
+import com.BE.utils.AccountUtils;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -14,7 +25,12 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 public class ExamGenerationServiceImpl implements IExamGenerationService {
+
+    AccountUtils accountUtils;
+    ToolLogServiceClient toolLogServiceClient;
+    ObjectMapper objectMapper;
 
     @Override
     public List<Map<String, Object>> generateExams(ExamGenerationRequest request) {
@@ -77,6 +93,21 @@ public class ExamGenerationServiceImpl implements IExamGenerationService {
                     "answerOnly", answerOnly
             ));
         }
+        Map<String, Object> input = objectMapper.convertValue(request, new TypeReference<>() {});
+
+        ToolExecutionLogRequest toolExecutionLogRequest = ToolExecutionLogRequest.builder()
+                .userId(accountUtils.getCurrentUserId())
+                .toolId(request.getToolId())
+                .toolType(ToolTypeEnum.INTERNAL)
+                .code(ToolCodeEnum.MANUAL_EXAM_CREATOR)
+                .input(input)
+                .output(Map.of("results", results))
+                .bookId(null)
+                .lessonIds(new ArrayList<>())
+                .academicYearId(request.getAcademicYearId())
+                .tokenUsed(0)
+                .build();
+        DataResponseDTO<ToolExecutionLogResponse> response = toolLogServiceClient.toolExecutionLog(toolExecutionLogRequest);
 
         return results;
     }
