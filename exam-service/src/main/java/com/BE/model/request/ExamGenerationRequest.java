@@ -5,15 +5,25 @@ import com.BE.model.dto.IndividualBankExamDTO;
 import com.BE.model.dto.SystemBankQuestionDTO;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class ExamGenerationRequest {
+
+    @NotNull(message = "ID công cụ không được để trống")
+    @Schema(description = "ID của công cụ được gọi", example = "123", required = true)
+    private UUID toolId;
+
+    @Schema(description = "AcademicYearId", example = "1", required = true)
+    @NotNull(message = "AcademicYearId không được để trống")
+    private Long academicYearId;
 
     @Schema(description = "Tên trường tổ chức kiểm tra", example = "THPT Lê Quý Đôn")
     private String school;
