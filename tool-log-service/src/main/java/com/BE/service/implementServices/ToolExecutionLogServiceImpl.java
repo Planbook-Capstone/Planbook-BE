@@ -61,31 +61,30 @@ public class ToolExecutionLogServiceImpl implements IToolExecutionLogService {
         if (request.getToolType().equals(ToolTypeEnum.EXTERNAL)) {
 
 
-
-
-
         } else {
-            try {
-                // Serialize log response thành JSON
-                Map<String, Object> input = request.getInput();
-                ToolKafkaPayload payload = ToolKafkaPayload.builder()
-                        .type(request.getCode().toString())
-                        .data(KafkaData.builder()
-                                .user_id(request.getUserId().toString())
-                                .book_id(request.getBookId().toString())
-                                .lesson_id(request.getLessonIds().get(0).toString())
-                                .tool_log_id(response.getId())
-                                .input(input)
-                                .timestamp(Instant.now().toString())
-                                .build())
-                        .build();
+            if (!ToolCodeEnum.MANUAL_EXAM_CREATOR.equals(request.getCode())) {
+                try {
+                    // Serialize log response thành JSON
+                    Map<String, Object> input = request.getInput();
+                    ToolKafkaPayload payload = ToolKafkaPayload.builder()
+                            .type(request.getCode().toString())
+                            .data(KafkaData.builder()
+                                    .user_id(request.getUserId().toString())
+                                    .book_id(request.getBookId().toString())
+                                    .lesson_id(request.getLessonIds().get(0).toString())
+                                    .tool_log_id(response.getId())
+                                    .input(input)
+                                    .timestamp(Instant.now().toString())
+                                    .build())
+                            .build();
 
-                String jsonToSend = objectMapper.writeValueAsString(payload);
+                    String jsonToSend = objectMapper.writeValueAsString(payload);
 
-                iOutboxService.saveOutbox(requestTopic, jsonToSend, request.getCode().toString(), request.getUserId() + ":" + request.getToolId());
+                    iOutboxService.saveOutbox(requestTopic, jsonToSend, request.getCode().toString(), request.getUserId() + ":" + request.getToolId());
 
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException("Lỗi serialize ToolExecutionLog khi ghi outbox", e);
+                } catch (JsonProcessingException e) {
+                    throw new RuntimeException("Lỗi serialize ToolExecutionLog khi ghi outbox", e);
+                }
             }
         }
 
@@ -181,7 +180,7 @@ public class ToolExecutionLogServiceImpl implements IToolExecutionLogService {
         ToolExecutionLog log = repository.findById(toolLogId)
                 .orElseThrow(() -> new NotFoundException("Không tìm thấy log với ID: " + toolLogId));
 
-        if(output.getSuccess()){
+        if (output.getSuccess()) {
             WalletTokenRequest walletTokenRequest = new WalletTokenRequest();
             walletTokenRequest.setAmount(log.getTokenUsed());
             walletTokenRequest.setUserId(log.getUserId());
@@ -226,9 +225,9 @@ public class ToolExecutionLogServiceImpl implements IToolExecutionLogService {
         log = repository.save(log);
         output.getOutput().put("result_id", log.getResultId());
         output.getOutput().put("tool_code", log.getCode());
-        if(ToolTypeEnum.INTERNAL.equals(log.getToolType())){
+        if (ToolTypeEnum.INTERNAL.equals(log.getToolType())) {
 
-            WebSocketMessageRequest webSocketMessageRequest =  WebSocketMessageRequest.builder()
+            WebSocketMessageRequest webSocketMessageRequest = WebSocketMessageRequest.builder()
                     .userId(log.getUserId().toString())
                     .destination("/queue/notifications")
                     .payload(output.getOutput())
@@ -241,24 +240,22 @@ public class ToolExecutionLogServiceImpl implements IToolExecutionLogService {
     }
 
 
+    private ToolResultType convertToToolResultType(ToolCodeEnum code) {
+        if (code == null) return null;
 
-        private ToolResultType convertToToolResultType(ToolCodeEnum code) {
-            if (code == null) return null;
-
-            return switch (code) {
-                case LESSON_PLAN -> ToolResultType.LESSON_PLAN;
-                case SLIDE_GENERATOR -> ToolResultType.SLIDE;
-                case EXAM_CREATOR -> ToolResultType.EXAM;
-                default -> throw new IllegalArgumentException("ToolCodeEnum không map được sang ToolResultType: " + code);
-            };
-        }
+        return switch (code) {
+            case LESSON_PLAN -> ToolResultType.LESSON_PLAN;
+            case SLIDE_GENERATOR -> ToolResultType.SLIDE;
+            case EXAM_CREATOR -> ToolResultType.EXAM;
+            default -> throw new IllegalArgumentException("ToolCodeEnum không map được sang ToolResultType: " + code);
+        };
+    }
 
 
     @Override
     public void sendWebSocket(WebSocketMessageRequest request) {
         webSocketServiceClient.pushToClient(request);
     }
-
 
 
 }

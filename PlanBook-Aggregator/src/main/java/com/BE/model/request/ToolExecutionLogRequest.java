@@ -60,7 +60,7 @@ public class ToolExecutionLogRequest {
     ToolTypeEnum toolType;
 
     @NotNull(message = "Số lượng token bị trừ mỗi khi người dùng gọi một truy vấn (query).")
-    @Min(value = 1, message = "Giá trị tối thiểu: 1.")
+    @Min(value = 0, message = "Giá trị tối thiểu: 0.")
     @Max(value = 1000, message = "Giá trị tối đa đề xuất: 1000.")
     Integer tokenUsed;
 

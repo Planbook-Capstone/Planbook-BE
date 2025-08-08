@@ -116,12 +116,16 @@ public class KafkaProcessingServiceImpl implements IKafkaProcessingService {
                 log.warn("⚠️ Không tìm thấy user_id trong progress message");
                 return;
             }
-
+            JsonNode examDataNode = innerData.path("exam_data");
             JsonNode partialResultNode = innerData.path("partial_result");
             Map<String, Object> partialResult = null;
-
+            Map<String, Object> examData = null;
             if (partialResultNode != null && !partialResultNode.isMissingNode() && !partialResultNode.isNull() && partialResultNode.isObject()) {
                 partialResult = mapper.convertValue(partialResultNode, new TypeReference<>() {});
+            }
+
+            if (examDataNode != null && !examDataNode.isMissingNode() && !examDataNode.isNull() && examDataNode.isObject()) {
+                examData = mapper.convertValue(examDataNode, new TypeReference<>() {});
             }
 
 
@@ -137,6 +141,8 @@ public class KafkaProcessingServiceImpl implements IKafkaProcessingService {
             payload.put("tool_code", toolExecutionLogResponse.getCode());
             if (partialResult != null) {
                 payload.put("partial_result", partialResult);
+            }else if(examData != null){
+                payload.put("exam_data", examData);
             }
 
             WebSocketMessageRequest request = WebSocketMessageRequest.builder()
