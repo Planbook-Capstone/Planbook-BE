@@ -38,6 +38,9 @@ public class ExternalToolConfig {
 
     Integer tokenCostPerQuery;
 
+    @Column(nullable = false, unique = true)
+    String code;
+
     @Lob
     @Column(columnDefinition = "LONGTEXT")
     String icon;

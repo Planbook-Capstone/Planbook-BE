@@ -19,6 +19,7 @@ public class ExternalToolConfigPublicResponse {
     UUID id;
     String name;
     String icon;
+    String code;
     Integer tokenCostPerQuery;
     ToolTypeEnum toolType;
     Map<String, Object> inputJson;
