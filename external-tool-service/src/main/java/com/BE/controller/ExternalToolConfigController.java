@@ -60,6 +60,7 @@ public class ExternalToolConfigController {
                                               "clientSecret": "super-secret",
                                               "description": "Tích hợp AI để tạo văn bản",
                                               "tokenCostPerQuery": 8,
+                                              "href": "formu-lens",
                                               "inputJson": {"className": "SE1705"}
                                             }
                                             """

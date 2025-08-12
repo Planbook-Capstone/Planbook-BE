@@ -50,6 +50,8 @@ public class ExternalToolConfig {
     @Enumerated(EnumType.STRING)
     ToolTypeEnum toolType;
 
+    String href;
+
     @Lob
     @Column(columnDefinition = "LONGTEXT")
     String description;
