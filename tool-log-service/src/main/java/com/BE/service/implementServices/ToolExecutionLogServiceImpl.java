@@ -185,36 +185,9 @@ public class ToolExecutionLogServiceImpl implements IToolExecutionLogService {
             walletTokenRequest.setAmount(log.getTokenUsed());
             walletTokenRequest.setUserId(log.getUserId());
             identityServiceClient.deduct(walletTokenRequest);
-            if (log.getResultId() == null) {
-                // 1. Tạo request tạo ToolResult từ dữ liệu của log
-                CreateToolResultRequest request = new CreateToolResultRequest();
-                request.setUserId(log.getUserId());
-                request.setAcademicYearId(log.getAcademicYearId());
-                request.setType(convertToToolResultType(log.getCode())); // Mapping Enum nếu cùng tên
-                request.setLessonIds(log.getLessonIds());
-                request.setName("Hệ thống tự động lưu kết quả " + log.getId()); // Có thể tùy biến theo use-case
-                request.setDescription("Tự động tạo từ tool execution log");
-                request.setSource(ToolResultSource.AI);
-//                request.setData(output.getOutput());
-                request.setStatus(ToolResultStatus.DRAFT);
-
-                try {
-                    // 2. Gọi Feign để tạo ToolResult
-                    DataResponseDTO<ToolResultResponse> response = workspaceServiceClient.create(request);
-
-                    if (response != null && response.getData() != null) {
-                        // 3. Lưu lại resultId vào log
-                        Long createdResultId = response.getData().getId();
-                        log.setResultId(createdResultId);
-                    } else {
-                        throw new RuntimeException("Tạo ToolResult thất bại: response không hợp lệ");
-                    }
-
-                } catch (Exception e) {
-                    throw new RuntimeException("Gọi tạo ToolResult thất bại: " + e.getMessage(), e);
-                }
+            if (log.getResultId() == null && ToolTypeEnum.INTERNAL.equals(log.getToolType())) {
+                createAndLinkToolResult(log);
             }
-
 
         }
         // Cập nhật output và status
@@ -240,6 +213,29 @@ public class ToolExecutionLogServiceImpl implements IToolExecutionLogService {
     }
 
 
+    private void createAndLinkToolResult(ToolExecutionLog log) {
+        CreateToolResultRequest request = new CreateToolResultRequest();
+        request.setUserId(log.getUserId());
+        request.setAcademicYearId(log.getAcademicYearId());
+        request.setType(convertToToolResultType(log.getCode()));
+        request.setLessonIds(log.getLessonIds());
+        request.setName("Hệ thống tự động lưu kết quả " + log.getId());
+        request.setDescription("Tự động tạo từ tool execution log");
+        request.setSource(ToolResultSource.AI);
+        request.setStatus(ToolResultStatus.DRAFT);
+
+        try {
+            DataResponseDTO<ToolResultResponse> response = workspaceServiceClient.create(request);
+            if (response == null || response.getData() == null) {
+                throw new RuntimeException("Tạo ToolResult thất bại: response không hợp lệ");
+            }
+            log.setResultId(response.getData().getId());
+        } catch (Exception e) {
+            throw new RuntimeException("Gọi tạo ToolResult thất bại: " + e.getMessage(), e);
+        }
+    }
+
+
     private ToolResultType convertToToolResultType(ToolCodeEnum code) {
         if (code == null) return null;
 
@@ -247,6 +243,7 @@ public class ToolExecutionLogServiceImpl implements IToolExecutionLogService {
             case LESSON_PLAN -> ToolResultType.LESSON_PLAN;
             case SLIDE_GENERATOR -> ToolResultType.SLIDE;
             case EXAM_CREATOR -> ToolResultType.EXAM;
+            case FORMU_LENS -> ToolResultType.FORMU_LENS;
             default -> throw new IllegalArgumentException("ToolCodeEnum không map được sang ToolResultType: " + code);
         };
     }

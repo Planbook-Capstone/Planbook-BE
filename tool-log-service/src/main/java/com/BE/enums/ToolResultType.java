@@ -6,7 +6,8 @@ package com.BE.enums;
 public enum ToolResultType {
     LESSON_PLAN("Giáo án"),
     SLIDE("Slide bài giảng"),
-    EXAM("Đề kiểm tra");
+    EXAM("Đề kiểm tra"),
+    FORMU_LENS("Tra cứu tài nguyên");
 
     private final String displayName;
 

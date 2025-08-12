@@ -66,10 +66,10 @@ public class ToolExecutionLogController {
             @ApiResponse(responseCode = "400", description = "Dữ liệu không hợp lệ")
     })
     public ResponseEntity<?> updateOutput(
-            @PathVariable Long toolLogId,
+            @PathVariable Long id,
             @Valid @RequestBody ToolLogUpdateRequest request
     ) {
-        service.updateOutputByLogId(toolLogId, request);
+        service.updateOutputByLogId(id, request);
         return responseHandler.response(200, "Cập nhật output thành công", null);
     }
 

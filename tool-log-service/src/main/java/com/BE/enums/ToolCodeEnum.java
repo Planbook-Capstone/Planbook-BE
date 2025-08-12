@@ -5,5 +5,7 @@ public enum ToolCodeEnum {
     SLIDE_GENERATOR,
     EXAM_CREATOR,
     MANUAL_EXAM_CREATOR,
-    QUIZ_GAME
+    QUIZ_GAME,
+    FORMU_LENS
+
 }
