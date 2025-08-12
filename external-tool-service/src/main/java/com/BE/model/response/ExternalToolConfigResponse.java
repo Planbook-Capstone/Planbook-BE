@@ -24,6 +24,7 @@ public class ExternalToolConfigResponse {
     String clientSecret;
     String icon;
     ToolCodeEnum code;
+    String href;
     Integer tokenCostPerQuery;
     ToolTypeEnum toolType;
     Map<String, Object> inputJson;
