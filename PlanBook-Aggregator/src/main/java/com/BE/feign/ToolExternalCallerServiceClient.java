@@ -13,7 +13,7 @@ import java.util.Map;
 @FeignClient(name = "external-caller-service",  configuration = FeignConfig.class)
 public interface ToolExternalCallerServiceClient {
 
-    @PostMapping("/api/partner-tools")
+    @PostMapping("/api/partner-tools/execute")
     DataResponseDTO<Map<String, Object>> executeExternalTool(@RequestBody ToolExecuteExternalRequest toolExecuteExternalRequest);
 
 }
