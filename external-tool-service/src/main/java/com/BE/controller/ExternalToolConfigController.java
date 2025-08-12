@@ -101,7 +101,7 @@ public class ExternalToolConfigController {
                     content = @Content(schema = @Schema(implementation = ExternalToolConfigResponse.class))),
             @ApiResponse(responseCode = "404", description = "Không tìm thấy công cụ")
     })
-    public ResponseEntity<?> getById(@PathVariable Long id) {
+    public ResponseEntity<?> getById(@PathVariable UUID id) {
         return responseHandler.response(200, "Lấy chi tiết thành công", service.getById(id));
     }
 
@@ -135,7 +135,8 @@ public class ExternalToolConfigController {
                                               "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==",
                                               "description": "Tích hợp AI để tạo văn bản",
                                               "tokenCostPerQuery": 10,
-                                              "inputJson": {"className": "SE1705"}
+                                              "inputJson": {"className": "SE1705"},
+                                              "code":"FORMU_LENS",
                                             }
                                             """
                             )
@@ -143,7 +144,7 @@ public class ExternalToolConfigController {
             )
     )
     public ResponseEntity<?> update(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @Valid @RequestBody ExternalToolConfigRequest request
     ) {
         return responseHandler.response(200, "Cập nhật thành công", service.update(id, request));
@@ -158,7 +159,7 @@ public class ExternalToolConfigController {
             @ApiResponse(responseCode = "404", description = "Không tìm thấy công cụ")
     })
     public ResponseEntity<?> changeStatus(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @Parameter(
                     description = "Trạng thái mới cần cập nhật",
                     required = true,
