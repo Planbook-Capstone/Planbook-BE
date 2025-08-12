@@ -13,8 +13,8 @@ public interface IExternalToolConfigService {
 
    Page<ExternalToolConfigResponse> getAll(ExternalToolSearchRequest request);
 
-   ExternalToolConfigResponse getById(Long id);
-   ExternalToolConfigResponse update(Long id, ExternalToolConfigRequest request);
-   ExternalToolConfigResponse updateStatus(Long id, StatusEnum status);
+   ExternalToolConfigResponse getById(UUID id);
+   ExternalToolConfigResponse update(UUID id, ExternalToolConfigRequest request);
+   ExternalToolConfigResponse updateStatus(UUID id, StatusEnum status);
 
 }

@@ -2,6 +2,7 @@ package com.BE.model.entity;
 
 import com.BE.config.MapToJsonConverter;
 import com.BE.enums.StatusEnum;
+import com.BE.enums.ToolCodeEnum;
 import com.BE.enums.ToolTypeEnum;
 import jakarta.persistence.*;
 import lombok.*;
@@ -38,8 +39,9 @@ public class ExternalToolConfig {
 
     Integer tokenCostPerQuery;
 
-    @Column(nullable = false, unique = true)
-    String code;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    ToolCodeEnum code;
 
     @Lob
     @Column(columnDefinition = "LONGTEXT")

@@ -1,5 +1,6 @@
 package com.BE.model.request;
 
+import com.BE.enums.ToolCodeEnum;
 import com.BE.exception.EnumValidator;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Max;
@@ -84,7 +85,8 @@ public class ExternalToolConfigRequest {
     String description;
 
     @NotNull(message = "Mã tool không được để trống")
-    @Schema(description = "Mã định danh cố định của tool, dùng để mapping", example = "Tool", required = true)
-    String code;
+    @EnumValidator(enumClass = ToolCodeEnum.class, message = "Code không hợp lệ")
+    @Schema(description = "Mã định danh cố định của tool, dùng để mapping ", example = "TOOL", required = true)
+    ToolCodeEnum code;
 }
 

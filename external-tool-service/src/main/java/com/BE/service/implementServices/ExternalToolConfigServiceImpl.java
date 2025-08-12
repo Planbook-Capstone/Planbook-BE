@@ -91,14 +91,14 @@ public class ExternalToolConfigServiceImpl implements IExternalToolConfigService
 
 
     @Override
-    public ExternalToolConfigResponse getById(Long id) {
+    public ExternalToolConfigResponse getById(UUID id) {
         return repository.findById(id)
                 .map(mapper::toResponse)
                 .orElseThrow(() -> new NotFoundException("Không tìm thấy cấu hình với ID: " + id));
     }
 
     @Override
-    public ExternalToolConfigResponse update(Long id, ExternalToolConfigRequest request) {
+    public ExternalToolConfigResponse update(UUID id, ExternalToolConfigRequest request) {
         ExternalToolConfig config = repository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Không tìm thấy cấu hình"));
 
@@ -108,7 +108,7 @@ public class ExternalToolConfigServiceImpl implements IExternalToolConfigService
         return mapper.toResponse(repository.save(config));
     }
     @Override
-    public ExternalToolConfigResponse updateStatus(Long id, StatusEnum status) {
+    public ExternalToolConfigResponse updateStatus(UUID id, StatusEnum status) {
         ExternalToolConfig config = repository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Không tìm thấy cấu hình"));
         config.setStatus(status);

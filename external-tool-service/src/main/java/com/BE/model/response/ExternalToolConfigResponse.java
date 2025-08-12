@@ -1,6 +1,7 @@
 package com.BE.model.response;
 
 import com.BE.enums.StatusEnum;
+import com.BE.enums.ToolCodeEnum;
 import com.BE.enums.ToolTypeEnum;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -22,7 +23,7 @@ public class ExternalToolConfigResponse {
     String clientId;
     String clientSecret;
     String icon;
-    String code;
+    ToolCodeEnum code;
     Integer tokenCostPerQuery;
     ToolTypeEnum toolType;
     Map<String, Object> inputJson;
