@@ -164,10 +164,12 @@ public class ToolAggregatorServiceImpl implements IToolAggregatorService {
                 .userId(accountUtils.getCurrentUserId())
                 .toolId(request.getToolId())
                 .toolType(request.getToolType())
+                .academicYearId(request.getAcademicYearId())
 //                .code(externalToolConfigResponse.getData().getCode())
-                .code(ToolCodeEnum.QUIZ_GAME)
+                .code(ToolCodeEnum.FORMU_LENS)
                 .input(request.getInput())
-                .lessonIds(lessons)
+//                .lessonIds(lessons)
+//                .bookId(request.getBook_id())
                 .tokenUsed(externalToolConfigResponse.getData().getTokenCostPerQuery())
                 .build();
 
@@ -187,7 +189,7 @@ public class ToolAggregatorServiceImpl implements IToolAggregatorService {
         boolean success = Boolean.TRUE.equals(outputExternalResponse.getData().get("success"));
         Object data = outputExternalResponse.getData().get("data");
         String message = (String) outputExternalResponse.getData().getOrDefault("message", "Không rõ lỗi");
-
+        outputExternalResponse.getData().put("tool_log_id", response.getData().getId());
         if (!success) {
             toolLogServiceClient.updateOutput(response.getData().getId(),
                     ToolLogUpdateRequest.builder()
