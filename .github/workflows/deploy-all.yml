@@ -552,9 +552,11 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "deploy/docker-compose.yml,.env"
+          source: |
+            deploy/docker-compose.yml
+            .env
           target: "/var/www/planbook-be/"
-          strip_components: 0
+          strip_components: 1
 
       - name: Deploy on VPS
         uses: appleboy/ssh-action@v1
@@ -567,18 +569,27 @@ jobs:
 
             cd /var/www/planbook-be
 
+             # Bảo đảm docker compose v2 có sẵn; fallback sang docker-compose nếu cần
+            if docker compose version >/dev/null 2>&1; then
+              DC="docker compose"
+            elif command -v docker-compose >/dev/null 2>&1; then
+              DC="docker-compose"
+            else
+              echo "Docker Compose chưa được cài trên VPS" >&2
+              exit 1
+            fi
+
             echo "🧹 Stopping and removing old containers..."
-            docker compose down --remove-orphans || true
+            $DC down --remove-orphans || true
 
             echo "🧹 Removing old images..."
-            docker image prune -f || true
+            docker image prune -af || true
 
             echo "📦 Pulling latest images..."
-            docker compose pull
+            $DC pull
 
             echo "🚀 Starting all services..."
-            docker compose up -d --remove-orphans
+            $DC up -d --remove-orphans
 
-            echo "✅ Deployment complete."
             echo "📊 Service status:"
-            docker compose ps
+            $DC ps
