@@ -632,3 +632,4 @@ jobs:
 
             echo "✅ Deployment complete."
             docker compose -f docker-compose.yml ps
+
