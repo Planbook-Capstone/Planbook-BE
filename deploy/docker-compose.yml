@@ -189,6 +189,7 @@ services:
       SPRING_PROFILES_ACTIVE: "prod"
       # Server Configuration
       SERVER_PORT: "${API_GATEWAY_PORT}"
+      
       MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "env,configprops"
       # JWT Configuration
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: "${API_GATEWAY_JWKS_URI}"
