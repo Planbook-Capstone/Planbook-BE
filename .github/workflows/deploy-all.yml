@@ -546,17 +546,50 @@ jobs:
           script: |
             mkdir -p /var/www/planbook-be
 
-      - name: Copy docker-compose.yml and .env to VPS
+      - name: Copy docker-compose.yml to VPS
         uses: appleboy/scp-action@v1
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: |
-            deploy/docker-compose.yml
-            .env
+          source: "deploy/docker-compose.yml"
           target: "/var/www/planbook-be/"
           strip_components: 1
+
+      - name: Copy .env to VPS
+        uses: appleboy/scp-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: ".env"
+          target: "/var/www/planbook-be/"
+
+      - name: Verify files on VPS
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /var/www/planbook-be
+            echo "📁 Files in deployment directory:"
+            ls -la
+            echo "🔍 Checking docker-compose.yml:"
+            if [ -f "docker-compose.yml" ]; then
+              echo "✅ docker-compose.yml exists"
+              head -5 docker-compose.yml
+            else
+              echo "❌ docker-compose.yml not found"
+            fi
+            echo "🔍 Checking .env:"
+            if [ -f ".env" ]; then
+              echo "✅ .env exists"
+              echo "DOCKERHUB_USERNAME in .env:"
+              grep "DOCKERHUB_USERNAME" .env || echo "❌ DOCKERHUB_USERNAME not found"
+            else
+              echo "❌ .env not found"
+            fi
 
       - name: Deploy on VPS
         uses: appleboy/ssh-action@v1
@@ -569,27 +602,21 @@ jobs:
 
             cd /var/www/planbook-be
 
-             # Bảo đảm docker compose v2 có sẵn; fallback sang docker-compose nếu cần
-            if docker compose version >/dev/null 2>&1; then
-              DC="docker compose"
-            elif command -v docker-compose >/dev/null 2>&1; then
-              DC="docker-compose"
-            else
-              echo "Docker Compose chưa được cài trên VPS" >&2
-              exit 1
-            fi
+            echo "📁 Current directory contents:"
+            ls -la
 
             echo "🧹 Stopping and removing old containers..."
-            $DC down --remove-orphans || true
+            docker compose -f docker-compose.yml down --remove-orphans || true
 
             echo "🧹 Removing old images..."
-            docker image prune -af || true
+            docker image prune -f || true
 
             echo "📦 Pulling latest images..."
-            $DC pull
+            docker compose -f docker-compose.yml pull
 
             echo "🚀 Starting all services..."
-            $DC up -d --remove-orphans
+            docker compose -f docker-compose.yml up -d --remove-orphans
 
+            echo "✅ Deployment complete."
             echo "📊 Service status:"
-            $DC ps
+            docker compose -f docker-compose.yml ps
