@@ -6,7 +6,7 @@ services:
     image: bitnami/kafka:3.7.0
     container_name: kafka
     restart: always
-    pull_policy: if_not_present
+    pull_policy: missing
     ports:
       - "9092:9092"
     environment:
@@ -27,7 +27,7 @@ services:
     image: obsidiandynamics/kafdrop:latest
     container_name: kafdrop
     restart: always
-    pull_policy: if_not_present
+    pull_policy: missing
     ports:
       - "9000:9000"
     environment:
@@ -40,7 +40,7 @@ services:
     image: debezium/connect:3.0.0.Final
     container_name: debezium
     restart: always
-    pull_policy: if_not_present
+    pull_policy: missing
     ports:
       - "8083:8083"
     environment:
@@ -61,22 +61,12 @@ services:
     depends_on:
       - kafka
 
-  redis:
-    image: redis:latest
-    container_name: redis
-    restart: always
-    pull_policy: if_not_present
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-
   # Management Tools
   dozzle:
     image: amir20/dozzle:latest
     container_name: dozzle
     restart: always
-    pull_policy: if_not_present
+    pull_policy: missing
     ports:
       - "8888:8080"
     volumes:
@@ -88,7 +78,7 @@ services:
     image: portainer/portainer-ce:latest
     container_name: portainer
     restart: always
-    pull_policy: if_not_present
+    pull_policy: missing
     ports:
       - "9001:9000"
     volumes:
@@ -100,7 +90,7 @@ services:
     image: ${DOCKERHUB_USERNAME}/planbook-discovery-server:latest
     container_name: planbook-discovery-server
     restart: always
-    pull_policy: if_not_present
+    pull_policy: always
     ports:
       - "${DISCOVERY_PORT}:${DISCOVERY_PORT}"
     environment:
@@ -117,7 +107,7 @@ services:
     image: ${DOCKERHUB_USERNAME}/planbook-identity-service:latest
     container_name: planbook-identity-service
     restart: always
-    pull_policy: if_not_present
+    pull_policy: always
     environment:
       SPRING_PROFILES_ACTIVE: "prod"
       # Database Configuration
@@ -183,14 +173,14 @@ services:
     depends_on:
       - discovery-server
       - kafka
-      - redis
+      
 
   # API Gateway
   api-gateway:
     image: ${DOCKERHUB_USERNAME}/planbook-gateway:latest
     container_name: planbook-gateway
     restart: always
-    pull_policy: if_not_present
+    pull_policy: always
     ports:
       - "${API_GATEWAY_PORT}:${API_GATEWAY_PORT}"
     environment:
@@ -225,7 +215,7 @@ services:
     image: ${DOCKERHUB_USERNAME}/planbook-master-data-service:latest
     container_name: planbook-master-data-service
     restart: always
-    pull_policy: if_not_present
+    pull_policy: always
     environment:
       SPRING_PROFILES_ACTIVE: "prod"
       # Database Configuration
@@ -285,14 +275,14 @@ services:
     depends_on:
       - discovery-server
       - kafka
-      - redis
+      
 
   # Purchase Service
   purchase-service:
     image: ${DOCKERHUB_USERNAME}/planbook-purchase-service:latest
     container_name: planbook-purchase-service
     restart: always
-    pull_policy: if_not_present
+    pull_policy: always
     environment:
       SPRING_PROFILES_ACTIVE: "prod"
       # Application Configuration
@@ -362,7 +352,7 @@ services:
     depends_on:
       - discovery-server
       - kafka
-      - redis
+      
 
 
 
@@ -371,7 +361,7 @@ services:
     image: ${DOCKERHUB_USERNAME}/planbook-exam-service:latest
     container_name: planbook-exam-service
     restart: always
-    pull_policy: if_not_present
+    pull_policy: always
     environment:
       SPRING_PROFILES_ACTIVE: "prod"
       SPRING_APPLICATION_NAME: "${EXAM_APP_NAME}"
@@ -420,14 +410,14 @@ services:
     depends_on:
       - discovery-server
       - kafka
-      - redis
+      
 
   # External Caller Service
   external-caller-service:
     image: ${DOCKERHUB_USERNAME}/planbook-external-caller-service:latest
     container_name: planbook-external-caller-service
     restart: always
-    pull_policy: if_not_present
+    pull_policy: always
     environment:
       SPRING_PROFILES_ACTIVE: "prod"
       SPRING_APPLICATION_NAME: "${EXTERNAL_CALLER_APP_NAME}"
@@ -459,14 +449,14 @@ services:
     depends_on:
       - discovery-server
       - kafka
-      - redis
+      
 
   # External Tool Config Service
   external-tool-config-service:
     image: ${DOCKERHUB_USERNAME}/planbook-external-tool-config-service:latest
     container_name: planbook-external-tool-config-service
     restart: always
-    pull_policy: if_not_present
+    pull_policy: always
     environment:
       SPRING_PROFILES_ACTIVE: "prod"
       SPRING_APPLICATION_NAME: "${EXTERNAL_TOOL_CONFIG_APP_NAME}"
@@ -528,14 +518,14 @@ services:
     depends_on:
       - discovery-server
       - kafka
-      - redis
+      
 
   # Slide Template Service
   slide-template-service:
     image: ${DOCKERHUB_USERNAME}/planbook-slide-template-service:latest
     container_name: planbook-slide-template-service
     restart: always
-    pull_policy: if_not_present
+    pull_policy: always
     environment:
       SPRING_PROFILES_ACTIVE: "prod"
       SPRING_APPLICATION_NAME: "${SLIDE_TEMPLATE_APP_NAME}"
@@ -585,14 +575,14 @@ services:
     depends_on:
       - discovery-server
       - kafka
-      - redis
+      
 
   # Websocket Service
   websocket-service:
     image: ${DOCKERHUB_USERNAME}/planbook-websocket-service:latest
     container_name: planbook-websocket-service
     restart: always
-    pull_policy: if_not_present
+    pull_policy: always
     ports:
       - "${WEBSOCKET_PORT}:${WEBSOCKET_PORT}"
     environment:
@@ -620,14 +610,14 @@ services:
     depends_on:
       - discovery-server
       - kafka
-      - redis
+      
 
   # Academic Resource Service
   academic-resource-service:
     image: ${DOCKERHUB_USERNAME}/planbook-academic-resource-service:latest
     container_name: planbook-academic-resource-service
     restart: always
-    pull_policy: if_not_present
+    pull_policy: always
     environment:
       SPRING_PROFILES_ACTIVE: "prod"
       SPRING_APPLICATION_NAME: "${ACADEMIC_RESOURCE_APP_NAME}"
@@ -676,14 +666,14 @@ services:
     depends_on:
       - discovery-server
       - kafka
-      - redis
+      
 
   # Lesson Plan Template Service
   lesson-plan-template-service:
     image: ${DOCKERHUB_USERNAME}/planbook-lesson-plan-template-service:latest
     container_name: planbook-lesson-plan-template-service
     restart: always
-    pull_policy: if_not_present
+    pull_policy: always
     environment:
       SPRING_PROFILES_ACTIVE: "prod"
       SPRING_APPLICATION_NAME: "${LESSON_PLAN_TEMPLATE_APP_NAME}"
@@ -737,14 +727,14 @@ services:
     depends_on:
       - discovery-server
       - kafka
-      - redis
+      
 
   # Tool Log Service
   tool-log-service:
     image: ${DOCKERHUB_USERNAME}/planbook-tool-log-service:latest
     container_name: planbook-tool-log-service
     restart: always
-    pull_policy: if_not_present
+    pull_policy: always
     environment:
       SPRING_PROFILES_ACTIVE: "prod"
       SPRING_APPLICATION_NAME: "${TOOL_LOG_APP_NAME}"
@@ -800,14 +790,14 @@ services:
     depends_on:
       - discovery-server
       - kafka
-      - redis
+      
 
   # Workspace Service
   workspace-service:
     image: ${DOCKERHUB_USERNAME}/planbook-workspace-service:latest
     container_name: planbook-workspace-service
     restart: always
-    pull_policy: if_not_present
+    pull_policy: always
     environment:
       SPRING_PROFILES_ACTIVE: "prod"
       SPRING_APPLICATION_NAME: "${WORKSPACE_APP_NAME}"
@@ -856,14 +846,14 @@ services:
     depends_on:
       - discovery-server
       - kafka
-      - redis
+      
 
   # Aggregator Service
   aggregator:
     image: ${DOCKERHUB_USERNAME}/planbook-aggregator:latest
     container_name: planbook-aggregator
     restart: always
-    pull_policy: if_not_present
+    pull_policy: always
     environment:
       SPRING_PROFILES_ACTIVE: "prod"
       SPRING_APPLICATION_NAME: "${AGGREGATOR_APP_NAME}"
@@ -890,9 +880,8 @@ services:
     depends_on:
       - discovery-server
       - kafka
-      - redis
+      
 
 volumes:
   kafka_data:
-  redis_data:
   portainer_data:
