@@ -616,15 +616,19 @@ jobs:
             echo "🧹 Stopping and removing old containers..."
             docker compose -f docker-compose.yml down --remove-orphans || true
 
-            echo "🧹 Removing old images..."
-            docker image prune -f || true
+            echo "📦 Pull infra services only if missing..."
+            INFRA_SERVICES="kafka kafdrop debezium portainer dozzle discovery-server"
+            docker compose -f docker-compose.yml pull --policy=missing $INFRA_SERVICES
 
-            echo "📦 Pulling latest images..."
-            docker compose -f docker-compose.yml pull
+            echo "📦 Pull application services (always)..."
+            APP_SERVICES="api-gateway identity-service master-data-service purchase-service exam-service \
+            external-caller-service external-tool-config-service slide-template-service websocket-service \
+            academic-resource-service lesson-plan-template-service tool-log-service workspace-service aggregator"
+
+            docker compose -f docker-compose.yml pull $APP_SERVICES
 
             echo "🚀 Starting all services..."
             docker compose -f docker-compose.yml up -d --remove-orphans
 
             echo "✅ Deployment complete."
-            echo "📊 Service status:"
             docker compose -f docker-compose.yml ps
