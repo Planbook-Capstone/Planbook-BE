@@ -22,7 +22,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @OpenAPIDefinition(
 		info = @Info(title = "Do Minh API", version = "2.0")
 		,servers = {
-				@Server(url = "https://biolab.life/purchase-service", description = "Production Server")
+				@Server(url = "https://api.planbook.vn/purchase-service", description = "Production Server")
 		}
 )
 public class SpringApplication {
