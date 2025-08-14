@@ -6,14 +6,51 @@ on:
       - master
 
 jobs:
-  build-auth-service:
+  # Discovery Server
+  build-discovery-server:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: auth-service
+        working-directory: discovery-server
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Build JAR
+        run: mvn clean package -DskipTests
+
+      - name: Docker login
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Build & Push Discovery Server image
+        run: |
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/planbook-discovery-server:latest .
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/planbook-discovery-server:latest
+
+  # Identity Service
+  build-identity-service:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: identity-service
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
 
       - name: Write RSA Private/Public Keys to file
         run: |
@@ -35,20 +72,26 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
-      - name: Build & Push Auth-service image
+      - name: Build & Push Identity Service image
         run: |
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/planbook-auth-service:latest .
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/planbook-auth-service:latest
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/planbook-identity-service:latest .
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/planbook-identity-service:latest
 
+  # API Gateway
   build-api-gateway:
     runs-on: ubuntu-latest
-    needs: build-auth-service
     defaults:
       run:
-        working-directory: api-gateway
+        working-directory: PlanBook-Gateway
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
 
       - name: Build JAR
         run: mvn clean package -DskipTests
@@ -61,14 +104,435 @@ jobs:
 
       - name: Build & Push API Gateway image
         run: |
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/planbook-api-gateway:latest .
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/planbook-api-gateway:latest
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/planbook-gateway:latest .
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/planbook-gateway:latest
+
+  # Master Data Service
+  build-master-data-service:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: master-data-service
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Write RSA Private/Public Keys to file
+        run: |
+          mkdir -p src/main/resources/keys
+          echo "${{ secrets.PRIVATE_KEY_PEM }}" > src/main/resources/keys/private.pem
+          echo "${{ secrets.PUBLIC_KEY_PEM }}" > src/main/resources/keys/public.pem
+
+      - name: Build JAR
+        run: mvn clean package -DskipTests
+
+      - name: Docker login
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Build & Push Master Data Service image
+        run: |
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/planbook-master-data-service:latest .
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/planbook-master-data-service:latest
+
+  # Purchase Service
+  build-purchase-service:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: purchase-service
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Build JAR
+        run: mvn clean package -DskipTests
+
+      - name: Docker login
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Build & Push Purchase Service image
+        run: |
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/planbook-purchase-service:latest .
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/planbook-purchase-service:latest
+
+  # Exam Service
+  build-exam-service:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: exam-service
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Write RSA Private/Public Keys to file
+        run: |
+          mkdir -p src/main/resources/keys
+          echo "${{ secrets.PRIVATE_KEY_PEM }}" > src/main/resources/keys/private.pem
+          echo "${{ secrets.PUBLIC_KEY_PEM }}" > src/main/resources/keys/public.pem
+
+      - name: Build JAR
+        run: mvn clean package -DskipTests
+
+      - name: Docker login
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Build & Push Exam Service image
+        run: |
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/planbook-exam-service:latest .
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/planbook-exam-service:latest
+
+  # External Caller Service
+  build-external-caller-service:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: external-caller-service
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Build JAR
+        run: mvn clean package -DskipTests
+
+      - name: Docker login
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Build & Push External Caller Service image
+        run: |
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/planbook-external-caller-service:latest .
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/planbook-external-caller-service:latest
+
+  # External Tool Config Service
+  build-external-tool-config-service:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: external-tool-service
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Write RSA Private/Public Keys to file
+        run: |
+          mkdir -p src/main/resources/keys
+          echo "${{ secrets.PRIVATE_KEY_PEM }}" > src/main/resources/keys/private.pem
+          echo "${{ secrets.PUBLIC_KEY_PEM }}" > src/main/resources/keys/public.pem
+
+      - name: Build JAR
+        run: mvn clean package -DskipTests
+
+      - name: Docker login
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Build & Push External Tool Config Service image
+        run: |
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/planbook-external-tool-config-service:latest .
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/planbook-external-tool-config-service:latest
+
+  # Slide Template Service
+  build-slide-template-service:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: slide-template-service
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Write RSA Private/Public Keys to file
+        run: |
+          mkdir -p src/main/resources/keys
+          echo "${{ secrets.PRIVATE_KEY_PEM }}" > src/main/resources/keys/private.pem
+          echo "${{ secrets.PUBLIC_KEY_PEM }}" > src/main/resources/keys/public.pem
+
+      - name: Build JAR
+        run: mvn clean package -DskipTests
+
+      - name: Docker login
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Build & Push Slide Template Service image
+        run: |
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/planbook-slide-template-service:latest .
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/planbook-slide-template-service:latest
+
+  # Websocket Service
+  build-websocket-service:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: websocket-service
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Build JAR
+        run: mvn clean package -DskipTests
+
+      - name: Docker login
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Build & Push Websocket Service image
+        run: |
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/planbook-websocket-service:latest .
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/planbook-websocket-service:latest
+
+  # Academic Resource Service
+  build-academic-resource-service:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: academic-resource-service
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Write RSA Private/Public Keys to file
+        run: |
+          mkdir -p src/main/resources/keys
+          echo "${{ secrets.PRIVATE_KEY_PEM }}" > src/main/resources/keys/private.pem
+          echo "${{ secrets.PUBLIC_KEY_PEM }}" > src/main/resources/keys/public.pem
+
+      - name: Build JAR
+        run: mvn clean package -DskipTests
+
+      - name: Docker login
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Build & Push Academic Resource Service image
+        run: |
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/planbook-academic-resource-service:latest .
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/planbook-academic-resource-service:latest
+
+  # Lesson Plan Template Service
+  build-lesson-plan-template-service:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: lesson-plan-service
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Write RSA Private/Public Keys to file
+        run: |
+          mkdir -p src/main/resources/keys
+          echo "${{ secrets.PRIVATE_KEY_PEM }}" > src/main/resources/keys/private.pem
+          echo "${{ secrets.PUBLIC_KEY_PEM }}" > src/main/resources/keys/public.pem
+
+      - name: Build JAR
+        run: mvn clean package -DskipTests
+
+      - name: Docker login
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Build & Push Lesson Plan Template Service image
+        run: |
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/planbook-lesson-plan-template-service:latest .
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/planbook-lesson-plan-template-service:latest
+
+  # Tool Log Service
+  build-tool-log-service:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: tool-log-service
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Write RSA Private/Public Keys to file
+        run: |
+          mkdir -p src/main/resources/keys
+          echo "${{ secrets.PRIVATE_KEY_PEM }}" > src/main/resources/keys/private.pem
+          echo "${{ secrets.PUBLIC_KEY_PEM }}" > src/main/resources/keys/public.pem
+
+      - name: Build JAR
+        run: mvn clean package -DskipTests
+
+      - name: Docker login
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Build & Push Tool Log Service image
+        run: |
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/planbook-tool-log-service:latest .
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/planbook-tool-log-service:latest
+
+  # Workspace Service
+  build-workspace-service:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: workspace-service
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Write RSA Private/Public Keys to file
+        run: |
+          mkdir -p src/main/resources/keys
+          echo "${{ secrets.PRIVATE_KEY_PEM }}" > src/main/resources/keys/private.pem
+          echo "${{ secrets.PUBLIC_KEY_PEM }}" > src/main/resources/keys/public.pem
+
+      - name: Build JAR
+        run: mvn clean package -DskipTests
+
+      - name: Docker login
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Build & Push Workspace Service image
+        run: |
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/planbook-workspace-service:latest .
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/planbook-workspace-service:latest
+
+  # Aggregator Service
+  build-aggregator:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: PlanBook-Aggregator
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Build JAR
+        run: mvn clean package -DskipTests
+
+      - name: Docker login
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Build & Push Aggregator Service image
+        run: |
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/planbook-aggregator:latest .
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/planbook-aggregator:latest
 
   deploy:
     runs-on: ubuntu-latest
     needs:
-      - build-auth-service
+      - build-discovery-server
+      - build-identity-service
       - build-api-gateway
+      - build-master-data-service
+      - build-purchase-service
+      - build-exam-service
+      - build-external-caller-service
+      - build-external-tool-config-service
+      - build-slide-template-service
+      - build-websocket-service
+      - build-academic-resource-service
+      - build-lesson-plan-template-service
+      - build-tool-log-service
+      - build-workspace-service
+      - build-aggregator
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -82,35 +546,15 @@ jobs:
           script: |
             mkdir -p /var/www/planbook-be
 
-      - name: Create .env file for Compose
-        run: |
-          cat <<EOF > deploy/.env
-          SPRING_DATASOURCE_URL=${{ secrets.DB_URL }}
-          SPRING_DATASOURCE_USERNAME=${{ secrets.DB_USERNAME }}
-          SPRING_DATASOURCE_PASSWORD=${{ secrets.DB_PASSWORD }}
-          SUPABASE_JWT_SECRET_KEY=${{ secrets.SUPABASE_JWT_SECRET_KEY }}
-          SPRING_APP_SECRET_KEY=${{ secrets.SPRING_APP_SECRET_KEY }}
-          KAFKA_TOPIC=${{ secrets.KAFKA_TOPIC }}
-          MAIL_HOST=${{ secrets.MAIL_HOST }}
-          MAIL_PORT=${{ secrets.MAIL_PORT }}
-          MAIL_USERNAME=${{ secrets.MAIL_USERNAME }}
-          MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}
-          APP_DURATION=${{ secrets.APP_DURATION }}
-          SPRING_JWT_PRIVATE_KEY_PATH=${{ secrets.PRIVATE_KEY_PATH }}
-          SPRING_JWT_PUBLIC_KEY_PATH=${{ secrets.PUBLIC_KEY_PATH }}
-          SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI=${{ secrets.SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI }}
-          DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}
-          EOF
-
       - name: Copy docker-compose.yml and .env to VPS
         uses: appleboy/scp-action@v1
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "deploy/docker-compose.yml,deploy/.env"
+          source: "deploy/docker-compose.yml,.env"
           target: "/var/www/planbook-be/"
-          strip_components: 1
+          strip_components: 0
 
       - name: Deploy on VPS
         uses: appleboy/ssh-action@v1
@@ -123,18 +567,18 @@ jobs:
 
             cd /var/www/planbook-be
 
-            echo "🧹 Removing old containers..."
-            docker rm -f planbook-auth-service || true
-            docker rm -f planbook-api-gateway || true
+            echo "🧹 Stopping and removing old containers..."
+            docker compose down --remove-orphans || true
 
             echo "🧹 Removing old images..."
-            docker rmi ${{ secrets.DOCKERHUB_USERNAME }}/planbook-auth-service:latest || true
-            docker rmi ${{ secrets.DOCKERHUB_USERNAME }}/planbook-api-gateway:latest || true
+            docker image prune -f || true
 
             echo "📦 Pulling latest images..."
             docker compose pull
 
-            echo "🚀 Starting services..."
+            echo "🚀 Starting all services..."
             docker compose up -d --remove-orphans
 
             echo "✅ Deployment complete."
+            echo "📊 Service status:"
+            docker compose ps

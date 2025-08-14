@@ -13,7 +13,13 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 @SpringBootApplication
 @EnableFeignClients
 @EnableDiscoveryClient
-@OpenAPIDefinition(info = @Info(title = "Exam Service API", version = "1.0", description = "API for managing exams, templates, and submissions"))
+// @OpenAPIDefinition(info = @Info(title = "Exam Service API", version = "1.0", description = "API for managing exams, templates, and submissions"))
+@OpenAPIDefinition(
+		info = @Info(title = "Planbook API", version = "2.0")
+		,servers = {
+				@Server(url = "https://api.planbook.vn/exam-service", description = "Production Server")
+		}
+)
 @SecurityScheme(name = "api", scheme = "bearer", type = SecuritySchemeType.HTTP, in = SecuritySchemeIn.HEADER)
 public class SpringApplication {
 	public static void main(String[] args) {

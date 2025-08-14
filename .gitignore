@@ -36,3 +36,19 @@ build/
 # Ignore RSA keys
 /src/main/resources/keys/private.pem
 /src/main/resources/keys/public.pem
+**/src/main/resources/keys/private.pem
+**/src/main/resources/keys/public.pem
+
+# Environment files (contain sensitive data)
+.env
+.env.local
+.env.production
+.env.staging
+.env.development
+.env.*
+!.env.example
+
+# Docker environment files
+deploy/.env
+deploy/.env.local
+deploy/.env.production

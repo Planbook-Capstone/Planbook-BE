@@ -14,15 +14,21 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 @EnableDiscoveryClient
 @EnableCaching
 //@OpenAPIDefinition(info = @Info(title = "Planbook API", version = "2.0", description = "Information"))
+// @OpenAPIDefinition(
+// //        servers = {
+// //                @Server(url = "https://biolab.life/identity-service", description = "Production server")
+// //        },
+//         info = @Info(
+//                 title = "Planbook API",
+//                 version = "2.0",
+//                 description = "Information"
+//         )
+// )
 @OpenAPIDefinition(
-//        servers = {
-//                @Server(url = "https://biolab.life/identity-service", description = "Production server")
-//        },
-        info = @Info(
-                title = "Planbook API",
-                version = "2.0",
-                description = "Information"
-        )
+		info = @Info(title = "Planbook API", version = "2.0")
+		,servers = {
+				@Server(url = "https://api.planbook.vn/identity-service", description = "Production Server")
+		}
 )
 @SecurityScheme(name = "api", scheme = "bearer", type = SecuritySchemeType.HTTP, in = SecuritySchemeIn.HEADER)
 public class SpringApplication {

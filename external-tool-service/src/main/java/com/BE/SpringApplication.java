@@ -12,7 +12,13 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 @SpringBootApplication
 @EnableDiscoveryClient
 @EnableCaching
-@OpenAPIDefinition(info = @Info(title = "Do Minh API", version = "2.0", description = "Information"))
+// @OpenAPIDefinition(info = @Info(title = "Do Minh API", version = "2.0", description = "Information"))
+@OpenAPIDefinition(
+		info = @Info(title = "Planbook API", version = "2.0")
+		,servers = {
+				@Server(url = "https://api.planbook.vn/external-tool-config-service", description = "Production Server")
+		}
+)
 @SecurityScheme(name = "api", scheme = "bearer", type = SecuritySchemeType.HTTP, in = SecuritySchemeIn.HEADER)
 public class SpringApplication {
 
