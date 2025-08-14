@@ -556,6 +556,14 @@ jobs:
           target: "/var/www/planbook-be/"
           strip_components: 1
 
+      - name: Create .env from secrets
+        run: |
+          cat > .env <<'EOF'
+          ${{ secrets.ENV_FILE }}
+          EOF
+          test -s .env || (echo "❌ .env is empty (check ENV_FILE secret)" && exit 1)
+          echo "✅ .env file created successfully"
+
       - name: Copy .env to VPS
         uses: appleboy/scp-action@v1
         with:
