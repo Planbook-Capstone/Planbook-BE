@@ -63,6 +63,7 @@ docker compose -f deploy/docker-compose-local.yml up -d
 - `SHARED_REDIS_HOST`: Redis host
 - `SHARED_SUPABASE_*`: Supabase configuration
 
+
 ### Service-specific Variables
 Mỗi service có các biến riêng:
 - `{SERVICE}_APP_NAME`: Tên application
