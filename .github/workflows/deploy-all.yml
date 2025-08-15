@@ -617,8 +617,8 @@ jobs:
             docker compose -f docker-compose.yml down --remove-orphans || true
 
             echo "📦 Pull infra services only if missing..."
-            INFRA_SERVICES="kafka kafdrop debezium portainer dozzle discovery-server"
-            docker compose -f docker-compose.yml pull --policy=missing $INFRA_SERVICES
+            # INFRA_SERVICES="kafka kafdrop debezium portainer dozzle discovery-server"
+            # docker compose -f docker-compose.yml pull --policy=missing $INFRA_SERVICES
 
             echo "📦 Pull application services (always)..."
             APP_SERVICES="api-gateway identity-service master-data-service purchase-service exam-service \
