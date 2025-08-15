@@ -952,7 +952,6 @@ services:
     networks:
       - planbook
 
-
 volumes:
   kafka_data:
   portainer_data:
