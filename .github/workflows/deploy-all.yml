@@ -326,6 +326,11 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
+      - name: Write RSA Private/Public Keys to file
+        run: |
+          mkdir -p src/main/resources/keys
+          echo "${{ secrets.PRIVATE_KEY_PEM }}" > src/main/resources/keys/private.pem
+          echo "${{ secrets.PUBLIC_KEY_PEM }}" > src/main/resources/keys/public.pem
 
       - name: Build JAR
         run: mvn clean package -DskipTests
