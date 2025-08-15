@@ -286,6 +286,7 @@ services:
       EUREKA_INSTANCE_HOSTNAME: "master-data-service"
       # Duration Configuration
       SPRING_DURATION: "${SHARED_DURATION_SECONDS}"
+      MANAGEMENT_HEALTH_MAIL_ENABLED: "${SHARED_MAIL_HEALTH_ENABLED}"
       # Mail Configuration
       SPRING_MAIL_HOST: "${SHARED_MAIL_HOST}"
       SPRING_MAIL_PORT: "${SHARED_MAIL_PORT}"
@@ -321,6 +322,7 @@ services:
        {"eureka":{"client":{"serviceUrl":{"defaultZone":"http://discovery-server:8761/eureka"}}}}
       SPRING_DATASOURCE_USERNAME: "${PURCHASE_DB_USERNAME}"
       SPRING_DATASOURCE_PASSWORD: "${PURCHASE_DB_PASSWORD}"
+      MANAGEMENT_HEALTH_MAIL_ENABLED: "${SHARED_MAIL_HEALTH_ENABLED}"
       # JPA Configuration
       SPRING_JPA_HIBERNATE_DDL_AUTO: "${SHARED_HIBERNATE_DDL_AUTO}"
       SPRING_JPA_DATABASE_PLATFORM: "${SHARED_HIBERNATE_DIALECT}"
@@ -400,6 +402,7 @@ services:
       SPRING_APPLICATION_JSON: >
        {"eureka":{"client":{"serviceUrl":{"defaultZone":"http://discovery-server:8761/eureka"}}}}
       SPRING_DATASOURCE_URL: "${EXAM_DB_URL}"
+      MANAGEMENT_HEALTH_MAIL_ENABLED: "${SHARED_MAIL_HEALTH_ENABLED}"
       SPRING_DATASOURCE_USERNAME: "${EXAM_DB_USERNAME}"
       SPRING_DATASOURCE_PASSWORD: "${EXAM_DB_PASSWORD}"
       SPRING_JPA_HIBERNATE_DDL_AUTO: "${SHARED_HIBERNATE_DDL_AUTO}"
@@ -500,6 +503,7 @@ services:
       SPRING_PROFILES_ACTIVE: "prod"
       SPRING_APPLICATION_NAME: "${EXTERNAL_TOOL_CONFIG_APP_NAME}"
       SERVER_PORT: "8080"
+      MANAGEMENT_HEALTH_MAIL_ENABLED: "${SHARED_MAIL_HEALTH_ENABLED}"
       # Database Configuration
       SPRING_DATASOURCE_URL: "${EXTERNAL_TOOL_CONFIG_DB_URL}"
       SPRING_DATASOURCE_USERNAME: "${EXTERNAL_TOOL_CONFIG_DB_USERNAME}"
@@ -573,6 +577,7 @@ services:
       SPRING_PROFILES_ACTIVE: "prod"
       SPRING_APPLICATION_NAME: "${SLIDE_TEMPLATE_APP_NAME}"
       SERVER_PORT: "8080"
+      MANAGEMENT_HEALTH_MAIL_ENABLED: "${SHARED_MAIL_HEALTH_ENABLED}"
       SPRING_APPLICATION_JSON: >
        {"eureka":{"client":{"serviceUrl":{"defaultZone":"http://discovery-server:8761/eureka"}}}}
       SPRING_DATASOURCE_URL: "${SLIDE_TEMPLATE_DB_URL}"
@@ -668,6 +673,7 @@ services:
       SPRING_PROFILES_ACTIVE: "prod"
       SPRING_APPLICATION_NAME: "${ACADEMIC_RESOURCE_APP_NAME}"
       SERVER_PORT: "8080"
+      MANAGEMENT_HEALTH_MAIL_ENABLED: "${SHARED_MAIL_HEALTH_ENABLED}"
       SPRING_APPLICATION_JSON: >
        {"eureka":{"client":{"serviceUrl":{"defaultZone":"http://discovery-server:8761/eureka"}}}}
       SPRING_DATASOURCE_URL: "${ACADEMIC_RESOURCE_DB_URL}"
@@ -728,6 +734,7 @@ services:
       SPRING_PROFILES_ACTIVE: "prod"
       SPRING_APPLICATION_NAME: "${LESSON_PLAN_TEMPLATE_APP_NAME}"
       SERVER_PORT: "8080"
+      MANAGEMENT_HEALTH_MAIL_ENABLED: "${SHARED_MAIL_HEALTH_ENABLED}"
       SPRING_APPLICATION_JSON: >
        {"eureka":{"client":{"serviceUrl":{"defaultZone":"http://discovery-server:8761/eureka"}}}}
       SPRING_DATASOURCE_URL: "${LESSON_PLAN_TEMPLATE_DB_URL}"
@@ -793,6 +800,7 @@ services:
       SPRING_PROFILES_ACTIVE: "prod"
       SPRING_APPLICATION_NAME: "${TOOL_LOG_APP_NAME}"
       SERVER_PORT: "8080"
+      MANAGEMENT_HEALTH_MAIL_ENABLED: "${SHARED_MAIL_HEALTH_ENABLED}"
       SPRING_APPLICATION_JSON: >
        {"eureka":{"client":{"serviceUrl":{"defaultZone":"http://discovery-server:8761/eureka"}}}}
       SPRING_DATASOURCE_URL: "${TOOL_LOG_DB_URL}"
@@ -860,6 +868,7 @@ services:
       SPRING_PROFILES_ACTIVE: "prod"
       SPRING_APPLICATION_NAME: "${WORKSPACE_APP_NAME}"
       SERVER_PORT: "8080"
+      MANAGEMENT_HEALTH_MAIL_ENABLED: "${SHARED_MAIL_HEALTH_ENABLED}"
       SPRING_APPLICATION_JSON: >
        {"eureka":{"client":{"serviceUrl":{"defaultZone":"http://discovery-server:8761/eureka"}}}}
       SPRING_DATASOURCE_URL: "${WORKSPACE_DB_URL}"
