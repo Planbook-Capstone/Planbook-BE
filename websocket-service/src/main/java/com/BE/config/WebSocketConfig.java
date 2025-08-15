@@ -1,5 +1,6 @@
 package com.BE.config;
 import com.BE.utils.PemUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
@@ -11,6 +12,9 @@ import java.security.interfaces.RSAPublicKey;
 @Configuration
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
+
+    @Value("${spring.JWT.PUBLIC.KEY.PATH}")
+    String PUBLIC_KEY_PATH;
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
         registry.enableSimpleBroker("/topic/", "/queue/");
@@ -20,7 +24,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     private RSAPublicKey loadPublicKey() {
         try {
-            return (RSAPublicKey) PemUtils.readPublicKey("keys/public.pem");
+            return (RSAPublicKey) PemUtils.readPublicKey(PUBLIC_KEY_PATH);
         } catch (Exception e) {
             throw new RuntimeException("Không thể load public key", e);
         }
