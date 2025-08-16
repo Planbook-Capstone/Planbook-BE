@@ -1,5 +1,4 @@
 package com.BE.model.entity;
-import com.BE.config.TimestampEntityListener;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;

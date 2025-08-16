@@ -1,6 +1,5 @@
 package com.BE.model.entity;
 
-import com.BE.config.TimestampEntityListener;
 import com.BE.enums.AcademicResourceEnum;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -8,10 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.AccessLevel;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
-import java.time.LocalDateTime;
 import java.util.Set;
 import java.util.UUID;
 
@@ -20,7 +16,6 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@EntityListeners(TimestampEntityListener.class)
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class AcademicResource {
 

@@ -71,5 +71,4 @@ public class ExternalToolConfig {
 
     LocalDateTime updatedAt;
 
-
 }

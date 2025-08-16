@@ -42,4 +42,5 @@ public class OutboxMessage {
     LocalDateTime createdAt;
 
     LocalDateTime updatedAt;
+
 }

@@ -41,4 +41,5 @@ public class LessonPlanTemplate {
     @Column(nullable = false)
     @Builder.Default
     Status status = Status.ACTIVE;
+
 }
