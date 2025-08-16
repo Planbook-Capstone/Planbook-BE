@@ -1,5 +1,6 @@
 package com.BE.model.entity;
 
+import com.BE.config.TimestampEntityListener;
 import com.BE.enums.AcademicYearStatusEnum;
 import jakarta.persistence.*;
 import org.hibernate.annotations.UuidGenerator;
@@ -16,6 +17,7 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
+@EntityListeners(TimestampEntityListener.class)
 public class AcademicYear {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

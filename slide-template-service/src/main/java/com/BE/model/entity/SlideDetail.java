@@ -1,6 +1,7 @@
 package com.BE.model.entity;
 
 import com.BE.config.MapToJsonConverter;
+import com.BE.config.TimestampEntityListener;
 import com.BE.enums.StatusEnum;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -17,6 +18,7 @@ import java.util.Map;
 @Getter
 @Setter
 @Table(name = "slide_detail")
+@EntityListeners(TimestampEntityListener.class)
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class SlideDetail {
     @Id
@@ -41,9 +43,8 @@ public class SlideDetail {
     @JoinColumn(name = "slide_template_id", nullable = false)
     SlideTemplate slideTemplate;
 
-    @CreationTimestamp
+
     LocalDateTime createdAt;
 
-    @UpdateTimestamp
     LocalDateTime updatedAt;
 }

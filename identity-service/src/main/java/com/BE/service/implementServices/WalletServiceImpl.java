@@ -13,6 +13,7 @@ import com.BE.repository.AuthenRepository;
 import com.BE.repository.WalletRepository;
 import com.BE.service.interfaceServices.IWalletService;
 import com.BE.utils.AccountUtils;
+import com.BE.utils.DateNowUtils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -27,6 +28,7 @@ public class WalletServiceImpl implements IWalletService {
     private final AccountUtils accountUtils;
     private final AuthenRepository authenRepository;
     private final WalletMapper walletMapper;
+    private final DateNowUtils dateNowUtils;
 
     @Override
     public WalletResponse getByUser(UUID id) {
@@ -86,6 +88,7 @@ public class WalletServiceImpl implements IWalletService {
                 .type(request.getType())
                 .description(request.getDescription())
                 .orderId(request.getOrderId())
+                .createdAt(dateNowUtils.getCurrentDateTimeHCM())
                 .build();
 
         txn.addWallet(wallet);

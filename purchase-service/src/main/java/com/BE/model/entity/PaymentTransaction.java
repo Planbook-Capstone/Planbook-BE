@@ -2,6 +2,7 @@ package com.BE.model.entity;
 
 
 import com.BE.config.MapToJsonConverter;
+import com.BE.config.TimestampEntityListener;
 import com.BE.enums.GatewayEnum;
 import com.BE.enums.StatusEnum;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -23,6 +24,7 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@EntityListeners(TimestampEntityListener.class)
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class PaymentTransaction {
 
@@ -74,12 +76,9 @@ public class PaymentTransaction {
 
     LocalDateTime expiredAt;
 
-    @Builder.Default
-    @CreationTimestamp
-    LocalDateTime createdAt = LocalDateTime.now();
 
-    @Builder.Default
-    @UpdateTimestamp
-    LocalDateTime updatedAt = LocalDateTime.now();
+    LocalDateTime createdAt;
+
+    LocalDateTime updatedAt;
 
 }

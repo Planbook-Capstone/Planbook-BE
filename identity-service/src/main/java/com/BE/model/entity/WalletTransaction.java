@@ -1,5 +1,6 @@
 package com.BE.model.entity;
 
+import com.BE.config.TimestampEntityListener;
 import com.BE.enums.TransactionType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
@@ -16,6 +17,7 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@EntityListeners(TimestampEntityListener.class)
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class WalletTransaction {
@@ -40,9 +42,7 @@ public class WalletTransaction {
     @Column(columnDefinition = "LONGTEXT")
     String description;
 
-    @CreationTimestamp
-    @Builder.Default
-    LocalDateTime createdAt = LocalDateTime.now();
+    LocalDateTime createdAt;
 
     @ManyToOne
     @JoinColumn(name = "wallet_id")

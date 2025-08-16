@@ -15,6 +15,7 @@ import com.BE.model.response.PaymentTransactionResponse;
 import com.BE.repository.PaymentTransactionRepository;
 import com.BE.service.interfaceServices.IPaymentService;
 import com.BE.utils.AccountUtils;
+import com.BE.utils.DateNowUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -39,6 +40,7 @@ public class PaymentServiceImpl implements IPaymentService {
     private final PaymentTransactionMapper paymentMapper;
     private final ObjectMapper objectMapper;
     private final AccountUtils accountUtils;
+    private final DateNowUtils dateNowUtils;
 
 
     @Value("${payos.return-url}")
@@ -83,6 +85,8 @@ public class PaymentServiceImpl implements IPaymentService {
                     .payosTransactionId(response.getPaymentLinkId())
                     .checkoutUrl(response.getCheckoutUrl())
                     .qrCode(response.getQrCode())
+                    .createdAt(dateNowUtils.getCurrentDateTimeHCM())
+                    .updatedAt(dateNowUtils.getCurrentDateTimeHCM())
                     .build();
             request.getOrder().addTransaction(transaction);
 

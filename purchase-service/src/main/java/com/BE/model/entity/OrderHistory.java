@@ -1,5 +1,6 @@
 package com.BE.model.entity;
 
+import com.BE.config.TimestampEntityListener;
 import com.BE.enums.StatusEnum;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
@@ -18,6 +19,7 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@EntityListeners(TimestampEntityListener.class)
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class OrderHistory {
 
@@ -38,10 +40,8 @@ public class OrderHistory {
 
     String note;
 
-    @CreationTimestamp
     LocalDateTime createdAt;
 
-    @UpdateTimestamp
     LocalDateTime updatedAt;
 
 

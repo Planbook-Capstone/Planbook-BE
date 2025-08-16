@@ -1,5 +1,6 @@
 package com.BE.model.entity;
 
+import com.BE.config.TimestampEntityListener;
 import com.BE.enums.StatusEnum;
 import jakarta.persistence.*;
 import lombok.*;
@@ -20,6 +21,7 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@EntityListeners(TimestampEntityListener.class)
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Order {
     @Id
@@ -36,10 +38,8 @@ public class Order {
     @Column(nullable = false)
     BigDecimal amount = BigDecimal.ZERO;
 
-    @CreationTimestamp
     LocalDateTime createdAt;
 
-    @UpdateTimestamp
     LocalDateTime updatedAt;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)

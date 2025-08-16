@@ -1,6 +1,7 @@
 package com.BE.model.entity;
 
 import com.BE.config.MapToJsonConverter;
+import com.BE.config.TimestampEntityListener;
 import com.BE.enums.StatusEnum;
 import com.BE.enums.ToolCodeEnum;
 import com.BE.enums.ToolTypeEnum;
@@ -22,6 +23,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 @Table(name = "external_tool_configs")
+@EntityListeners(TimestampEntityListener.class)
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ExternalToolConfig {
 
@@ -65,10 +67,8 @@ public class ExternalToolConfig {
 
     UUID createdBy;
 
-    @CreationTimestamp
     LocalDateTime createdAt;
 
-    @UpdateTimestamp
     LocalDateTime updatedAt;
 
 

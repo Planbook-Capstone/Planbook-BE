@@ -1,5 +1,6 @@
 package com.BE.model.entity;
 
+import com.BE.config.TimestampEntityListener;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
@@ -19,6 +20,7 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@EntityListeners(TimestampEntityListener.class)
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Wallet {
@@ -30,10 +32,8 @@ public class Wallet {
     @Column(nullable = false)
     Integer balance = 0;
 
-    @CreationTimestamp
     LocalDateTime createdAt;
 
-    @UpdateTimestamp
     LocalDateTime updatedAt;
 
 

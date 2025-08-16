@@ -1,5 +1,6 @@
 package com.BE.model.entity;
 
+import com.BE.config.TimestampEntityListener;
 import com.BE.convert.LongListToJsonConverter;
 import com.BE.convert.MapToJsonConverter;
 import com.BE.enums.ExecutionStatus;
@@ -23,6 +24,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 @Table(name = "tool_usage_logs")
+@EntityListeners(TimestampEntityListener.class)
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ToolExecutionLog {
 
@@ -76,10 +78,8 @@ public class ToolExecutionLog {
 //    @Column(columnDefinition = "TEXT")
 //    String errorMessage;
 
-    @CreationTimestamp
     LocalDateTime createdAt;
 
-    @UpdateTimestamp
     LocalDateTime updatedAt;
 
 }

@@ -1,5 +1,6 @@
 package com.BE.model.entity;
 
+import com.BE.config.TimestampEntityListener;
 import com.BE.enums.PlaceholderTypeEnum;
 import com.BE.enums.StatusEnum;
 import jakarta.persistence.*;
@@ -16,6 +17,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @Table(name = "slide_placeholder")
+@EntityListeners(TimestampEntityListener.class)
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class SlidePlaceholder {
     @Id
@@ -37,9 +39,9 @@ public class SlidePlaceholder {
     @Enumerated(EnumType.STRING)
     StatusEnum status;
 
-    @CreationTimestamp
+
     LocalDateTime createdAt;
 
-    @UpdateTimestamp
+
     LocalDateTime updatedAt;
 }

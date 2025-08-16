@@ -6,9 +6,70 @@ on:
       - master
 
 jobs:
+  detect-changes:
+      runs-on: ubuntu-latest
+      outputs:
+        discovery_server: ${{ steps.filter.outputs.discovery_server }}
+        identity_service: ${{ steps.filter.outputs.identity_service }}
+        api_gateway: ${{ steps.filter.outputs.api_gateway }}
+        master_data_service: ${{ steps.filter.outputs.master_data_service }}
+        purchase_service: ${{ steps.filter.outputs.purchase_service }}
+        exam_service: ${{ steps.filter.outputs.exam_service }}
+        external_caller_service: ${{ steps.filter.outputs.external_caller_service }}
+        external_tool_config_service: ${{ steps.filter.outputs.external_tool_config_service }}
+        slide_template_service: ${{ steps.filter.outputs.slide_template_service }}
+        websocket_service: ${{ steps.filter.outputs.websocket_service }}
+        academic_resource_service: ${{ steps.filter.outputs.academic_resource_service }}
+        lesson_plan_template_service: ${{ steps.filter.outputs.lesson_plan_template_service }}
+        tool_log_service: ${{ steps.filter.outputs.tool_log_service }}
+        workspace_service: ${{ steps.filter.outputs.workspace_service }}
+        aggregator: ${{ steps.filter.outputs.aggregator }}
+        deploy_files: ${{ steps.filter.outputs.deploy_files }}
+      steps:
+        - uses: actions/checkout@v4
+
+        - name: Detect changed folders
+          id: filter
+          uses: dorny/paths-filter@v3
+          with:
+            filters: |
+              discovery_server:
+                - 'discovery-server/**'
+              identity_service:
+                - 'identity-service/**'
+              api_gateway:
+                - 'PlanBook-Gateway/**'
+              master_data_service:
+                - 'master-data-service/**'
+              purchase_service:
+                - 'purchase-service/**'
+              exam_service:
+                - 'exam-service/**'
+              external_caller_service:
+                - 'external-caller-service/**'
+              external_tool_config_service:
+                - 'external-tool-service/**'
+              slide_template_service:
+                - 'slide-template-service/**'
+              websocket_service:
+                - 'websocket-service/**'
+              academic_resource_service:
+                - 'academic-resource-service/**'
+              lesson_plan_template_service:
+                - 'lesson-plan-service/**'
+              tool_log_service:
+                - 'tool-log-service/**'
+              workspace_service:
+                - 'workspace-service/**'
+              aggregator:
+                - 'PlanBook-Aggregator/**'
+              deploy_files:
+                - 'deploy/docker-compose.yml'
   # Discovery Server
   build-discovery-server:
     runs-on: ubuntu-latest
+    needs: detect-changes
+    if: needs.detect-changes.outputs.discovery_server == 'true'
     defaults:
       run:
         working-directory: discovery-server
@@ -39,6 +100,8 @@ jobs:
   # Identity Service
   build-identity-service:
     runs-on: ubuntu-latest
+    needs: detect-changes
+    if: needs.detect-changes.outputs.identity_service == 'true'
     defaults:
       run:
         working-directory: identity-service
@@ -80,6 +143,8 @@ jobs:
   # API Gateway
   build-api-gateway:
     runs-on: ubuntu-latest
+    needs: detect-changes
+    if: needs.detect-changes.outputs.api_gateway == 'true'
     defaults:
       run:
         working-directory: PlanBook-Gateway
@@ -110,6 +175,8 @@ jobs:
   # Master Data Service
   build-master-data-service:
     runs-on: ubuntu-latest
+    needs: detect-changes
+    if: needs.detect-changes.outputs.master_data_service == 'true'
     defaults:
       run:
         working-directory: master-data-service
@@ -146,6 +213,8 @@ jobs:
   # Purchase Service
   build-purchase-service:
     runs-on: ubuntu-latest
+    needs: detect-changes
+    if: needs.detect-changes.outputs.purchase_service == 'true'
     defaults:
       run:
         working-directory: purchase-service
@@ -176,6 +245,8 @@ jobs:
   # Exam Service
   build-exam-service:
     runs-on: ubuntu-latest
+    needs: detect-changes
+    if: needs.detect-changes.outputs.exam_service == 'true'
     defaults:
       run:
         working-directory: exam-service
@@ -212,6 +283,8 @@ jobs:
   # External Caller Service
   build-external-caller-service:
     runs-on: ubuntu-latest
+    needs: detect-changes
+    if: needs.detect-changes.outputs.external_caller_service == 'true'
     defaults:
       run:
         working-directory: external-caller-service
@@ -242,6 +315,8 @@ jobs:
   # External Tool Config Service
   build-external-tool-config-service:
     runs-on: ubuntu-latest
+    needs: detect-changes
+    if: needs.detect-changes.outputs.external_tool_config_service == 'true'
     defaults:
       run:
         working-directory: external-tool-service
@@ -278,6 +353,8 @@ jobs:
   # Slide Template Service
   build-slide-template-service:
     runs-on: ubuntu-latest
+    needs: detect-changes
+    if: needs.detect-changes.outputs.slide_template_service == 'true'
     defaults:
       run:
         working-directory: slide-template-service
@@ -314,6 +391,8 @@ jobs:
   # Websocket Service
   build-websocket-service:
     runs-on: ubuntu-latest
+    needs: detect-changes
+    if: needs.detect-changes.outputs.websocket_service == 'true'
     defaults:
       run:
         working-directory: websocket-service
@@ -349,6 +428,8 @@ jobs:
   # Academic Resource Service
   build-academic-resource-service:
     runs-on: ubuntu-latest
+    needs: detect-changes
+    if: needs.detect-changes.outputs.academic_resource_service == 'true'
     defaults:
       run:
         working-directory: academic-resource-service
@@ -385,6 +466,8 @@ jobs:
   # Lesson Plan Template Service
   build-lesson-plan-template-service:
     runs-on: ubuntu-latest
+    needs: detect-changes
+    if: needs.detect-changes.outputs.lesson_plan_template_service == 'true'
     defaults:
       run:
         working-directory: lesson-plan-service
@@ -421,6 +504,8 @@ jobs:
   # Tool Log Service
   build-tool-log-service:
     runs-on: ubuntu-latest
+    needs: detect-changes
+    if: needs.detect-changes.outputs.tool_log_service == 'true'
     defaults:
       run:
         working-directory: tool-log-service
@@ -457,6 +542,8 @@ jobs:
   # Workspace Service
   build-workspace-service:
     runs-on: ubuntu-latest
+    needs: detect-changes
+    if: needs.detect-changes.outputs.workspace_service == 'true'
     defaults:
       run:
         working-directory: workspace-service
@@ -493,6 +580,8 @@ jobs:
   # Aggregator Service
   build-aggregator:
     runs-on: ubuntu-latest
+    needs: detect-changes
+    if: needs.detect-changes.outputs.aggregator == 'true'
     defaults:
       run:
         working-directory: PlanBook-Aggregator
@@ -611,6 +700,8 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
+            set -e
+
             docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_PASSWORD }}
 
             cd /var/www/planbook-be
@@ -618,23 +709,45 @@ jobs:
             echo "📁 Current directory contents:"
             ls -la
 
-            echo "🧹 Stopping and removing old containers..."
-            docker compose -f docker-compose.yml down --remove-orphans || true
+            echo "🧹 Do NOT stop all containers (keep uptime)."
+            # docker compose -f docker-compose.yml down --remove-orphans || true
 
-            echo "📦 Pull infra services only if missing..."
-            # INFRA_SERVICES="kafka kafdrop debezium portainer dozzle discovery-server"
-            # docker compose -f docker-compose.yml pull --policy=missing $INFRA_SERVICES
+            echo "📦 Pull INFRA services only if image is missing..."
+            docker compose -f docker-compose.yml pull --policy=missing kafka kafdrop debezium dozzle portainer discovery-server || true
 
-            echo "📦 Pull application services (always)..."
-            APP_SERVICES="api-gateway identity-service master-data-service purchase-service exam-service \
-            external-caller-service external-tool-config-service slide-template-service websocket-service \
-            academic-resource-service lesson-plan-template-service tool-log-service workspace-service aggregator"
+            echo "🔎 Compute changed APP services from CI outputs..."
+            APP_SERVICES=""
 
-            docker compose -f docker-compose.yml pull $APP_SERVICES
+            [ "${{ needs.detect-changes.outputs.api_gateway }}" = "true" ] && APP_SERVICES="$APP_SERVICES api-gateway"
+            [ "${{ needs.detect-changes.outputs.identity_service }}" = "true" ] && APP_SERVICES="$APP_SERVICES identity-service"
+            [ "${{ needs.detect-changes.outputs.master_data_service }}" = "true" ] && APP_SERVICES="$APP_SERVICES master-data-service"
+            [ "${{ needs.detect-changes.outputs.purchase_service }}" = "true" ] && APP_SERVICES="$APP_SERVICES purchase-service"
+            [ "${{ needs.detect-changes.outputs.exam_service }}" = "true" ] && APP_SERVICES="$APP_SERVICES exam-service"
+            [ "${{ needs.detect-changes.outputs.external_caller_service }}" = "true" ] && APP_SERVICES="$APP_SERVICES external-caller-service"
+            [ "${{ needs.detect-changes.outputs.external_tool_config_service }}" = "true" ] && APP_SERVICES="$APP_SERVICES external-tool-config-service"
+            [ "${{ needs.detect-changes.outputs.slide_template_service }}" = "true" ] && APP_SERVICES="$APP_SERVICES slide-template-service"
+            [ "${{ needs.detect-changes.outputs.websocket_service }}" = "true" ] && APP_SERVICES="$APP_SERVICES websocket-service"
+            [ "${{ needs.detect-changes.outputs.academic_resource_service }}" = "true" ] && APP_SERVICES="$APP_SERVICES academic-resource-service"
+            [ "${{ needs.detect-changes.outputs.lesson_plan_template_service }}" = "true" ] && APP_SERVICES="$APP_SERVICES lesson-plan-template-service"
+            [ "${{ needs.detect-changes.outputs.tool_log_service }}" = "true" ] && APP_SERVICES="$APP_SERVICES tool-log-service"
+            [ "${{ needs.detect-changes.outputs.workspace_service }}" = "true" ] && APP_SERVICES="$APP_SERVICES workspace-service"
+            [ "${{ needs.detect-changes.outputs.aggregator }}" = "true" ] && APP_SERVICES="$APP_SERVICES aggregator"
+            [ "${{ needs.detect-changes.outputs.discovery_server }}" = "true" ] && APP_SERVICES="$APP_SERVICES discovery-server"
 
-            echo "🚀 Starting all services..."
-            docker compose -f docker-compose.yml up -d --remove-orphans
+            if [ -n "$APP_SERVICES" ]; then
+              echo "📦 Pulling changed application services: $APP_SERVICES"
+              docker compose -f docker-compose.yml pull $APP_SERVICES
+
+              echo "🚀 Recreating only CHANGED services (no deps, no pull at up):"
+              docker compose -f docker-compose.yml up -d --no-deps --pull never $APP_SERVICES
+            else
+              if [ "${{ needs.detect-changes.outputs.deploy_files }}" = "true" ]; then
+                echo "🛠 Only docker-compose.yml changed. Re-applying stack WITHOUT pulling or recreating:"
+                docker compose -f docker-compose.yml up -d --no-recreate --pull never
+              else
+                echo "✅ No application service changes detected. Skipping pull/up."
+              fi
+            fi
 
             echo "✅ Deployment complete."
             docker compose -f docker-compose.yml ps
-            
