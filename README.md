@@ -464,6 +464,16 @@ docker-compose -f deploy/docker-compose.yml up -d
 - Push lên Docker Hub registry
 - Environment-specific configuration
 
+## 📞 Liên hệ
+
+**Team**: PlanBook Development Team
+**Email**: contact@planbook.vn
+**Website**: https://planbook.vn
+
+Made with ❤️ by PlanBook Team
+
+---
+
 ## 📞 Support
 
 Nếu bạn gặp vấn đề hoặc có câu hỏi, vui lòng tạo issue trên GitHub repository.
