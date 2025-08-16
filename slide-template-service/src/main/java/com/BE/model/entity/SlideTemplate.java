@@ -1,6 +1,7 @@
 package com.BE.model.entity;
 
 import com.BE.config.MapToJsonConverter;
+import com.BE.config.TimestampEntityListener;
 import com.BE.enums.StatusEnum;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
@@ -19,6 +20,7 @@ import java.util.Map;
 @Getter
 @Setter
 @Table(name = "slide_template")
+@EntityListeners(TimestampEntityListener.class)
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class SlideTemplate {
     @Id
@@ -43,10 +45,10 @@ public class SlideTemplate {
     @Convert(converter = MapToJsonConverter.class)
     Map<String, Object> imageBlocks;
 
-    @CreationTimestamp
+
     LocalDateTime createdAt;
 
-    @UpdateTimestamp
+
     LocalDateTime updatedAt;
 
     @JsonIgnore

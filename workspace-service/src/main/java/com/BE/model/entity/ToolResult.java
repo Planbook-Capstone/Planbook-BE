@@ -1,5 +1,6 @@
 package com.BE.model.entity;
 
+import com.BE.config.TimestampEntityListener;
 import com.BE.convert.LongListToJsonConverter;
 import com.BE.convert.ObjectToJsonConverter;
 import com.BE.enums.ToolResultSource;
@@ -22,6 +23,7 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@EntityListeners(TimestampEntityListener.class)
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ToolResult {
 
@@ -63,9 +65,7 @@ public class ToolResult {
     @Enumerated(EnumType.STRING)
     ToolResultStatus status;
 
-    @CreationTimestamp
     LocalDateTime createdAt;
 
-    @UpdateTimestamp
     LocalDateTime updatedAt;
 }

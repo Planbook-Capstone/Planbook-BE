@@ -1,6 +1,7 @@
 package com.BE.model.entity;
 
 import com.BE.config.MapToJsonConverter;
+import com.BE.config.TimestampEntityListener;
 import com.BE.enums.SubscriptionStatus;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -25,6 +26,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@EntityListeners(TimestampEntityListener.class)
 public class SubscriptionPackage {
 
     @Id
@@ -53,12 +55,8 @@ public class SubscriptionPackage {
     @Column(nullable = false)
     SubscriptionStatus status;
 
-    @JsonFormat(pattern = "dd-MM-yyyy HH:mm:ss")
-    @CreationTimestamp
     LocalDateTime createdAt;
 
-    @JsonFormat(pattern = "dd-MM-yyyy HH:mm:ss")
-    @UpdateTimestamp
     LocalDateTime updatedAt;
 
     @OneToMany(mappedBy = "subscriptionPackage", cascade = CascadeType.ALL)

@@ -1,5 +1,6 @@
 package com.BE.model.entity;
 
+import com.BE.config.TimestampEntityListener;
 import com.BE.enums.NodeType;
 import com.BE.enums.Status;
 import com.fasterxml.jackson.annotation.JsonIgnore;

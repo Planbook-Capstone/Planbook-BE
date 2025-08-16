@@ -1,5 +1,6 @@
 package com.BE.model.entity;
 
+import com.BE.config.TimestampEntityListener;
 import com.BE.enums.GenderEnum;
 import com.BE.enums.RoleEnum;
 import com.BE.enums.StatusEnum;
@@ -24,6 +25,7 @@ import java.util.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@EntityListeners(TimestampEntityListener.class)
 @Table(name = "users")
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class User implements UserDetails {
@@ -61,10 +63,10 @@ public class User implements UserDetails {
     @Enumerated(value = EnumType.STRING)
     GenderEnum gender;
 
-    @CreationTimestamp
+
     LocalDateTime createdAt;
 
-    @UpdateTimestamp
+
     LocalDateTime updatedAt;
 
     @OneToMany(mappedBy = "user")

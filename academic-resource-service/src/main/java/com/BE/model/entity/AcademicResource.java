@@ -1,5 +1,6 @@
 package com.BE.model.entity;
 
+import com.BE.config.TimestampEntityListener;
 import com.BE.enums.AcademicResourceEnum;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -19,6 +20,7 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@EntityListeners(TimestampEntityListener.class)
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class AcademicResource {
 
@@ -46,11 +48,9 @@ public class AcademicResource {
     UUID createdBy;
 
     @Column(name = "created_at")
-    @CreationTimestamp
     String createdAt;
 
     @Column(name = "updated_at")
-    @UpdateTimestamp
     String updatedAt;
 
     @OneToMany(mappedBy = "resource", cascade = CascadeType.ALL)
