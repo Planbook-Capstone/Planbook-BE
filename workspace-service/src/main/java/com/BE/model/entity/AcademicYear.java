@@ -31,6 +31,7 @@ public class AcademicYear {
     private AcademicYearStatusEnum status;
 
     private LocalDateTime createdAt;
+
     private LocalDateTime updatedAt;
 
 //    @OneToMany(mappedBy = "academicYear", cascade = CascadeType.ALL)

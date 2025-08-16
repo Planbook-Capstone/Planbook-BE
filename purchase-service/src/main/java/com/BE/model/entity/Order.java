@@ -24,6 +24,7 @@ import java.util.UUID;
 @EntityListeners(TimestampEntityListener.class)
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Order {
+
     @Id
     @GeneratedValue
     UUID id;

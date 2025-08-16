@@ -36,7 +36,6 @@ public class Wallet {
 
     LocalDateTime updatedAt;
 
-
     @OneToOne
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     @JsonIgnore

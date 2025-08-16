@@ -21,6 +21,7 @@ import java.util.Map;
 @EntityListeners(TimestampEntityListener.class)
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class SlideDetail {
+
     @Id
     String id; // Sử dụng id từ JSON (ví dụ: "p1", "p2")
 

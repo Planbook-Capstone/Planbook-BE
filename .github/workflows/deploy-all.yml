@@ -611,9 +611,9 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
-    needs: detect-changes    
     if: always()                
     needs:
+      - detect-changes
       - build-discovery-server
       - build-identity-service
       - build-api-gateway
