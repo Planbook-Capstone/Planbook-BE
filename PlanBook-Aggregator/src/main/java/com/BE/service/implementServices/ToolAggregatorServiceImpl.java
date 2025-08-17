@@ -91,9 +91,9 @@ public class ToolAggregatorServiceImpl implements IToolAggregatorService {
         }else if(ToolCodeEnum.EXAM_CREATOR.equals(code)){
             totalCount = (Integer) request.getInput().get("totalCount");
             totalTokenToDeduct = totalCount * tokenCostPerQuery;
+        }else{
+            totalTokenToDeduct = tokenCostPerQuery;
         }
-
-        totalTokenToDeduct = tokenCostPerQuery;
         deductToken(code,totalTokenToDeduct);
 
         List<Long> lessons = new ArrayList<>();

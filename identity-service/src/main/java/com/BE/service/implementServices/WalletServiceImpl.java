@@ -126,7 +126,7 @@ public class WalletServiceImpl implements IWalletService {
                 .createdAt(dateNowUtils.getCurrentDateTimeHCM())
                 .build();
 
-        transaction.setWallet(wallet);
+        transaction.addWallet(wallet);
 
         wallet.setBalance(tokenBefore - amount);
         wallet = walletRepository.save(wallet);
@@ -155,7 +155,7 @@ public class WalletServiceImpl implements IWalletService {
                 .wallet(wallet)
                 .createdAt(dateNowUtils.getCurrentDateTimeHCM())
                 .build();
-        transaction.setWallet(wallet);
+        transaction.addWallet(wallet);
 
         wallet = walletRepository.save(wallet);
 
