@@ -16,6 +16,8 @@ public class WalletTokenRequest {
     @NotNull(message = "userId không được để trống")
     private UUID userId;
 
+    private String description;
+
     @Schema(description = "Số token bị trừ", example = "10")
     @NotNull(message = "Số token không được để trống")
     @Min(value = 0, message = "Số token phải từ 0 trở lên")

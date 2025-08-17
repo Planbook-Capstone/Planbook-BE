@@ -1,6 +1,7 @@
 package com.BE.service.implementServices;
 
 import com.BE.enums.ToolResultStatus;
+import com.BE.exception.exceptions.BadRequestException;
 import com.BE.mapper.ToolResultMapper;
 import com.BE.model.entity.ToolResult;
 import com.BE.model.request.CreateToolResultRequest;
@@ -19,6 +20,9 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.UUID;
+
 /**
  * Implementation của IToolResultService với Specification-based filtering
  */
@@ -31,6 +35,8 @@ public class ToolResultServiceImpl implements IToolResultService {
     private final ToolResultRepository toolResultRepository;
     private final ToolResultMapper toolResultMapper;
     private final PageUtil pageUtil;
+    private static final int MAX_ARCHIVED_RESULTS = 30;
+
 
     @Override
     public ToolResultResponse create(CreateToolResultRequest request) {
@@ -39,6 +45,10 @@ public class ToolResultServiceImpl implements IToolResultService {
 
         try {
             ToolResult entity = toolResultMapper.toEntity(request);
+
+            if(ToolResultStatus.ARCHIVED.equals(request.getStatus())){
+                validateArchivedToolResultLimit(request.getUserId());
+            }
             ToolResult savedEntity = toolResultRepository.save(entity);
 
             log.info("Tạo ToolResult thành công với id: {}", savedEntity.getId());
@@ -49,6 +59,15 @@ public class ToolResultServiceImpl implements IToolResultService {
         }
     }
 
+
+    private void validateArchivedToolResultLimit(UUID userId) {
+        List<ToolResult> archivedResults = toolResultRepository.findByUserIdAndStatus(userId, ToolResultStatus.ARCHIVED);
+        if (archivedResults.size() >= MAX_ARCHIVED_RESULTS) {
+            throw new BadRequestException("Chỉ được lưu trữ tối đa 30 kết quả");
+        }
+    }
+
+
     @Override
     public ToolResultResponse update(Long id, UpdateToolResultRequest request) {
         log.info("Cập nhật ToolResult với id: {}", id);
@@ -58,6 +77,11 @@ public class ToolResultServiceImpl implements IToolResultService {
 
         try {
             toolResultMapper.updateEntityFromRequest(request, existingEntity);
+
+            if(ToolResultStatus.ARCHIVED.equals(request.getStatus())){
+                validateArchivedToolResultLimit(existingEntity.getUserId());
+            }
+
             ToolResult updatedEntity = toolResultRepository.save(existingEntity);
 
             log.info("Cập nhật ToolResult thành công với id: {}", id);

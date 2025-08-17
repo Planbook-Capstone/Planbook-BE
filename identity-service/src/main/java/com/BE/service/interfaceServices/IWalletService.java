@@ -20,7 +20,7 @@ public interface IWalletService {
 
     Wallet create(User user);
 
-    boolean hasSufficientToken(WalletTokenRequest request);
+    WalletResponse refund(WalletTokenRequest request);
 
 
 }
