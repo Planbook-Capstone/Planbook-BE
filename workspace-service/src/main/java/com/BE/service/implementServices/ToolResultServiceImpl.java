@@ -35,7 +35,7 @@ public class ToolResultServiceImpl implements IToolResultService {
     private final ToolResultRepository toolResultRepository;
     private final ToolResultMapper toolResultMapper;
     private final PageUtil pageUtil;
-    private static final int MAX_ARCHIVED_RESULTS = 30;
+    private static final int MAX_ARCHIVED_RESULTS = 50;
 
 
     @Override
@@ -63,7 +63,7 @@ public class ToolResultServiceImpl implements IToolResultService {
     private void validateArchivedToolResultLimit(UUID userId) {
         List<ToolResult> archivedResults = toolResultRepository.findByUserIdAndStatus(userId, ToolResultStatus.ARCHIVED);
         if (archivedResults.size() >= MAX_ARCHIVED_RESULTS) {
-            throw new BadRequestException("Chỉ được lưu trữ tối đa 30 kết quả");
+            throw new BadRequestException("Chỉ được lưu trữ tối đa 50 kết quả");
         }
     }
 

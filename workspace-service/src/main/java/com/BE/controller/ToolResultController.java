@@ -57,6 +57,7 @@ public class ToolResultController {
                                                 "title": "Bài học về nguyên tố hóa học",
                                                 "objectives": ["Hiểu khái niệm nguyên tố", "Tính nguyên tử khối"]
                                               },
+                                              "source": "AI",
                                               "status": "DRAFT"
                                             }
                                             """
@@ -88,6 +89,7 @@ public class ToolResultController {
                                                   "title": "Bài học về nguyên tố hóa học",
                                                   "objectives": ["Hiểu khái niệm nguyên tố", "Tính nguyên tử khối"]
                                                 },
+                                                "source": "AI",
                                                 "status": "DRAFT",
                                                 "createdAt": "2025-07-27T12:34:56",
                                                 "updatedAt": "2025-07-27T12:34:56"
