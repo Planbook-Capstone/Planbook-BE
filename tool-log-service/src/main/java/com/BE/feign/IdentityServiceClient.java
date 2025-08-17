@@ -17,9 +17,8 @@ public interface IdentityServiceClient {
 //    @PostMapping("/auth/login")
 //    AuthenticationResponse login(@RequestBody LoginRequestDTO request);
 
-
-    @PostMapping("/api/wallets/deduct")
-    DataResponseDTO<WalletResponse> deduct(@RequestBody WalletTokenRequest request);
+    @PostMapping("/api/wallets/refund")
+    DataResponseDTO<WalletResponse> refund(@RequestBody WalletTokenRequest request);
 
 
 //    @PostMapping("/auth/login-google")

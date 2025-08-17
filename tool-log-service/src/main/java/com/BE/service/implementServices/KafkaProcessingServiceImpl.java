@@ -48,6 +48,7 @@ public class KafkaProcessingServiceImpl implements IKafkaProcessingService {
             boolean success = innerData.path("success").asBoolean(false);
             JsonNode resultNode = innerData.path("result");
             JsonNode outputNode = resultNode.path("output");
+            int totalCount = innerData.path("total_count").asInt(0);
             String toolLogIdStr = innerData.path("tool_log_id").asText(null);
             if (toolLogIdStr == null) {
                 log.warn("⚠️ Không tìm thấy tool_log_id trong lesson_plan");
@@ -58,6 +59,7 @@ public class KafkaProcessingServiceImpl implements IKafkaProcessingService {
             if (success) {
                 Map<String, Object> outputMap = mapper.convertValue(outputNode, new TypeReference<>() {});
                 outputMap.put("tool_log_id", toolLogIdStr);
+                outputMap.put("total_count", totalCount);
                 ToolLogUpdateRequest request = new ToolLogUpdateRequest(true, outputMap);
                 logService.updateOutputByLogId(toolLogId, request);
                 log.info("✅ Cập nhật output SUCCESS cho tool_log_id: {}", toolLogId);

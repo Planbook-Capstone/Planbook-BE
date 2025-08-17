@@ -180,11 +180,13 @@ public class ToolExecutionLogServiceImpl implements IToolExecutionLogService {
         ToolExecutionLog log = repository.findById(toolLogId)
                 .orElseThrow(() -> new NotFoundException("Không tìm thấy log với ID: " + toolLogId));
 
-        if (output.getSuccess()) {
+        if (!output.getSuccess()) {
             WalletTokenRequest walletTokenRequest = new WalletTokenRequest();
             walletTokenRequest.setAmount(log.getTokenUsed());
             walletTokenRequest.setUserId(log.getUserId());
-            identityServiceClient.deduct(walletTokenRequest);
+            String vi = ToolCodeEnum.toVietnamese(log.getCode());
+            walletTokenRequest.setDescription("Hoàn token do sử dụng tool ( " + vi + " ) thất bại");
+            identityServiceClient.refund(walletTokenRequest);
             if (log.getResultId() == null && ToolTypeEnum.INTERNAL.equals(log.getToolType())) {
                 createAndLinkToolResult(log);
             }

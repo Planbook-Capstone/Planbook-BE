@@ -13,6 +13,8 @@ import com.BE.model.request.*;
 import com.BE.model.response.*;
 import com.BE.service.interfaceServices.IToolAggregatorService;
 import com.BE.utils.AccountUtils;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -35,23 +37,64 @@ public class ToolAggregatorServiceImpl implements IToolAggregatorService {
     ToolLogServiceClient toolLogServiceClient;
     ToolAggregatorMapper toolAggregatorMapper;
     AccountUtils accountUtils;
+    ObjectMapper mapper;
 
-    private void checkToken(Integer tokenCostPerQuery){
+
+    private void deductToken(ToolCodeEnum code, Integer tokenCostPerQuery){
         WalletTokenRequest request = new WalletTokenRequest();
         request.setAmount(tokenCostPerQuery);
         request.setUserId(accountUtils.getCurrentUserId());
-
-        if(!toolInternalServiceClient.checkSufficientToken(request)){
+        String vi = ToolCodeEnum.toVietnamese(code);
+        request.setDescription("Trừ token do sử dụng tool ( " + vi + " )");
+        try {
+            toolInternalServiceClient.deduct(request);
+        }catch(Exception e) {
             throw new WalletTokenException("Không đủ token trong ví để thực hiện hành động");
         }
+
     }
+
+    private int countValidNodes(JsonNode node) {
+        boolean isContentEmpty = !node.hasNonNull("content") || node.get("content").asText().trim().isEmpty();
+        boolean hasNoChildren = !node.has("children") || !node.get("children").isArray() || node.get("children").size() == 0;
+
+        int count = 0;
+        if (isContentEmpty && hasNoChildren) {
+            count++;
+        }
+
+        // Đệ quy các node con nếu có
+        if (node.has("children") && node.get("children").isArray()) {
+            for (JsonNode child : node.get("children")) {
+                count += countValidNodes(child);
+            }
+        }
+
+        return count;
+    }
+
+
 
 
     @Override
     public String executeInternalTool(ToolExecuteRequest request) {
-
+        Integer totalCount = 0;
+        Integer totalTokenToDeduct = 0;
         DataResponseDTO<BookTypeResponse> internalToolConfigResponse = toolInternalServiceClient.getBookTypeById(request.getToolId());
-        checkToken(internalToolConfigResponse.getData().getTokenCostPerQuery());
+        ToolCodeEnum code = internalToolConfigResponse.getData().getCode();
+        Integer tokenCostPerQuery = internalToolConfigResponse.getData().getTokenCostPerQuery();
+
+        if(ToolCodeEnum.LESSON_PLAN.equals(code)){
+            JsonNode jsonNode = mapper.convertValue(request.getInput(), JsonNode.class);
+            totalCount = countValidNodes(jsonNode);
+            totalTokenToDeduct = totalCount * tokenCostPerQuery;
+        }else if(ToolCodeEnum.EXAM_CREATOR.equals(code)){
+            totalCount = (Integer) request.getInput().get("totalCount");
+            totalTokenToDeduct = totalCount * tokenCostPerQuery;
+        }
+
+        totalTokenToDeduct = tokenCostPerQuery;
+        deductToken(code,totalTokenToDeduct);
 
         List<Long> lessons = new ArrayList<>();
 
@@ -157,7 +200,9 @@ public class ToolAggregatorServiceImpl implements IToolAggregatorService {
     @Override
     public Map<String, Object> executeExternalTool(ToolExecuteRequest request) {
         DataResponseDTO<ExternalToolConfigResponse> externalToolConfigResponse = toolExternalServiceClient.getById(request.getToolId());
-        checkToken(externalToolConfigResponse.getData().getTokenCostPerQuery());
+        ToolCodeEnum code = externalToolConfigResponse.getData().getCode();
+        Integer tokenCostPerQuery = externalToolConfigResponse.getData().getTokenCostPerQuery();
+        deductToken(code,tokenCostPerQuery);
         List<Long> lessons = new ArrayList<>();
         lessons.add(request.getLesson_id());
         ToolExecutionLogRequest toolExecutionLogRequest = ToolExecutionLogRequest.builder()

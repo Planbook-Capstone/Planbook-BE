@@ -19,6 +19,8 @@ public class ToolLogUpdateRequest {
     @Schema(description = "true nếu tool thực thi thành công", example = "true")
     Boolean success;
 
+
+
     @Schema(description = "Kết quả trả về từ công cụ", example = "{\"result\": \"Bản dịch hoàn tất\"}")
     Map<String, Object> output;
 }

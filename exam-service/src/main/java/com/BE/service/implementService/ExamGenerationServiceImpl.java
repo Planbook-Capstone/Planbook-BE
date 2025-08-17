@@ -160,10 +160,13 @@ public class ExamGenerationServiceImpl implements IExamGenerationService {
                     // xử lý statement: giữ text trong đề, answer trong đáp án
                     Map<String, Map<String, Object>> statements = (Map<String, Map<String, Object>>) original.get("statements");
 
+                    List<Map.Entry<String, Map<String, Object>>> entries = new ArrayList<>(statements.entrySet());
+                    Collections.shuffle(entries); // 🔁 Shuffle entry list
+
                     Map<String, Map<String, Object>> questionStatements = new LinkedHashMap<>();
                     Map<String, Boolean> answerStatements = new LinkedHashMap<>();
 
-                    for (Map.Entry<String, Map<String, Object>> entry : statements.entrySet()) {
+                    for (Map.Entry<String, Map<String, Object>> entry : entries) {
                         String key = entry.getKey();
                         Map<String, Object> value = entry.getValue();
                         questionStatements.put(key, Map.of("text", value.get("text")));
@@ -173,8 +176,32 @@ public class ExamGenerationServiceImpl implements IExamGenerationService {
                     questionItem.put("statements", questionStatements);
                     answerItem.put("statements", answerStatements);
                 } else {
-                    questionItem.remove("answer");
-                    answerItem.put("answer", original.get("answer"));
+                    if (questionItem.containsKey("options")) {
+                        Map<String, String> originalOptions = (Map<String, String>) questionItem.get("options");
+
+                        List<Map.Entry<String, String>> optionsList = new ArrayList<>(originalOptions.entrySet());
+                        Collections.shuffle(optionsList);
+
+                        Map<String, String> shuffledOptions = new LinkedHashMap<>();
+                        String originalAnswer = (String) original.get("answer");
+                        String newAnswerKey = null;
+
+                        for (int j = 0; j < optionsList.size(); j++) {
+                            String newKey = String.valueOf((char) ('A' + j)); // A, B, C, D
+                            shuffledOptions.put(newKey, optionsList.get(j).getValue());
+
+                            if (optionsList.get(j).getKey().equals(originalAnswer)) {
+                                newAnswerKey = newKey;
+                            }
+                        }
+
+                        questionItem.put("options", shuffledOptions);
+                        answerItem.put("answer", newAnswerKey);
+                    } else {
+                        // Nếu không có options thì xử lý như cũ
+                        questionItem.remove("answer");
+                        answerItem.put("answer", original.get("answer"));
+                    }
                 }
 
                 answerItem.put("questionNumber", i + 1);

@@ -1,5 +1,6 @@
 package com.BE.service.implementServices;
 
+import com.BE.enums.TransactionType;
 import com.BE.exception.exceptions.NotFoundException;
 import com.BE.mapper.WalletMapper;
 import com.BE.model.entity.User;
@@ -104,32 +105,64 @@ public class WalletServiceImpl implements IWalletService {
     @Transactional
     public WalletResponse deduct(WalletTokenRequest request) {
         UUID userId = request.getUserId();
-        Integer amount = request.getAmount();
 
         User user = authenRepository.findById(userId).orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
         Wallet wallet = user.getWallet();
+
+        Integer tokenBefore = wallet.getBalance();
+        Integer amount = request.getAmount();
 
         if (wallet.getBalance() < amount) {
             throw new IllegalStateException("Không đủ token trong ví");
         }
 
-        wallet.setBalance(wallet.getBalance() - amount);
+        WalletTransaction transaction = WalletTransaction.builder()
+                .orderId(UUID.randomUUID()) // hoặc truyền từ request nếu cần
+                .tokenBefore(tokenBefore)
+                .tokenChange(amount)
+                .type(TransactionType.TOOL_USAGE)
+                .description(request.getDescription())
+                .wallet(wallet)
+                .createdAt(dateNowUtils.getCurrentDateTimeHCM())
+                .build();
+
+        transaction.setWallet(wallet);
+
+        wallet.setBalance(tokenBefore - amount);
         wallet = walletRepository.save(wallet);
 
         return walletMapper.toResponse(wallet);
     }
 
     @Override
-    public boolean hasSufficientToken(WalletTokenRequest request) {
-        UUID userId = request.getUserId();
-        int amount = request.getAmount();
-
-        if (amount <= 0) return true;
-
-        User user = authenRepository.findById(userId).orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+    @Transactional
+    public WalletResponse refund(WalletTokenRequest request) {
+        User user = authenRepository.findById(request.getUserId()).orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
         Wallet wallet = user.getWallet();
-        return wallet.getBalance() >= amount;
+
+        int tokenBefore = wallet.getBalance();
+        int tokenChange = request.getAmount();
+
+        wallet.setBalance(tokenBefore + tokenChange); // ✅ Cộng lại số token đã mất
+        walletRepository.save(wallet);
+
+        WalletTransaction transaction = WalletTransaction.builder()
+                .orderId(UUID.randomUUID()) // hoặc truyền từ request nếu cần
+                .tokenBefore(tokenBefore)
+                .tokenChange(tokenChange)
+                .type(TransactionType.REFUND)
+                .description(request.getDescription())
+                .wallet(wallet)
+                .createdAt(dateNowUtils.getCurrentDateTimeHCM())
+                .build();
+        transaction.setWallet(wallet);
+
+        wallet = walletRepository.save(wallet);
+
+        return walletMapper.toResponse(wallet);
     }
+
+
 
 
 }
