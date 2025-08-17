@@ -187,10 +187,10 @@ public class ToolExecutionLogServiceImpl implements IToolExecutionLogService {
             String vi = ToolCodeEnum.toVietnamese(log.getCode());
             walletTokenRequest.setDescription("Hoàn token do sử dụng tool ( " + vi + " ) thất bại");
             identityServiceClient.refund(walletTokenRequest);
+        }else{
             if (log.getResultId() == null && ToolTypeEnum.INTERNAL.equals(log.getToolType())) {
                 createAndLinkToolResult(log);
             }
-
         }
         // Cập nhật output và status
         log.setOutput(output.getOutput());
