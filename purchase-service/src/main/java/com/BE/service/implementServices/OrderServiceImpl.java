@@ -85,9 +85,10 @@ public class OrderServiceImpl implements IOrderService {
         order.addSubcriptionPackage(subscriptionPackage);
 
 
-        Order savedOrder = orderRepository.save(order);
 
-        saveHistory(savedOrder, null, StatusEnum.PENDING, "Tạo đơn hàng mới");
+
+        saveHistory(order, null, StatusEnum.PENDING, "Tạo đơn hàng mới");
+        Order savedOrder = orderRepository.save(order);
 
         // Tự động tạo Payment sau khi Order được tạo
         CreatePaymentRequestDTO paymentRequest = new CreatePaymentRequestDTO();
@@ -152,9 +153,8 @@ public class OrderServiceImpl implements IOrderService {
         StatusEnum fromStatus = order.getStatus();
 
         order.setStatus(newStatus);
-        orderRepository.save(order);
-
         saveHistory(order, fromStatus, newStatus, note);
+        orderRepository.save(order);
 
         OrderResponseDTO responseDTO = orderMapper.toOrderResponseDTO(order);
 
@@ -183,7 +183,6 @@ public class OrderServiceImpl implements IOrderService {
                 .note(note)
                 .build();
         order.addHistory(history);
-        orderHistoryRepository.save(history);
     }
 
 
@@ -199,9 +198,8 @@ public class OrderServiceImpl implements IOrderService {
             // Nếu trạng thái khác thì update + save history
             if (!fromStatus.equals(newStatus)) {
                 order.setStatus(newStatus);
-                order = orderRepository.save(order);
-
                 saveHistory(order, fromStatus, newStatus, getNoteForStatus(newStatus));
+                order = orderRepository.save(order);
             }
             if (StatusEnum.PAID.equals(newStatus)) {
                 try {
@@ -216,7 +214,7 @@ public class OrderServiceImpl implements IOrderService {
                     DataResponseDTO<WalletTransactionResponse> wallet = identityServiceClient.recharge(walletTransactionRequest);
 
                     DataResponseDTO<UserResponse> user = identityServiceClient.getUserById(order.getUserId());
-
+                    System.out.println(user.getData().getFullName());
                     EmailDataRequest emailDataRequest =  new EmailDataRequest();
                     emailDataRequest.setToEmail(user.getData().getEmail());
                     emailDataRequest.setTemplateId(templateOrder);

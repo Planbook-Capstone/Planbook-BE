@@ -148,6 +148,7 @@ public class PaymentServiceImpl implements IPaymentService {
 
             PaymentLinkData paymentLinkData = payos.getPaymentLinkInformation(webhookData.getOrderCode());
             String actualPayosStatus = paymentLinkData.getStatus().toUpperCase(Locale.ROOT);
+            System.out.println(actualPayosStatus);
             String payosStatusDescription = webhookData.getDescription();
 
             if (!StatusEnum.PENDING.equals(txn.getStatus()) && !StatusEnum.RETRY.equals(txn.getStatus())) {
