@@ -18,7 +18,6 @@ import com.BE.repository.PaymentTransactionRepository;
 import com.BE.repository.SubscriptionPackageRepository;
 import com.BE.service.interfaceServices.IOrderService;
 import com.BE.service.interfaceServices.IPaymentService;
-import com.BE.service.interfaceServices.ISubscriptionPackageService;
 import com.BE.utils.AccountUtils;
 import com.BE.utils.PageUtil;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -216,7 +215,7 @@ public class OrderServiceImpl implements IOrderService {
 
                     DataResponseDTO<WalletTransactionResponse> wallet = identityServiceClient.recharge(walletTransactionRequest);
 
-                    DataResponseDTO<UserResponse> user = identityServiceClient.getCurrentUser();
+                    DataResponseDTO<UserResponse> user = identityServiceClient.getUserById(order.getUserId());
 
                     EmailDataRequest emailDataRequest =  new EmailDataRequest();
                     emailDataRequest.setToEmail(user.getData().getEmail());
