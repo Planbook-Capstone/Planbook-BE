@@ -138,10 +138,13 @@ public class MatrixConfigController {
     }
 
     @GetMapping
-    @Operation(summary = "Lấy danh sách cấu hình theo trạng thái", description = "Trả về danh sách cấu hình có trạng thái ACTIVE hoặc INACTIVE.")
-    public ResponseEntity getAllByStatus(
-            @RequestParam @Parameter(description = "Trạng thái cần lọc: ACTIVE hoặc INACTIVE", schema = @Schema(implementation = StatusEnum.class))
+    @Operation(summary = "Lấy danh sách cấu hình theo trạng thái", description = "Trả về danh sách cấu hình có trạng thái ACTIVE, INACTIVE hoặc tất cả nếu không truyền.")
+    public ResponseEntity<?> getAllByStatus(
+            @RequestParam(required = false)
+            @Parameter(description = "Trạng thái cần lọc: ACTIVE hoặc INACTIVE", schema = @Schema(implementation = StatusEnum.class))
             StatusEnum status) {
+
         return responseHandler.response(200, "Danh sách theo trạng thái", service.getAllByStatus(status));
     }
+
 }

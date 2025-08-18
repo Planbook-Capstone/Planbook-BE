@@ -5,6 +5,7 @@ import com.BE.enums.StatusEnum;
 import com.BE.exception.exceptions.AuthenException;
 import com.BE.exception.exceptions.BadRequestException;
 import com.BE.exception.exceptions.InvalidRefreshTokenException;
+import com.BE.feign.EmailServiceClient;
 import com.BE.mapper.AuthMapper;
 import com.BE.model.EmailDetail;
 import com.BE.model.entity.User;
@@ -33,6 +34,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -65,6 +67,21 @@ public class AuthenticationImpl implements IAuthenticationService {
 
     @Autowired
     IWalletService iWalletService;
+
+    @Autowired
+    EmailServiceClient emailServiceClient;
+
+    @Value("${spring.sendgrid.template.reset.password}")
+    private String templateResetPassword;
+
+    @Value("${spring.link.reset.password}")
+    private String linkResetPassword;
+
+    @Value("${spring.sendgrid.template.verify}")
+    private String templateVerifyUser;
+
+    @Value("${spring.link.verify}")
+    private String linkVerifyUser;
 //
 //    @Autowired
 //    IAcademicYearService academicYearService;
@@ -79,7 +96,7 @@ public class AuthenticationImpl implements IAuthenticationService {
     public AuthenticationResponse register(AuthenticationRequest request) {
         User user = authMapper.toAuth(request);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setStatus(StatusEnum.ACTIVE);
+        user.setStatus(StatusEnum.INACTIVE);
         user.setRole(RoleEnum.TEACHER);
         try {
 //            // Create workspace for new auth
@@ -111,6 +128,9 @@ public class AuthenticationImpl implements IAuthenticationService {
         }
 
         User user = (User) authentication.getPrincipal();
+        if(StatusEnum.INACTIVE.equals(user.getStatus())){
+            throw new AuthenException("Tài khoản này chưa được xác thực");
+        }
         validateUserStatusForLogin(user);
         AuthenticationResponse authenticationResponse = authMapper.toAuthenticationResponse(user);
         String refresh = UUID.randomUUID().toString();
@@ -194,24 +214,22 @@ public class AuthenticationImpl implements IAuthenticationService {
 
     public void forgotPasswordRequest(String email) {
         User user = authenRepository.findByEmail(email).orElseThrow(() -> new BadRequestException("Không tìm thấy email này!"));
+        sendEmailByTemplate(user,templateResetPassword,linkResetPassword);
+    }
 
-        EmailDetail emailDetail = new EmailDetail();
-        emailDetail.setRecipient(user.getEmail());
-        emailDetail.setSubject("Khôi phục mật khẩu cho: " + user.getEmail() + "!");
-        emailDetail.setMsgBody("aaa");
-        emailDetail.setButtonValue("Reset Password");
-//        emailDetail.setFullName(auth.getFullName());
-        emailDetail.setLink("http://localhost:5173?token=" + jwtService.generateToken(user));
+    private void sendEmailByTemplate(User user, String templateId, String link){
+        EmailDataRequest emailDataRequest =  new EmailDataRequest();
+        emailDataRequest.setToEmail(user.getEmail());
+        emailDataRequest.setTemplateId(templateId);
 
-        Runnable r = new Runnable() {
-            @Override
-            public void run() {
-                emailService.sendMailTemplate(emailDetail);
-            }
+        String token = jwtService.generateToken(user);
 
-        };
-        new Thread(r).start();
+        Map<String, String> dynamicData = new HashMap<>();
+        dynamicData.put("fullname", user.getFullName());
+        dynamicData.put("link", link + "?token=" + token);
 
+        emailDataRequest.setDynamicData(dynamicData);
+        String response = emailServiceClient.sendTemplateEmail(emailDataRequest);
     }
 
     public User resetPassword(ResetPasswordRequest resetPasswordRequest) {
@@ -245,5 +263,18 @@ public class AuthenticationImpl implements IAuthenticationService {
     public void logout(RefreshRequest refreshRequest) {
         String refresh = refreshRequest.getRefreshToken();
         refreshTokenService.deleteRefreshToken(refresh);
+    }
+
+    @Override
+    public void verify() {
+        User user = accountUtils.getCurrentUser();
+        user.setStatus(StatusEnum.ACTIVE);
+        authenRepository.save(user);
+    }
+
+    @Override
+    public void resendVerification(String email) {
+        User user = authenRepository.findByEmail(email).orElseThrow(() -> new BadRequestException("Email không tồn tại."));
+        sendEmailByTemplate(user, templateVerifyUser, linkVerifyUser);
     }
 }

@@ -22,6 +22,9 @@ public interface IUserService {
     Page<UserResponse> getUsersWithFilter(String search, RoleEnum role, StatusEnum status, GenderEnum gender,
                                           int offset, int pageSize,
                                           String sortBy, String sortDirection);
+    UserResponse getCurrentUser();
+
+
 
 
 }

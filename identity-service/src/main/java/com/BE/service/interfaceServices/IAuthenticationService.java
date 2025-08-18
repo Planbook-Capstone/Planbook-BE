@@ -5,6 +5,8 @@ import com.BE.model.request.*;
 import com.BE.model.response.AuthenResponse;
 import com.BE.model.response.AuthenticationResponse;
 
+import java.util.UUID;
+
 public interface IAuthenticationService {
     AuthenticationResponse register(AuthenticationRequest request);
     AuthenticationResponse authenticate(LoginRequestDTO request);
@@ -14,4 +16,7 @@ public interface IAuthenticationService {
     String admin();
     AuthenResponse refresh(RefreshRequest refreshRequest);
     void logout(RefreshRequest refreshRequest);
+
+    void verify();
+    void resendVerification(String email);
 }

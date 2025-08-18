@@ -12,6 +12,7 @@ import com.BE.model.response.UserResponse;
 import com.BE.repository.AuthenRepository;
 import com.BE.service.interfaceServices.IUserService;
 import com.BE.service.interfaceServices.IWalletService;
+import com.BE.utils.AccountUtils;
 import com.BE.utils.PageUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -38,7 +39,8 @@ public class UserServiceImpl implements IUserService {
     UserMapper mapper;
     PasswordEncoder passwordEncoder;
     PageUtil pageUtil;
-    IWalletService iWalletService;;
+    IWalletService iWalletService;
+    AccountUtils accountUtils;
 
 
     @Override
@@ -97,5 +99,12 @@ public class UserServiceImpl implements IUserService {
         }
         return repository.findAll(spec, pageable).map(mapper::toResponse);
     }
+
+    @Override
+    public UserResponse getCurrentUser() {
+        User user = accountUtils.getCurrentUser();
+        return mapper.toResponse(user);
+    }
+
 
 }
