@@ -204,7 +204,6 @@ public class OrderServiceImpl implements IOrderService {
 
                 saveHistory(order, fromStatus, newStatus, getNoteForStatus(newStatus));
             }
-            order.toString();
             if (StatusEnum.PAID.equals(newStatus)) {
                 try {
                     WalletTransactionRequest walletTransactionRequest = WalletTransactionRequest.builder()
