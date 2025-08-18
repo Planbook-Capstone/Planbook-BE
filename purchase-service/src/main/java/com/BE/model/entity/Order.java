@@ -43,7 +43,7 @@ public class Order {
 
     LocalDateTime updatedAt;
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Builder.Default
     Set<OrderHistory> orderHistories = new HashSet<>();
 
