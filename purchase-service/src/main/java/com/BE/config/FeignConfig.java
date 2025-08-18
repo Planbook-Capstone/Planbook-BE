@@ -10,4 +10,9 @@ public class FeignConfig {
     public ErrorDecoder errorDecoder() {
         return new FeignErrorDecoder();
     }
+
+    @Bean
+    public FeignClientInterceptor feignClientInterceptor() {
+        return new FeignClientInterceptor();
+    }
 }
