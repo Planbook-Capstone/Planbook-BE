@@ -158,13 +158,13 @@ public class UserController {
                 ));
     }
 
-    @GetMapping("/current")
+    @GetMapping("{id}")
     @Operation(
             summary = "Lấy thông tin người dùng hiện tại",
             description = "Trả về thông tin người dùng đang đăng nhập dựa trên token"
     )
-    public ResponseEntity<?> getCurrentUser() {
-        return responseHandler.response(200, "Thông tin người dùng hiện tại", userService.getCurrentUser());
+    public ResponseEntity<?> getUserById(@PathVariable UUID id) {
+        return responseHandler.response(200, "Thông tin người dùng hiện tại", userService.getUserById(id));
     }
 
 

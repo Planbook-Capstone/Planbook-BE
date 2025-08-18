@@ -6,10 +6,7 @@ import com.BE.model.response.DataResponseDTO;
 import com.BE.model.response.UserResponse;
 import com.BE.model.response.WalletTransactionResponse;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
@@ -19,7 +16,7 @@ public interface IdentityServiceClient {
         @PostMapping("/api/wallets/recharge")
         DataResponseDTO<WalletTransactionResponse> recharge(@RequestBody WalletTransactionRequest request);
 
-        @GetMapping("/api/users/current")
-        DataResponseDTO<UserResponse> getCurrentUser();
+        @GetMapping("/api/users/{id}")
+        DataResponseDTO<UserResponse> getUserById(@PathVariable("id") UUID id);
 
 }

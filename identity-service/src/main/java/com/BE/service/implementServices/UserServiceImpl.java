@@ -101,8 +101,8 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public UserResponse getCurrentUser() {
-        User user = accountUtils.getCurrentUser();
+    public UserResponse getUserById(UUID id) {
+        User user = repository.findById(id).orElseThrow(() -> new NotFoundException("User không tồn tại"));
         return mapper.toResponse(user);
     }
 
