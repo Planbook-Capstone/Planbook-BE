@@ -25,10 +25,10 @@ public class UserResponse {
     RoleEnum role;
     String phone;
     String avatar;
-    GenderEnum gender;
-    LocalDate birthday;
-    StatusEnum status;
+//    GenderEnum gender;
+//    LocalDate birthday;
+//    StatusEnum status;
     LocalDateTime createdAt;
     LocalDateTime updatedAt;
-    WalletResponse wallet;
+//    WalletResponse wallet;
 }
