@@ -32,4 +32,5 @@ public class ExamGenerationController {
         return responseHandler.response(200, "Sinh đề thành công", generatedExams);
     }
 
+    
 }
