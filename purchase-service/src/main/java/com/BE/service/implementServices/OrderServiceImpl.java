@@ -187,7 +187,6 @@ public class OrderServiceImpl implements IOrderService {
 
 
     @Override
-    @Transactional
     public void handlePaymentResult(ObjectNode body) throws Exception {
 
         PaymentTransaction txn = paymentService.handlePayosWebhook(body);
