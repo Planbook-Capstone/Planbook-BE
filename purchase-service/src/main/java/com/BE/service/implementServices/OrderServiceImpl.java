@@ -199,7 +199,7 @@ public class OrderServiceImpl implements IOrderService {
             // Nếu trạng thái khác thì update + save history
             if (!fromStatus.equals(newStatus)) {
                 order.setStatus(newStatus);
-                orderRepository.save(order);
+                order = orderRepository.save(order);
 
                 saveHistory(order, fromStatus, newStatus, getNoteForStatus(newStatus));
             }
