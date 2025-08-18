@@ -166,11 +166,12 @@ public class ExamGenerationServiceImpl implements IExamGenerationService {
                     Map<String, Map<String, Object>> questionStatements = new LinkedHashMap<>();
                     Map<String, Boolean> answerStatements = new LinkedHashMap<>();
 
-                    for (Map.Entry<String, Map<String, Object>> entry : entries) {
-                        String key = entry.getKey();
-                        Map<String, Object> value = entry.getValue();
-                        questionStatements.put(key, Map.of("text", value.get("text")));
-                        answerStatements.put(key, (Boolean) value.get("answer"));
+                    for (int statementIndex = 0; statementIndex < entries.size(); statementIndex++) {
+                        String newKey = String.valueOf((char) ('A' + statementIndex));
+                        Map<String, Object> value = entries.get(statementIndex).getValue();
+
+                        questionStatements.put(newKey, Map.of("text", value.get("text")));
+                        answerStatements.put(newKey, (Boolean) value.get("answer"));
                     }
 
                     questionItem.put("statements", questionStatements);
@@ -187,7 +188,7 @@ public class ExamGenerationServiceImpl implements IExamGenerationService {
                         String newAnswerKey = null;
 
                         for (int j = 0; j < optionsList.size(); j++) {
-                            String newKey = String.valueOf((char) ('A' + j)); // A, B, C, D
+                            String newKey = String.valueOf((char) ('A' + j));
                             shuffledOptions.put(newKey, optionsList.get(j).getValue());
 
                             if (optionsList.get(j).getKey().equals(originalAnswer)) {
@@ -196,7 +197,9 @@ public class ExamGenerationServiceImpl implements IExamGenerationService {
                         }
 
                         questionItem.put("options", shuffledOptions);
+                        questionItem.put("answer", newAnswerKey);
                         answerItem.put("answer", newAnswerKey);
+                        answerItem.put("options", shuffledOptions);
                     } else {
                         // Nếu không có options thì xử lý như cũ
                         questionItem.remove("answer");

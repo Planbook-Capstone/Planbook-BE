@@ -185,6 +185,10 @@ services:
       SPRING_MAIL_PROPERTIES_MAIL_SMTP_TIMEOUT: "${SHARED_MAIL_SMTP_TIMEOUT}"
       SPRING_MAIL_PROPERTIES_MAIL_SMTP_WRITETIMEOUT: "${SHARED_MAIL_SMTP_WRITETIMEOUT}"
       MANAGEMENT_HEALTH_MAIL_ENABLED: "${SHARED_MAIL_HEALTH_ENABLED}"
+      SPRING_SENDGRID_TEMPLATE_RESET_PASSWORD: "${IDENTITY_SENDGRID_TEMPLATE_RESET_PASSWORD}"
+      SPRING_LINK_RESET_PASSWORD: "${IDENTITY_LINK_RESET_PASSWORD}"
+      SPRING_SENDGRID_TEMPLATE_VERIFY: "${IDENTITY_SENDGRID_TEMPLATE_VERIFY}"
+      SPRING_LINK_VERIFY: "${IDENTITY_LINK_VERIFY}"
     depends_on:
       - discovery-server
       - kafka
@@ -379,7 +383,7 @@ services:
       PAYOS_CANCEL_URL: "${PURCHASE_PAYOS_CANCEL_URL}"
       PAYOS_WEBHOOK_URL: "${PURCHASE_PAYOS_WEBHOOK_URL}"
       # SendGrid Configuration
-      SENDGRID_API_KEY: "${PURCHASE_SENDGRID_API_KEY}"
+      SPRING_SENDGRID_TEMPLATE_ORDER: "${PURCHASE_SENDGRID_TEMPLATE_ORDER}"
     depends_on:
       - discovery-server
       - kafka
@@ -661,6 +665,36 @@ services:
       - kafka
     networks:
       - planbook
+
+ # Email Service      
+  email-service:
+      image: ${DOCKERHUB_USERNAME}/planbook-email-service:latest
+      container_name: planbook-email-service
+      restart: always
+      pull_policy: always
+      ports:
+        - "${EMAIL_PORT}:${EMAIL_PORT}"
+      environment:
+        SPRING_PROFILES_ACTIVE: "prod"
+        SPRING_APPLICATION_NAME: "${EMAIL_APP_NAME}"
+        SERVER_PORT: "${EMAIL_PORT}"
+        SPRING_APPLICATION_JSON: >
+         {"eureka":{"client":{"serviceUrl":{"defaultZone":"http://discovery-server:8761/eureka"}}}}
+        EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "${SHARED_EUREKA_DEFAULT_ZONE}"
+        EUREKA_CLIENT_REGISTER_WITH_EUREKA: "${SHARED_EUREKA_REGISTER_WITH_EUREKA}"
+        EUREKA_CLIENT_FETCH_REGISTRY: "${SHARED_EUREKA_FETCH_REGISTRY}"
+        EUREKA_CLIENT_HEALTHCHECK_ENABLED: "${SHARED_EUREKA_HEALTHCHECK_ENABLED}"
+        MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "${SHARED_MANAGEMENT_EXPOSURE}"
+        MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS: "${SHARED_MANAGEMENT_HEALTH_DETAILS}"
+        SPRING_WEBFLUX_FORWARD_HEADERS_STRATEGY: "${SHARED_FORWARD_HEADERS_STRATEGY}"
+        SPRINGDOC_API_DOCS_PATH: "${SHARED_OPENAPI_DOCS_PATH}"
+        SPRING_SENDGRID_API_KEY: "${EMAIL_SENDGRID_API_KEY}"
+        SPRING_SENDGRID_FROM_EMAIL: "${EMAIL_SENDGRID_FROM_EMAIL}"
+      depends_on:
+        - discovery-server
+        - kafka
+      networks:
+        - planbook      
 
 
   # Academic Resource Service

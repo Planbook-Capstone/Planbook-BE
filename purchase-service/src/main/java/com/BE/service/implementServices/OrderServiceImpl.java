@@ -3,6 +3,7 @@ package com.BE.service.implementServices;
 import com.BE.enums.StatusEnum;
 import com.BE.enums.TransactionType;
 import com.BE.exception.exceptions.NotFoundException;
+import com.BE.feign.EmailServiceClient;
 import com.BE.feign.IdentityServiceClient;
 import com.BE.mapper.OrderMapper;
 import com.BE.model.entity.Order;
@@ -10,10 +11,7 @@ import com.BE.model.entity.OrderHistory;
 import com.BE.model.entity.PaymentTransaction;
 import com.BE.model.entity.SubscriptionPackage;
 import com.BE.model.request.*;
-import com.BE.model.response.DataResponseDTO;
-import com.BE.model.response.OrderHistoryResponseDTO;
-import com.BE.model.response.OrderResponseDTO;
-import com.BE.model.response.WalletTransactionResponse;
+import com.BE.model.response.*;
 import com.BE.repository.OrderHistoryRepository;
 import com.BE.repository.OrderRepository;
 import com.BE.repository.PaymentTransactionRepository;
@@ -24,8 +22,10 @@ import com.BE.service.interfaceServices.ISubscriptionPackageService;
 import com.BE.utils.AccountUtils;
 import com.BE.utils.PageUtil;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import feign.FeignException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -35,9 +35,7 @@ import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -54,7 +52,10 @@ public class OrderServiceImpl implements IOrderService {
     private final PageUtil pageUtil;
     private final SubscriptionPackageRepository subscriptionPackageRepository;
     private final IdentityServiceClient identityServiceClient;
+    private final EmailServiceClient emailServiceClient;
 
+    @Value("${spring.sendgrid.template.order}")
+    private String templateOrder;
 
     @Override
     @Transactional
@@ -205,16 +206,36 @@ public class OrderServiceImpl implements IOrderService {
             }
             order.toString();
             if (StatusEnum.PAID.equals(newStatus)) {
-                WalletTransactionRequest walletTransactionRequest = WalletTransactionRequest.builder()
-                        .orderId(order.getId())
-                        .description("Nạp token từ gói " + order.getSubscriptionPackage().getName())
-                        .tokenChange(order.getSubscriptionPackage().getTokenAmount())
-                        .type(TransactionType.RECHARGE)
-                        .userId(order.getUserId())
-                        .build();
+                try {
+                    WalletTransactionRequest walletTransactionRequest = WalletTransactionRequest.builder()
+                            .orderId(order.getId())
+                            .description("Nạp token từ gói " + order.getSubscriptionPackage().getName())
+                            .tokenChange(order.getSubscriptionPackage().getTokenAmount())
+                            .type(TransactionType.RECHARGE)
+                            .userId(order.getUserId())
+                            .build();
 
-                DataResponseDTO<WalletTransactionResponse> wallet = identityServiceClient.recharge(walletTransactionRequest);
+                    DataResponseDTO<WalletTransactionResponse> wallet = identityServiceClient.recharge(walletTransactionRequest);
 
+                    DataResponseDTO<UserResponse> user = identityServiceClient.getCurrentUser();
+
+                    EmailDataRequest emailDataRequest =  new EmailDataRequest();
+                    emailDataRequest.setToEmail(user.getData().getEmail());
+                    emailDataRequest.setTemplateId(templateOrder);
+
+                    Map<String, String> dynamicData = new HashMap<>();
+                    dynamicData.put("package_name", order.getSubscriptionPackage().getName());
+                    dynamicData.put("fullname", user.getData().getFullName());
+
+                    emailDataRequest.setDynamicData(dynamicData);
+                    String response = emailServiceClient.sendTemplateEmail(emailDataRequest);
+                }catch (FeignException e) {
+                    throw e; // Ném lại FeignException
+                } catch (NullPointerException e) {
+                    throw e; // Ném lại NullPointerException
+                } catch (Exception e) {
+                    throw e; // Ném lại Exception chung
+                }
             }
         }
     }

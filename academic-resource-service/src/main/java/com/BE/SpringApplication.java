@@ -13,7 +13,7 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 @SpringBootApplication
 @EnableDiscoveryClient
 @EnableCaching
-// @OpenAPIDefinition(info = @Info(title = "Planbook API", version = "2.0", description = "Information"))
+ @OpenAPIDefinition(info = @Info(title = "Planbook API", version = "2.0", description = "Information"))
 //@OpenAPIDefinition(
 //        servers = {
 //                @Server(url = "https://planbook.vn/auth-service", description = "Production server")
@@ -24,12 +24,12 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 //                description = "Information"
 //        )
 //)
-@OpenAPIDefinition(
-		info = @Info(title = "Planbook API", version = "2.0")
-		,servers = {
-				@Server(url = "https://api.planbook.vn/academic-resource-service", description = "Production Server")
-		}
-)
+//@OpenAPIDefinition(
+//		info = @Info(title = "Planbook API", version = "2.0")
+//		,servers = {
+//				@Server(url = "https://api.planbook.vn/academic-resource-service", description = "Production Server")
+//		}
+//)
 @SecurityScheme(name = "api", scheme = "bearer", type = SecuritySchemeType.HTTP, in = SecuritySchemeIn.HEADER)
 public class SpringApplication {
 

@@ -7,6 +7,7 @@ import com.BE.service.interfaceServices.IAuthenticationService;
 import com.BE.utils.KafkaMessageProducer;
 import com.BE.utils.ResponseHandler;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -18,6 +19,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 @RestController
 @RequestMapping("api")
@@ -124,6 +127,22 @@ public class AuthenticationController {
     public ResponseEntity hihi() {
         return ResponseEntity.ok("git-action thành công");
     }
+
+    @GetMapping("/verify")
+    public ResponseEntity verify() {
+        iAuthenticationService.verify();
+        return ResponseEntity.ok("Xác thực tài khoản thành công");
+    }
+
+    @PostMapping("/resend-verification")
+    public ResponseEntity<?> resendVerification(
+            @Parameter(description = "Email người dùng cần gửi lại email xác thực", required = true)
+            @RequestParam String email
+    ) {
+        iAuthenticationService.resendVerification(email);
+        return ResponseEntity.ok("Kiểm tra email của bạn để xác thực tài khoản.");
+    }
+
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/admin-only")

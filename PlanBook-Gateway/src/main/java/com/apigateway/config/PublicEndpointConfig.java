@@ -21,6 +21,7 @@ public class PublicEndpointConfig {
             "/*/api/register",
             "/*/api/login-google",
             "/*/api/forgot-password",
+            "/*/api/resend-verification",
             "/*/api/status",
             "/*/api/refresh",
             "/*/api/logout",

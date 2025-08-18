@@ -158,4 +158,14 @@ public class UserController {
                 ));
     }
 
+    @GetMapping("/current")
+    @Operation(
+            summary = "Lấy thông tin người dùng hiện tại",
+            description = "Trả về thông tin người dùng đang đăng nhập dựa trên token"
+    )
+    public ResponseEntity<?> getCurrentUser() {
+        return responseHandler.response(200, "Thông tin người dùng hiện tại", userService.getCurrentUser());
+    }
+
+
 }

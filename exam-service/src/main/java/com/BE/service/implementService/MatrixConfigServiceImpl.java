@@ -67,7 +67,11 @@ public class MatrixConfigServiceImpl implements IMatrixConfigService {
 
     @Override
     public List<MatrixConfigResponse> getAllByStatus(StatusEnum status) {
+        if (status == null) {
+            return mapper.toResponseList(repository.findAll());
+        }
         return mapper.toResponseList(repository.findByStatus(status));
     }
+
 
 }
