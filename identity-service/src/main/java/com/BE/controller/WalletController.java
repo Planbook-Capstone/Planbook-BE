@@ -1,7 +1,9 @@
 package com.BE.controller;
 
 import com.BE.model.request.WalletTokenRequest;
+import com.BE.model.request.WalletTransactionFilterRequest;
 import com.BE.model.request.WalletTransactionRequest;
+import com.BE.model.response.WalletTransactionResponse;
 import com.BE.service.interfaceServices.IWalletService;
 import com.BE.utils.ResponseHandler;
 import io.swagger.v3.oas.annotations.Operation;
@@ -9,6 +11,8 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -41,19 +45,15 @@ public class WalletController {
         return responseHandler.response(200,"Nạp token vào ví thành công", walletService.recharge(request));
     }
 
+
     @GetMapping("/transactions")
     @Operation(
-            summary = "Lấy lịch sử nạp ví (theo userId hoặc tự động từ token)",
-            description = "Truyền `userId` để lấy lịch sử ví của người dùng cụ thể. Nếu không truyền `userId`, hệ thống sẽ mặc định lấy từ user hiện tại trong token."
+            summary = "Lấy lịch sử ví",
+            description = "Lọc theo userId (hoặc từ token), loại giao dịch, khoảng thời gian, phân trang và sắp xếp."
     )
-    public ResponseEntity<?> getTransactions(
-            @Parameter(
-                    description = "UUID của người dùng. Nếu không truyền, sẽ lấy từ token.",
-                    example = "a2b5c3e8-7f12-45d2-9f7f-0c83d2a81234"
-            )
-            @RequestParam(required = false) UUID userId
-    ) {
-        return responseHandler.response(200, "Lấy lịch sử nạp ví thành công", walletService.getTransactions(userId));
+    public ResponseEntity<?> getTransactions(@Valid @ParameterObject WalletTransactionFilterRequest request) {
+        Page<WalletTransactionResponse> result = walletService.getTransactions(request);
+        return responseHandler.response(200, "Lấy lịch sử giao dịch ví thành công", result);
     }
 
 

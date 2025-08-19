@@ -185,7 +185,7 @@ public class ToolExecutionLogServiceImpl implements IToolExecutionLogService {
             walletTokenRequest.setAmount(log.getTokenUsed());
             walletTokenRequest.setUserId(log.getUserId());
             String vi = ToolCodeEnum.toVietnamese(log.getCode());
-            walletTokenRequest.setDescription("Hoàn token do sử dụng tool ( " + vi + " ) thất bại");
+            walletTokenRequest.setDescription("Hoàn token do sử dụng chức năng " + vi + " thất bại");
             identityServiceClient.refund(walletTokenRequest);
         }else{
             if (log.getResultId() == null && ToolTypeEnum.INTERNAL.equals(log.getToolType())) {

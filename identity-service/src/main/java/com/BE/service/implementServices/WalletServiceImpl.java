@@ -1,24 +1,36 @@
 package com.BE.service.implementServices;
 
+import com.BE.enums.TimeRangePreset;
 import com.BE.enums.TransactionType;
+import com.BE.exception.exceptions.BadRequestException;
 import com.BE.exception.exceptions.NotFoundException;
 import com.BE.mapper.WalletMapper;
 import com.BE.model.entity.User;
 import com.BE.model.entity.Wallet;
 import com.BE.model.entity.WalletTransaction;
 import com.BE.model.request.WalletTokenRequest;
+import com.BE.model.request.WalletTransactionFilterRequest;
 import com.BE.model.request.WalletTransactionRequest;
 import com.BE.model.response.WalletResponse;
 import com.BE.model.response.WalletTransactionResponse;
 import com.BE.repository.AuthenRepository;
 import com.BE.repository.WalletRepository;
+import com.BE.repository.WalletTransactionRepository;
 import com.BE.service.interfaceServices.IWalletService;
+import com.BE.specification.WalletTransactionSpecification;
 import com.BE.utils.AccountUtils;
 import com.BE.utils.DateNowUtils;
+import com.BE.utils.PageUtil;
+import com.BE.utils.TimeRangeUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -30,6 +42,8 @@ public class WalletServiceImpl implements IWalletService {
     private final AuthenRepository authenRepository;
     private final WalletMapper walletMapper;
     private final DateNowUtils dateNowUtils;
+    private final PageUtil pageUtil;
+    private final WalletTransactionRepository walletTransactionRepository;
 
     @Override
     public WalletResponse getByUser(UUID id) {
@@ -51,19 +65,37 @@ public class WalletServiceImpl implements IWalletService {
 //    }
 
     @Override
-    public List<WalletTransactionResponse> getTransactions(UUID id) {
-        Wallet wallet;
-        if (id != null) {
-            User user = authenRepository.findById(id).orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
-            wallet = user.getWallet();
-        } else {
-            wallet = accountUtils.getCurrentUser().getWallet();
+    public Page<WalletTransactionResponse> getTransactions(WalletTransactionFilterRequest request) {
+        pageUtil.checkOffset(request.getPage());
+
+        if (request.getUserId() == null) {
+            request.setUserId(accountUtils.getCurrentUser().getId());
+        }
+        if (request.getTimeRange() != null && request.getTimeRange() != TimeRangePreset.CUSTOM) {
+            Pair<LocalDate, LocalDate> range = TimeRangeUtil.resolve(request.getTimeRange());
+            request.setFromDate(range.getFirst());
+            request.setToDate(range.getSecond());
         }
 
-        return wallet.getTransactions()
-                .stream()
-                .map(walletMapper::toResponse)
-                .toList();
+        // Validate ngày hợp lệ
+        if (request.getFromDate() != null && request.getToDate() != null) {
+            if (request.getFromDate().isAfter(request.getToDate())) {
+                throw new BadRequestException("Ngày bắt đầu không được sau ngày kết thúc.");
+            }
+        }
+
+        Pageable pageable = pageUtil.getPageable(
+                request.getPage() - 1,
+                request.getSize(),
+                request.getSortBy(),
+                request.getSortDir()
+        );
+
+        Specification<WalletTransaction> spec = WalletTransactionSpecification.build(request);
+
+        Page<WalletTransaction> result = walletTransactionRepository.findAll(spec, pageable);
+
+        return result.map(walletMapper::toResponse);
     }
 
     @Override
