@@ -19,6 +19,7 @@ import com.BE.repository.SubscriptionPackageRepository;
 import com.BE.service.interfaceServices.IOrderService;
 import com.BE.service.interfaceServices.IPaymentService;
 import com.BE.utils.AccountUtils;
+import com.BE.utils.DateNowUtils;
 import com.BE.utils.PageUtil;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import feign.FeignException;
@@ -34,6 +35,7 @@ import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -52,6 +54,7 @@ public class OrderServiceImpl implements IOrderService {
     private final SubscriptionPackageRepository subscriptionPackageRepository;
     private final IdentityServiceClient identityServiceClient;
     private final EmailServiceClient emailServiceClient;
+    private final DateNowUtils dateNowUtils;
 
     @Value("${spring.sendgrid.template.order}")
     private String templateOrder;
@@ -108,8 +111,10 @@ public class OrderServiceImpl implements IOrderService {
 
 
     private void scheduleAutoExpire(PaymentTransaction txn) {
-        LocalDateTime now = LocalDateTime.now();
-        long delayMillis = java.time.Duration.between(now, txn.getExpiredAt()).toMillis();
+        Date targetTime = Date.from(txn.getExpiredAt()
+                .atZone(ZoneId.of("Asia/Ho_Chi_Minh"))
+                .toInstant());
+
 
         taskScheduler.schedule(() -> {
             // runnable logic
@@ -125,7 +130,7 @@ public class OrderServiceImpl implements IOrderService {
                 orderRepository.save(order);
                 System.out.println("✅ Auto-expired payment " + txn.getId() + " và order " + order.getId());
             }
-        }, new Date(System.currentTimeMillis() + delayMillis));
+        }, targetTime);
     }
 
     @Override

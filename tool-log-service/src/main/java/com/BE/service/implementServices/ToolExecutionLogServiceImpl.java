@@ -29,6 +29,10 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
 import java.util.Map;
 import java.util.UUID;
 
@@ -74,7 +78,8 @@ public class ToolExecutionLogServiceImpl implements IToolExecutionLogService {
                                     .lesson_id(request.getLessonIds().get(0).toString())
                                     .tool_log_id(response.getId())
                                     .input(input)
-                                    .timestamp(Instant.now().toString())
+                                    .timestamp(ZonedDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh"))
+                                            .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))
                                     .build())
                             .build();
 

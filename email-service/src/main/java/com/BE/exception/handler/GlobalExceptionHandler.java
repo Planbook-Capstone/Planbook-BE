@@ -5,14 +5,10 @@ import com.BE.exception.exceptions.EnumValidationException;
 import com.BE.exception.exceptions.InvalidRefreshTokenException;
 import com.BE.exception.exceptions.NotFoundException;
 
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -22,6 +18,7 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -78,7 +75,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(EmailSendingException.class)
     public ResponseEntity<?> handleEmailException(EmailSendingException ex) {
         Map<String, Object> response = Map.of(
-                "timestamp", LocalDateTime.now(),
+                "timestamp", LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")),
                 "status", HttpStatus.INTERNAL_SERVER_ERROR.value(),
                 "error", "Gửi email thất bại",
                 "message", ex.getMessage()

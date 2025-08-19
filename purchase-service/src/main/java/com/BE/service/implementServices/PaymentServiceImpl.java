@@ -79,7 +79,7 @@ public class PaymentServiceImpl implements IPaymentService {
                     .amount(request.getAmount())
                     .status(StatusEnum.PENDING)
                     .description(request.getDescription())
-                    .expiredAt(LocalDateTime.now().plusMinutes(15))
+                    .expiredAt(dateNowUtils.getCurrentDateTimeHCM().plusMinutes(15))
                     .gateway(GatewayEnum.PAYOS)
                     .payosOrderCode(orderCode)
                     .payosTransactionId(response.getPaymentLinkId())
