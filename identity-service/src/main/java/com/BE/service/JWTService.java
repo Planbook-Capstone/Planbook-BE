@@ -18,6 +18,8 @@ import org.springframework.stereotype.Service;
 import java.text.ParseException;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Date;
 
 @Service
@@ -42,8 +44,15 @@ public class JWTService {
 
             JWTClaimsSet claims = new JWTClaimsSet.Builder()
                     .subject(user.getUsername())
-                    .issueTime(new Date())
-                    .expirationTime(Date.from(Instant.now().plus(Duration.ofSeconds(DURATION))))
+                    .issueTime(Date.from(
+                            ZonedDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh"))
+                                    .toInstant()
+                    ))
+                    .expirationTime(Date.from(
+                            ZonedDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh"))
+                                    .plusSeconds(DURATION)
+                                    .toInstant()
+                    ))
                     .claim("scope", "ROLE_" + user.getRole())
                     .claim("userId", user.getId())
                     .claim("refresh", refresh)
@@ -69,8 +78,15 @@ public class JWTService {
 
             JWTClaimsSet claims = new JWTClaimsSet.Builder()
                     .subject(user.getUsername())
-                    .issueTime(new Date())
-                    .expirationTime(Date.from(Instant.now().plus(Duration.ofSeconds(DURATION))))
+                    .issueTime(Date.from(
+                            ZonedDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh"))
+                                    .toInstant()
+                    ))
+                    .expirationTime(Date.from(
+                            ZonedDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh"))
+                                    .plusSeconds(DURATION)
+                                    .toInstant()
+                    ))
                     .claim("scope", "ROLE_" + user.getRole())
                     .claim("userId", user.getId())
                     .build();

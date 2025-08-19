@@ -6,10 +6,11 @@ import org.springframework.data.util.Pair;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.ZoneId;
 
 public class TimeRangeUtil {
     public static Pair<LocalDate, LocalDate> resolve(TimeRangePreset preset) {
-        LocalDate now = LocalDate.now();
+        LocalDate now = LocalDate.now(ZoneId.of("Asia/Ho_Chi_Minh"));
         return switch (preset) {
             case TODAY -> Pair.of(now, now);
             case YESTERDAY -> Pair.of(now.minusDays(1), now.minusDays(1));
