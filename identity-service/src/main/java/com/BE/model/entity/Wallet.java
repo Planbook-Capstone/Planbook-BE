@@ -49,5 +49,6 @@ public class Wallet {
         this.setUser(account);
         account.setWallet(this);
     }
+
 }
 

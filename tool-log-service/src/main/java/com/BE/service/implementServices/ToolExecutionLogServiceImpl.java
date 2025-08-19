@@ -92,8 +92,7 @@ public class ToolExecutionLogServiceImpl implements IToolExecutionLogService {
                 }
             }
         }
-
-
+        
         return response;
     }
 
