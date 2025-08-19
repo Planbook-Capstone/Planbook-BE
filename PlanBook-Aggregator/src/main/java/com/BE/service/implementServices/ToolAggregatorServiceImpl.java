@@ -45,7 +45,7 @@ public class ToolAggregatorServiceImpl implements IToolAggregatorService {
         request.setAmount(tokenCostPerQuery);
         request.setUserId(accountUtils.getCurrentUserId());
         String vi = ToolCodeEnum.toVietnamese(code);
-        request.setDescription("Trừ token do sử dụng tool ( " + vi + " )");
+        request.setDescription("Trừ token do sử dụng chức năng " + vi);
         try {
             toolInternalServiceClient.deduct(request);
         }catch(Exception e) {
