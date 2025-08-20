@@ -46,9 +46,11 @@ build/
 .env.staging
 .env.development
 .env.*
-!.env.example
+
 
 # Docker environment files
 deploy/.env
 deploy/.env.local
 deploy/.env.production
+
+.DS_Store

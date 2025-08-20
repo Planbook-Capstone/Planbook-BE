@@ -15,13 +15,6 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 @EnableDiscoveryClient
 @EnableFeignClients
 @EnableCaching
-// @OpenAPIDefinition(info = @Info(title = "Do Minh API", version = "2.0", description = "Information"))
-@OpenAPIDefinition(
-		info = @Info(title = "Do Minh API", version = "2.0")
-		,servers = {
-				@Server(url = "https://api.planbook.vn/aggregator", description = "Production Server")
-		}
-)
 @SecurityScheme(name = "api", scheme = "bearer", type = SecuritySchemeType.HTTP, in = SecuritySchemeIn.HEADER)
 public class SpringApplication {
 

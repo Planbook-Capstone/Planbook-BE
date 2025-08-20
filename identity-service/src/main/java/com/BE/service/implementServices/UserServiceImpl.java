@@ -55,6 +55,7 @@ public class UserServiceImpl implements IUserService {
     public UserResponse create(CreateUserRequest request) {
         User user = mapper.toEntity(request);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setStatus(StatusEnum.INACTIVE);
         try{
             if(RoleEnum.TEACHER.equals(request.getRole()) || RoleEnum.PARTNER.equals(request.getRole())) iWalletService.create(user);
             return mapper.toResponse(repository.save(user));

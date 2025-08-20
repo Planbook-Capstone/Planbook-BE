@@ -121,7 +121,7 @@ public class OrderServiceImpl implements IOrderService {
             PaymentTransaction latestTxn = paymentTransactionRepository.findById(txn.getId())
                     .orElse(null);
             Order order = latestTxn.getOrder();
-            if (latestTxn != null && StatusEnum.PENDING.equals(order.getStatus())
+            if (latestTxn != null && (StatusEnum.PENDING.equals(order.getStatus()) || StatusEnum.RETRY.equals(order.getStatus()))
                     && (StatusEnum.PENDING.equals(latestTxn.getStatus()) || StatusEnum.RETRY.equals(latestTxn.getStatus()))) {
                 latestTxn.setStatus(StatusEnum.EXPIRED);
                 paymentTransactionRepository.save(latestTxn);
@@ -176,6 +176,7 @@ public class OrderServiceImpl implements IOrderService {
             PaymentTransaction paymentTransaction = paymentService.retryPayment(retryRequest);
             responseDTO.setCheckoutUrl(paymentTransaction.getCheckoutUrl());
             responseDTO.setQrCode(paymentTransaction.getQrCode());
+            scheduleAutoExpire(paymentTransaction);
         }
         return responseDTO;
     }
