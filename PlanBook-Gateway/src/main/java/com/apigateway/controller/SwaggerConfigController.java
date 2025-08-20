@@ -45,4 +45,5 @@ public class SwaggerConfigController {
         swaggerConfig.put("urls", urls);
         return new ResponseEntity<>(swaggerConfig, HttpStatus.OK);
     }
+
 }

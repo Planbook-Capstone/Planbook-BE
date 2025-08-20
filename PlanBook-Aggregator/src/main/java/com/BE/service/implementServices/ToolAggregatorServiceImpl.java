@@ -256,5 +256,4 @@ public class ToolAggregatorServiceImpl implements IToolAggregatorService {
         return outputExternalResponse.getData();
     }
 
-
 }
