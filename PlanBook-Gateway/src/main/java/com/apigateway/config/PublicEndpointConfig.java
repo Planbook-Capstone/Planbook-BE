@@ -44,10 +44,11 @@ public class PublicEndpointConfig {
             "/*/api/exam-instances/code/**",
             "/*/api/exam-instances/code/*/submit"
 
+
     );
 
     private final List<String> publicGetEndpoints = Arrays.asList(
-            "/*/api/testRole"
+            "/*/api/subscription-packages"
     );
 
     public List<String> getPublicEndpoints() {

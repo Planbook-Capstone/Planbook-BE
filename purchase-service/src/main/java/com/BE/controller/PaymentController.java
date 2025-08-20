@@ -1,6 +1,7 @@
 package com.BE.controller;
 
 
+
 import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -129,31 +130,6 @@ public class PaymentController {
 //            @Valid @RequestBody RetryPaymentRequestDTO request) {
 //        PaymentLinkResponseDTO paymentLink = paymentService.retryPayment(request);
 //        return responseHandler.response(200, "Tạo link thanh toán thử lại thành công!", paymentLink);
-//    }
-
-
-//    @Operation(
-//            summary = "Huỷ tất cả giao dịch đang chờ thanh toán của một đơn hàng",
-//            description = "Huỷ toàn bộ các link thanh toán còn hiệu lực (trạng thái PENDING) liên kết với một đơn hàng nhất định",
-//            responses = {
-//                    @ApiResponse(
-//                            responseCode = "200",
-//                            description = "Huỷ thành công",
-//                            content = @Content(schema = @Schema(implementation = CancelPaymentResponseDTO.class))
-//                    ),
-//                    @ApiResponse(
-//                            responseCode = "404",
-//                            description = "Không tìm thấy giao dịch nào",
-//                            content = @Content(mediaType = "application/json",
-//                                    examples = @ExampleObject(value = "{\"error\": -1, \"message\": \"Không tìm thấy giao dịch\", \"data\": null}")
-//                            )
-//                    )
-//            }
-//    )
-//    @PostMapping("/cancel")
-//    public ResponseEntity cancelAllPendingTransactions(@RequestBody CancelPaymentRequestDTO request) {
-//        CancelPaymentResponseDTO response = paymentService.cancelAllPendingTransactions(request);
-//        return ResponseEntity.ok(new DataResponseDTO<>(200, "Cancel payment success", response));
 //    }
 
 }

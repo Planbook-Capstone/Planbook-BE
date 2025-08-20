@@ -35,7 +35,6 @@ public class SecurityConfig {
                         .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .pathMatchers(publicEndpointConfig.getPublicEndpoints().toArray(new String[0])).permitAll()
                         .pathMatchers(HttpMethod.GET, publicEndpointConfig.getPublicGetEndpoints().toArray(new String[0])).permitAll()
-                        .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         // Tất cả các request còn lại phải được xác thực (có JWT hợp lệ)
                         .anyExchange().authenticated()
                 )

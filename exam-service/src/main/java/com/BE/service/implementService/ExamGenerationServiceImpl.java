@@ -136,6 +136,8 @@ public class ExamGenerationServiceImpl implements IExamGenerationService {
             DifficultyCountDTO config = matrix.get(partName);
             List<Map<String, Object>> partPool = questionBank.get(partName);
 
+            if (partPool == null || partPool.isEmpty() || config == null) continue;
+
             List<Map<String, Object>> selectedQuestions = randomSelectByDifficultyAvoidingReuse(partPool, config, usedQuestionIds);
             List<Map<String, Object>> questionList = new ArrayList<>();
             List<Map<String, Object>> answerList = new ArrayList<>();

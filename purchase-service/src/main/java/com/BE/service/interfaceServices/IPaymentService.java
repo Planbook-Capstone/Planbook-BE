@@ -1,5 +1,6 @@
 package com.BE.service.interfaceServices;
 
+import com.BE.model.entity.Order;
 import com.BE.model.entity.PaymentTransaction;
 import com.BE.model.request.CancelPaymentRequestDTO;
 import com.BE.model.request.CreatePaymentRequestDTO;
@@ -20,5 +21,5 @@ public interface IPaymentService {
 
     CancelPaymentResponseDTO cancelAllPendingTransactions(CancelPaymentRequestDTO request);
 
-
+    Order cancelPaymentPayos(Long orderCode);
 }
