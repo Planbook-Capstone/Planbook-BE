@@ -22,92 +22,92 @@ import java.util.List;
 @RequestMapping("/api/tags")
 @SecurityRequirement(name = "api")
 @RequiredArgsConstructor
-@Tag(name = "Tag Management", description = "APIs for managing tags")
+@Tag(name = "Quản lý Loại học liệu", description = "APIs để quản lý loại học liệu")
 public class TagController {
 
         private final TagService tagService;
         private final ResponseHandler responseHandler;
 
         @PostMapping
-        @Operation(summary = "Create a new tag", description = "Create a new tag for categorizing resources")
+        @Operation(summary = "Tạo loại học liệu mới", description = "Tạo loại học liệu mới để phân loại tài nguyên")
         public ResponseEntity<DataResponseDTO<TagResponse>> createTag(
                         @Valid @RequestBody TagCreateRequest request) {
 
                 TagResponse response = tagService.createTag(request);
-                return responseHandler.response(201, "Tag created successfully", response);
+                return responseHandler.response(201, "Loại học liệu được tạo thành công", response);
         }
 
         @GetMapping("/{id}")
-        @Operation(summary = "Get tag by ID", description = "Retrieve a specific tag by its ID")
+        @Operation(summary = "Lấy loại học liệu theo ID", description = "Lấy loại học liệu cụ thể theo ID")
         public ResponseEntity<DataResponseDTO<TagResponse>> getTagById(
-                        @Parameter(description = "Tag ID") @PathVariable Long id) {
+                        @Parameter(description = "ID loại học liệu") @PathVariable Long id) {
 
                 TagResponse response = tagService.getTagById(id);
-                return responseHandler.response(200, "Tag retrieved successfully", response);
+                return responseHandler.response(200, "Loại học liệu được lấy thành công", response);
         }
 
         @GetMapping
-        @Operation(summary = "Get all tags", description = "Retrieve all tags sorted by name")
+        @Operation(summary = "Lấy tất cả loại học liệu", description = "Lấy tất cả loại học liệu được sắp xếp theo tên")
         public ResponseEntity<DataResponseDTO<List<TagResponse>>> getAllTags() {
 
                 List<TagResponse> response = tagService.getAllTags();
-                return responseHandler.response(200, "Tags retrieved successfully", response);
+                return responseHandler.response(200, "Loại học liệu được lấy thành công", response);
         }
 
         @GetMapping("/search")
-        @Operation(summary = "Search tags", description = "Search tags by keyword with pagination")
+        @Operation(summary = "Tìm kiếm loại học liệu", description = "Tìm kiếm loại học liệu theo từ khóa với phân trang")
         public ResponseEntity<DataResponseDTO<PagedResponse<TagResponse>>> searchTags(
-                        @Parameter(description = "Search keyword") @RequestParam(required = false) String keyword,
-                        @Parameter(description = "Page number") @RequestParam(defaultValue = "0") Integer page,
-                        @Parameter(description = "Page size") @RequestParam(defaultValue = "10") Integer size) {
+                        @Parameter(description = "Từ khóa tìm kiếm") @RequestParam(required = false) String keyword,
+                        @Parameter(description = "Số trang") @RequestParam(defaultValue = "0") Integer page,
+                        @Parameter(description = "Kích thước trang") @RequestParam(defaultValue = "10") Integer size) {
 
                 PagedResponse<TagResponse> response = tagService.searchTags(keyword, page, size);
-                return responseHandler.response(200, "Tags retrieved successfully", response);
+                return responseHandler.response(200, "Loại học liệu được lấy thành công", response);
         }
 
         @PutMapping("/{id}")
-        @Operation(summary = "Update tag", description = "Update an existing tag")
+        @Operation(summary = "Cập nhật loại học liệu", description = "Cập nhật loại học liệu hiện có")
         public ResponseEntity<DataResponseDTO<TagResponse>> updateTag(
-                        @Parameter(description = "Tag ID") @PathVariable Long id,
+                        @Parameter(description = "ID loại học liệu") @PathVariable Long id,
                         @Valid @RequestBody TagCreateRequest request) {
 
                 TagResponse response = tagService.updateTag(id, request);
-                return responseHandler.response(200, "Tag updated successfully", response);
+                return responseHandler.response(200, "Loại học liệu được cập nhật thành công", response);
         }
 
         @DeleteMapping("/{id}")
-        @Operation(summary = "Delete tag", description = "Delete a tag (only if not used by any resources)")
+        @Operation(summary = "Xóa loại học liệu", description = "Xóa loại học liệu (chỉ khi không được sử dụng bởi tài nguyên nào)")
         public ResponseEntity<DataResponseDTO<Void>> deleteTag(
-                        @Parameter(description = "Tag ID") @PathVariable Long id) {
+                        @Parameter(description = "ID loại học liệu") @PathVariable Long id) {
 
                 tagService.deleteTag(id);
-                return responseHandler.response(200, "Tag deleted successfully", null);
+                return responseHandler.response(200, "Loại học liệu được xóa thành công", null);
         }
 
         @GetMapping("/popular")
-        @Operation(summary = "Get popular tags", description = "Get tags ordered by usage count")
+        @Operation(summary = "Lấy loại học liệu phổ biến", description = "Lấy loại học liệu được sắp xếp theo số lượng sử dụng")
         public ResponseEntity<DataResponseDTO<PagedResponse<Object[]>>> getPopularTags(
-                        @Parameter(description = "Page number") @RequestParam(defaultValue = "0") Integer page,
-                        @Parameter(description = "Page size") @RequestParam(defaultValue = "10") Integer size) {
+                        @Parameter(description = "Số trang") @RequestParam(defaultValue = "0") Integer page,
+                        @Parameter(description = "Kích thước trang") @RequestParam(defaultValue = "10") Integer size) {
 
                 PagedResponse<Object[]> response = tagService.getPopularTags(page, size);
-                return responseHandler.response(200, "Popular tags retrieved successfully", response);
+                return responseHandler.response(200, "Loại học liệu phổ biến được lấy thành công", response);
         }
 
         @GetMapping("/resource/{resourceId}")
-        @Operation(summary = "Get tags by resource", description = "Get all tags associated with a specific resource")
+        @Operation(summary = "Lấy loại học liệu theo tài nguyên", description = "Lấy tất cả loại học liệu liên quan đến tài nguyên cụ thể")
         public ResponseEntity<DataResponseDTO<List<TagResponse>>> getTagsByResourceId(
-                        @Parameter(description = "Resource ID") @PathVariable Long resourceId) {
+                        @Parameter(description = "ID tài nguyên") @PathVariable Long resourceId) {
 
                 List<TagResponse> response = tagService.getTagsByResourceId(resourceId);
-                return responseHandler.response(200, "Resource tags retrieved successfully", response);
+                return responseHandler.response(200, "Loại học liệu của tài nguyên được lấy thành công", response);
         }
 
         @GetMapping("/unused")
-        @Operation(summary = "Get unused tags", description = "Get tags that are not associated with any resources")
+        @Operation(summary = "Lấy loại học liệu chưa sử dụng", description = "Lấy loại học liệu chưa được liên kết với tài nguyên nào")
         public ResponseEntity<DataResponseDTO<List<TagResponse>>> getUnusedTags() {
 
                 List<TagResponse> response = tagService.getUnusedTags();
-                return responseHandler.response(200, "Unused tags retrieved successfully", response);
+                return responseHandler.response(200, "Loại học liệu chưa sử dụng được lấy thành công", response);
         }
 }

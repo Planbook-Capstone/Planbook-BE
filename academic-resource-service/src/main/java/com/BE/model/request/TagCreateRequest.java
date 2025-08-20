@@ -15,11 +15,11 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class TagCreateRequest {
 
-    @Schema(example = "Mathematics", description = "Tag name")
-    @NotBlank(message = "Tag name is required")
-    @Size(max = 100, message = "Tag name must not exceed 100 characters")
+    @Schema(example = "Toán học", description = "Tên loại học liệu")
+    @NotBlank(message = "Tên loại học liệu là bắt buộc")
+    @Size(max = 100, message = "Tên loại học liệu không được vượt quá 100 ký tự")
     String name;
 
-    @Schema(example = "Resources related to mathematics", description = "Tag description")
+    @Schema(example = "Tài nguyên liên quan đến toán học", description = "Mô tả loại học liệu")
     String description;
 }

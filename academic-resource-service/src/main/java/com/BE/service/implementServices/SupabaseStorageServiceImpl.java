@@ -32,7 +32,7 @@ public class SupabaseStorageServiceImpl implements SupabaseStorageService {
 
     public FileUploadResponse uploadFile(MultipartFile file)  {
         if (file.isEmpty()) {
-            throw new FileUploadException("File is empty");
+            throw new FileUploadException("Tệp trống");
         }
 
         // Generate unique filename
@@ -86,17 +86,17 @@ public class SupabaseStorageServiceImpl implements SupabaseStorageService {
                             publicUrl,
                             file.getContentType(),
                             file.getSize(),
-                            "File uploaded successfully");
+                            "Tệp được tải lên thành công");
                 } else {
                     log.error("Failed to upload file. Status: {}, Response: {}", statusCode, responseBody);
-                    throw new FileUploadException("Failed to upload file to Supabase Storage");
+                    throw new FileUploadException("Không thể tải tệp lên Supabase Storage");
                 }
             } catch (ParseException e) {
                 log.error("Error uploading file: {}", uniqueFilename, e);
-                throw new FileUploadException("Error uploading file to Supabase Storage", e);
+                throw new FileUploadException("Lỗi khi tải tệp lên Supabase Storage", e);
             }
         } catch (IOException e) {
-            throw new BadRequestException("Error reading file input stream: " + e.getMessage());
+            throw new BadRequestException("Lỗi khi đọc luồng dữ liệu tệp: " + e.getMessage());
         }
     }
 

@@ -35,7 +35,7 @@ public class TagServiceImpl implements TagService {
     public TagResponse createTag(TagCreateRequest request) {
         // Check if tag already exists
         if (tagRepository.existsByNameIgnoreCase(request.getName())) {
-            throw new AcademicResourceException("Tag with name '" + request.getName() + "' already exists");
+            throw new AcademicResourceException("Loại học liệu với tên '" + request.getName() + "' đã tồn tại");
         }
 
         Tag tag = new Tag();
@@ -49,7 +49,7 @@ public class TagServiceImpl implements TagService {
 
     public TagResponse getTagById(Long id) {
         Tag tag = tagRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Tag", id));
+                .orElseThrow(() -> new ResourceNotFoundException("Loại học liệu", id));
 
         return convertToResponse(tag);
     }
@@ -78,12 +78,12 @@ public class TagServiceImpl implements TagService {
     @Transactional
     public TagResponse updateTag(Long id, TagCreateRequest request) {
         Tag tag = tagRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Tag", id));
+                .orElseThrow(() -> new ResourceNotFoundException("Loại học liệu", id));
 
         // Check if new name conflicts with existing tag (excluding current tag)
         if (!tag.getName().equalsIgnoreCase(request.getName()) &&
                 tagRepository.existsByNameIgnoreCase(request.getName())) {
-            throw new AcademicResourceException("Tag with name '" + request.getName() + "' already exists");
+            throw new AcademicResourceException("Loại học liệu với tên '" + request.getName() + "' đã tồn tại");
         }
         if (request.getName() != null || !request.getName().trim().isEmpty()) {
             tag.setName(request.getName());
@@ -99,13 +99,13 @@ public class TagServiceImpl implements TagService {
     @Transactional
     public void deleteTag(Long id) {
         Tag tag = tagRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Tag", id));
+                .orElseThrow(() -> new ResourceNotFoundException("Loại học liệu", id));
 
         // Check if tag is being used by any resources
         long resourceCount = resourceTagRepository.countByTagId(id);
         if (resourceCount > 0) {
             throw new AcademicResourceException(
-                    "Không thể xóa thẻ (tag) vì đang được sử dụng bởi " + resourceCount + " tài nguyên.");
+                    "Không thể xóa loại học liệu vì đang được sử dụng bởi " + resourceCount + " tài nguyên.");
         }
 
         tagRepository.delete(tag);

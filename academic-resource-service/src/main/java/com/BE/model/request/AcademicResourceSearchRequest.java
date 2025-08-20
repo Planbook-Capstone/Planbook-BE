@@ -32,19 +32,19 @@ public class AcademicResourceSearchRequest {
     )
     UUID createdBy;
 
-    @Schema(example = "math", description = "Search keyword for name or description")
+    @Schema(example = "toán", description = "Từ khóa tìm kiếm cho tên hoặc mô tả")
     String keyword;
 
-    @Schema(example = "image", description = "Filter by resource type")
+    @Schema(example = "image", description = "Lọc theo loại tài nguyên")
     String type;
 
-    @Schema(example = "[1, 2]", description = "Filter by tag IDs")
+    @Schema(example = "[1, 2]", description = "Lọc theo ID loại học liệu")
     Set<Long> tagIds;
 
-    @Schema(example = "1", description = "Page number (1-based)")
+    @Schema(example = "1", description = "Số trang (bắt đầu từ 1)")
     Integer page = 1;
 
-    @Schema(example = "10", description = "Page size")
+    @Schema(example = "10", description = "Kích thước trang")
     Integer size = 10;
 
     @EnumValidator(enumClass = SortBy.class, message = "sortBy phải là một trong các giá trị hợp lệ")
