@@ -12,4 +12,5 @@ public class KafkaMessageConsumer {
         System.out.println("Received message: " + record);
         // Xử lý message ở đây
     }
+
 }

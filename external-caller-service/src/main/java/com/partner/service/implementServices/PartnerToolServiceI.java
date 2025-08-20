@@ -41,6 +41,5 @@ public class PartnerToolServiceI implements IPartnerToolService {
                 );
     }
 
-
 }
 

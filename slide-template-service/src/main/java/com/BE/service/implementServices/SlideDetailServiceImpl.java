@@ -245,4 +245,5 @@ public class SlideDetailServiceImpl implements ISlideDetailService {
         // Logic này có thể được mở rộng trong tương lai nếu cần
         // Hiện tại chỉ để placeholder cho việc mở rộng
     }
+
 }

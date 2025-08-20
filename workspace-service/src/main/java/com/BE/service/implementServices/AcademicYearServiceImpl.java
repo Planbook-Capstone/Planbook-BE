@@ -24,10 +24,7 @@ public class AcademicYearServiceImpl implements IAcademicYearService {
     DateNowUtils dateNowUtils;
     @Autowired
     private AcademicYearRepository academicYearRepository;
-//    @Autowired
-//    private AuthenRepository authenRepository;
-//    @Autowired
-//    private WorkSpaceRepository workSpaceRepository;
+
     @Autowired
     private AcademicYearMapper academicYearMapper;
 
