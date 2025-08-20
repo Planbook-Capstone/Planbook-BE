@@ -257,9 +257,4 @@ public class ToolAggregatorServiceImpl implements IToolAggregatorService {
     }
 
 
-//    public long getLessonById(long id){
-//        masterDataServiceClient.getLessonById(id);
-//
-//        return null;
-//    }
 }
