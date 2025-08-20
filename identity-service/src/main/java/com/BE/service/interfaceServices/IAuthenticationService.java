@@ -18,5 +18,5 @@ public interface IAuthenticationService {
     void logout(RefreshRequest refreshRequest);
 
     void verify();
-    void resendVerification(String email);
+    void resendVerification(String username);
 }
