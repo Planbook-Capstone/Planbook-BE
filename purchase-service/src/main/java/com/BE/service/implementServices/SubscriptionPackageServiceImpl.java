@@ -76,4 +76,5 @@ public class SubscriptionPackageServiceImpl implements ISubscriptionPackageServi
         mapper.updateFromDto(request, entity);
         return mapper.toResponse(repository.save(entity));
     }
+
 }

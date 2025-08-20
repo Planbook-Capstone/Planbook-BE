@@ -124,7 +124,7 @@ public class AuthenticationImpl implements IAuthenticationService {
                             request.getUsername().trim(),
                             request.getPassword().trim()));
         } catch (Exception e) {
-            throw new NullPointerException("Sai ID hoặc mật khẩu!");
+            throw new NullPointerException("Sai tài khoản hoặc mật khẩu!");
         }
 
         User user = (User) authentication.getPrincipal();

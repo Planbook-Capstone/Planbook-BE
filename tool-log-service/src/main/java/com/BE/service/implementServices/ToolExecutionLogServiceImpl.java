@@ -218,7 +218,6 @@ public class ToolExecutionLogServiceImpl implements IToolExecutionLogService {
 
     }
 
-
     private void createAndLinkToolResult(ToolExecutionLog log) {
         CreateToolResultRequest request = new CreateToolResultRequest();
         request.setUserId(log.getUserId());
