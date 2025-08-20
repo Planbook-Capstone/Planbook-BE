@@ -56,7 +56,7 @@ public class PaymentTransaction {
     @Enumerated(EnumType.STRING)
     GatewayEnum gateway;
 
-    @Column(name = "payos_order_code", nullable = false)
+    @Column(name = "payos_order_code", nullable = false, unique = true)
     Long payosOrderCode;
 
     String checkoutUrl;

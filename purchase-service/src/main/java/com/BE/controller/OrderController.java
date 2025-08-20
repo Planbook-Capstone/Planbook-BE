@@ -1,10 +1,9 @@
 package com.BE.controller;
 
 import com.BE.enums.StatusEnum;
-import com.BE.exception.exceptions.BusinessException;
-import com.BE.model.entity.PaymentTransaction;
 import com.BE.model.request.CreateOrderRequestDTO;
 import com.BE.model.request.UpdateOrderStatusRequestDTO;
+import com.BE.model.response.CancelPaymentResponseDTO;
 import com.BE.model.response.DataResponseDTO;
 import com.BE.model.response.OrderHistoryResponseDTO;
 import com.BE.model.response.OrderResponseDTO;
@@ -24,12 +23,9 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.hibernate.query.Page;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.awt.print.Pageable;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -187,6 +183,38 @@ public class OrderController {
         )));
     }
 
+    @Operation(
+            summary = "Huỷ giao dịch thanh toán PayOS bị treo",
+            description = "API này cho phép hệ thống chủ động huỷ tất cả các link thanh toán còn hiệu lực (trạng thái PENDING) liên kết với một đơn hàng nếu PayOS không tự callback trạng thái huỷ. Áp dụng khi người dùng thoát giữa chừng, hoặc PayOS không gửi webhook.",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Huỷ giao dịch thành công",
+                            content = @Content(schema = @Schema(implementation = CancelPaymentResponseDTO.class))
+                    ),
+                    @ApiResponse(
+                            responseCode = "404",
+                            description = "Không tìm thấy giao dịch thanh toán nào đang chờ",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    examples = @ExampleObject(
+                                            value = """
+                                                    {
+                                                      "error": -1,
+                                                      "message": "Không tìm thấy giao dịch",
+                                                      "data": null
+                                                    }
+                                                    """
+                                    )
+                            )
+                    )
+            }
+    )
+    @PatchMapping("/cancel-payment/{orderCode}")
+    public ResponseEntity cancelPaymentTransactions(@PathVariable Long orderCode) {
+        OrderResponseDTO response = orderService.cancelPaymentTransactions(orderCode);
+        return ResponseEntity.ok(new DataResponseDTO<>(200, "Huỷ thanh toán thành công", response));
+    }
 
 
 }

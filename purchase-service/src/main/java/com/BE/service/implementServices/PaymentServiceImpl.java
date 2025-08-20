@@ -6,6 +6,7 @@ import com.BE.exception.exceptions.BusinessException;
 import com.BE.exception.exceptions.InvalidSignatureException;
 import com.BE.exception.exceptions.NotFoundException;
 import com.BE.mapper.PaymentTransactionMapper;
+import com.BE.model.entity.Order;
 import com.BE.model.entity.PaymentTransaction;
 import com.BE.model.request.CancelPaymentRequestDTO;
 import com.BE.model.request.CreatePaymentRequestDTO;
@@ -229,7 +230,7 @@ public class PaymentServiceImpl implements IPaymentService {
 
         int cancelledCount = 0;
         for (PaymentTransaction txn : transactions) {
-            if (txn.getStatus().equals(StatusEnum.PENDING)) {
+            if (txn.getStatus().equals(StatusEnum.PENDING) || txn.getStatus().equals(StatusEnum.RETRY)) {
                 try {
                     if (txn.getPayosOrderCode() != null) {
                         payos.cancelPaymentLink(
@@ -254,6 +255,39 @@ public class PaymentServiceImpl implements IPaymentService {
                         ? "Đã huỷ toàn bộ các giao dịch PENDING"
                         : "Không có giao dịch PENDING để huỷ")
                 .build();
+    }
+
+    @Override
+    public Order cancelPaymentPayos(Long orderCode) {
+
+        PaymentTransaction txn = paymentTransactionRepository.findByPayosOrderCode(orderCode).orElseThrow(() -> new NotFoundException("Không tìm thấy giao dịch này"));
+
+        Order order = txn.getOrder();
+
+        // Chỉ cho phép huỷ nếu transaction và order đều đang chờ
+        boolean txnPending = txn.getStatus().equals(StatusEnum.PENDING) || txn.getStatus().equals(StatusEnum.RETRY);
+        boolean orderPending = order.getStatus().equals(StatusEnum.PENDING) || order.getStatus().equals(StatusEnum.RETRY);
+
+        if (!(txnPending && orderPending)) {
+            throw new IllegalStateException("Không thể huỷ: giao dịch hoặc đơn hàng không còn ở trạng thái chờ thanh toán.");
+        }
+
+        try {
+            if (txn.getPayosOrderCode() != null) {
+                payos.cancelPaymentLink(
+                        txn.getPayosOrderCode(),
+                        "Huỷ thanh toán từ Payos"
+                );
+            }
+        } catch (Exception e) {
+            // log lỗi nhưng vẫn xử lý huỷ local
+            e.printStackTrace();
+        }
+
+            txn.setStatus(StatusEnum.CANCELLED);
+            paymentTransactionRepository.save(txn);
+
+        return order;
     }
 
 }

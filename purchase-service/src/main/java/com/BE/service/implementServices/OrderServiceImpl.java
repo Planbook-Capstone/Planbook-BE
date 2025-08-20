@@ -289,6 +289,14 @@ public class OrderServiceImpl implements IOrderService {
                 .map(orderMapper::toOrderResponseDTO);
     }
 
+    @Override
+    public OrderResponseDTO cancelPaymentTransactions(Long orderCode) {
+        Order order =  paymentService.cancelPaymentPayos(orderCode);
+        StatusEnum fromStatus = order.getStatus();
+        order.setStatus(StatusEnum.CANCELLED);
+        saveHistory(order, fromStatus, StatusEnum.CANCELLED, "Huỷ thanh toán từ Payos");
+        return orderMapper.toOrderResponseDTO(orderRepository.save(order));
+    }
 
 
 }

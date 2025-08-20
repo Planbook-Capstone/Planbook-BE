@@ -19,6 +19,7 @@ import java.util.UUID;
 public interface PaymentTransactionRepository extends JpaRepository<PaymentTransaction, UUID> {
     Optional<PaymentTransaction> findByPayosTransactionId(String payosTransactionId);
 
+    Optional<PaymentTransaction> findByPayosOrderCode(Long payosOrderCode);
 
     Optional<PaymentTransaction> findByParentTransactionId(UUID parentTransactionId);
 
