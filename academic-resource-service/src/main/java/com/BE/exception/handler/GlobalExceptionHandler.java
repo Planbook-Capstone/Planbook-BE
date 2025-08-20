@@ -123,7 +123,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(AcademicResourceException.class)
     public ResponseEntity<DataResponseDTO<Object>> handleAcademicResourceException(AcademicResourceException ex) {
-        return responseHandler.response(400, "Tài nguyên học thuật không hợp lệ", null);
+        return responseHandler.response(400, ex.getMessage(), null);
     }
 
     @ExceptionHandler(MissingServletRequestPartException.class)

@@ -89,8 +89,8 @@ public class AcademicResourceServiceImpl implements AcademicResourceService {
         uploadResponse = supabaseStorageService.uploadFile(file);
         UUID userId = accountUtils.getCurrentUserId();
         AcademicResource resource = new AcademicResource();
-        resource.setName("user_" + userId + "_resource_" + dateNowUtils.getCurrentDateTimeHCM());
-        resource.setDescription("Uploaded by user " + userId);
+        resource.setName("người_dùng_" + userId + "_tài_nguyên_" + dateNowUtils.getCurrentDateTimeHCM());
+        resource.setDescription("Được tải lên bởi người dùng " + userId);
         resource.setVisibility(AcademicResourceEnum.INTERNAL);
         resource.setCreatedBy(userId);
         resource.setUrl(uploadResponse.getFileUrl());
@@ -110,7 +110,7 @@ public class AcademicResourceServiceImpl implements AcademicResourceService {
                     AcademicResourceCreateRequest.class);
             System.out.println("Parsed Create Request: " + createRequest);
         } catch (JsonProcessingException e) {
-            throw new BadRequestException("Invalid metadata JSON format: " + e.getMessage());
+            throw new BadRequestException("Định dạng JSON metadata không hợp lệ: " + e.getMessage());
         }
         uploadResponse = supabaseStorageService.uploadFile(request.getFile());
 
@@ -122,7 +122,7 @@ public class AcademicResourceServiceImpl implements AcademicResourceService {
 
     public AcademicResourceResponse getResourceById(Long id) {
         AcademicResource resource = academicResourceRepository.findByIdWithTags(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Academic resource", id));
+                .orElseThrow(() -> new ResourceNotFoundException("Tài nguyên học thuật", id));
 
         return convertToResponse(resource);
     }
@@ -130,7 +130,7 @@ public class AcademicResourceServiceImpl implements AcademicResourceService {
     @Transactional
     public AcademicResourceResponse updateResource(Long id, AcademicResourceUpdateRequest request) {
         AcademicResource resource = academicResourceRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Academic resource", id));
+                .orElseThrow(() -> new ResourceNotFoundException("Tài nguyên học thuật", id));
 
         // Update fields if provided
         if (request.getType() != null) {
@@ -165,7 +165,7 @@ public class AcademicResourceServiceImpl implements AcademicResourceService {
     @Transactional
     public void deleteResource(Long id) {
         AcademicResource resource = academicResourceRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Academic resource", id));
+                .orElseThrow(() -> new ResourceNotFoundException("Tài nguyên học thuật", id));
 
         // 1) Xoá liên kết con trước
         resourceTagRepository.deleteByResourceId(id);
@@ -271,7 +271,7 @@ public class AcademicResourceServiceImpl implements AcademicResourceService {
 
         // Get the resource entity
         AcademicResource resource = academicResourceRepository.findById(resourceId)
-                .orElseThrow(() -> new ResourceNotFoundException("Academic resource", resourceId));
+                .orElseThrow(() -> new ResourceNotFoundException("Tài nguyên học thuật", resourceId));
 
         for (Tag tag : tags) {
             ResourceTag resourceTag = new ResourceTag();

@@ -24,23 +24,23 @@ public class AcademicResourceCreateRequest {
     )
     Long lessonId;
 
-    @Schema(example = "image", description = "Resource type: image, gif, video, webp, iframe")
-    @NotBlank(message = "Type is required")
-    @Size(max = 20, message = "Type must not exceed 20 characters")
+    @Schema(example = "image", description = "Loại tài nguyên: image, gif, video, webp, iframe")
+    @NotBlank(message = "Loại tài nguyên là bắt buộc")
+    @Size(max = 20, message = "Loại tài nguyên không được vượt quá 20 ký tự")
     String type;
 
-    @Schema(example = "Math Formula Collection", description = "Resource name")
-    @NotBlank(message = "Name is required")
-    @Size(max = 255, message = "Name must not exceed 255 characters")
+    @Schema(example = "Bộ sưu tập công thức Toán", description = "Tên tài nguyên")
+    @NotBlank(message = "Tên tài nguyên là bắt buộc")
+    @Size(max = 255, message = "Tên tài nguyên không được vượt quá 255 ký tự")
     String name;
 
-    @Schema(example = "Collection of important math formulas for grade 10", description = "Resource description")
+    @Schema(example = "Bộ sưu tập các công thức toán quan trọng cho lớp 10", description = "Mô tả tài nguyên")
     String description;
 
-    @Schema(example = "https://example.com/resource.pdf", description = "Resource URL or file path")
+    @Schema(example = "https://example.com/resource.pdf", description = "URL tài nguyên hoặc đường dẫn tệp")
     String url; // Optional if file is being uploaded
 
-    @Schema(example = "[1, 2, 3]", description = "List of tag IDs to associate with this resource")
+    @Schema(example = "[1, 2, 3]", description = "Danh sách ID loại học liệu để liên kết với tài nguyên này")
     Set<Long> tagIds;
 
 

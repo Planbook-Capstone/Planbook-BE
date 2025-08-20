@@ -21,11 +21,11 @@ import java.util.Set;
 public class AcademicResourceCreateWithFileRequest {
 
 
-    @Schema(description = "File to upload")
-    @NotNull(message = "File is required")
+    @Schema(description = "Tệp cần tải lên")
+    @NotNull(message = "Tệp là bắt buộc")
     MultipartFile file;
 
-    @Schema(description = "Metadata in JSON format", example = "{\"type\": \"image\", \"name\": \"Test\", \"description\": \"Test\",\"url\": \"null\", \"tags\": [\"1\", \"2\"]}")
+    @Schema(description = "Metadata ở định dạng JSON", example = "{\"type\": \"image\", \"name\": \"Test\", \"description\": \"Test\",\"url\": \"null\", \"tags\": [\"1\", \"2\"]}")
     String metadataJson;
 
 

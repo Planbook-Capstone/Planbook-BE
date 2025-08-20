@@ -19,8 +19,8 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class StatusRequest {
 
-    @Schema(example = "ACTIVE, INACTIVE", description = "Status Enum")
-    @EnumValidator(enumClass = StatusEnum.class, message = "Invalid status value")
+    @Schema(example = "ACTIVE, INACTIVE", description = "Enum trạng thái")
+    @EnumValidator(enumClass = StatusEnum.class, message = "Giá trị trạng thái không hợp lệ")
     @Enumerated(EnumType.STRING)
     StatusEnum status;
 

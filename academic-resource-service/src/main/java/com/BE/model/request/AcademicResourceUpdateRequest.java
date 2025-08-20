@@ -16,18 +16,18 @@ import java.util.Set;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class AcademicResourceUpdateRequest {
 
-    @Schema(example = "image", description = "Resource type: image, gif, video, webp, iframe")
-    @Size(max = 20, message = "Type must not exceed 20 characters")
+    @Schema(example = "image", description = "Loại tài nguyên: image, gif, video, webp, iframe")
+    @Size(max = 20, message = "Loại tài nguyên không được vượt quá 20 ký tự")
     String type;
 
-    @Schema(example = "Updated Math Formula Collection", description = "Resource name")
-    @Size(max = 255, message = "Name must not exceed 255 characters")
+    @Schema(example = "Bộ sưu tập công thức Toán đã cập nhật", description = "Tên tài nguyên")
+    @Size(max = 255, message = "Tên tài nguyên không được vượt quá 255 ký tự")
     String name;
 
-    @Schema(example = "Updated collection of important math formulas", description = "Resource description")
+    @Schema(example = "Bộ sưu tập các công thức toán quan trọng đã cập nhật", description = "Mô tả tài nguyên")
     String description;
 
-    @Schema(example = "https://example.com/updated-resource.pdf", description = "Resource URL or file path")
+    @Schema(example = "https://example.com/updated-resource.pdf", description = "URL tài nguyên hoặc đường dẫn tệp")
     String url;
 
     @Schema(example = "[1, 2, 4]", description = "List of tag IDs to associate with this resource")
