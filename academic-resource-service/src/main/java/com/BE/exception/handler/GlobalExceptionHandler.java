@@ -57,8 +57,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseEntity<Map<String, String>> handleMethodArgumentNotValidException(
-            MethodArgumentNotValidException ex) {
+    public ResponseEntity<Map<String, String>> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
         for (FieldError error : ex.getBindingResult().getFieldErrors()) {
             errors.put(error.getField(), error.getDefaultMessage());
@@ -67,15 +66,13 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<Map<String, String>> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex,
-            WebRequest request) {
+    public ResponseEntity<Map<String, String>> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex, WebRequest request) {
         Map<String, String> errors = new HashMap<>();
 
         Throwable mostSpecificCause = ex.getMostSpecificCause();
-        String message = "Failed to parse JSON";
+        String message = "Không thể phân tích dữ liệu JSON";
 
-        if (mostSpecificCause instanceof InvalidFormatException) {
-            InvalidFormatException ife = (InvalidFormatException) mostSpecificCause;
+        if (mostSpecificCause instanceof InvalidFormatException ife) {
             List<JsonMappingException.Reference> path = ife.getPath();
             String fieldName = path.get(path.size() - 1).getFieldName();
             Class<?> targetType = ife.getTargetType();
@@ -83,11 +80,9 @@ public class GlobalExceptionHandler {
 
             if (targetType.isEnum()) {
                 String validValues = EnumUtils.getValidEnumValues(targetType.asSubclass(Enum.class));
-                message = String.format("Field '%s' has invalid value '%s'. Expected one of: %s", fieldName, value,
-                        validValues);
+                message = String.format("Trường '%s' có giá trị không hợp lệ '%s'. Giá trị hợp lệ: %s", fieldName, value, validValues);
             } else {
-                message = String.format("Field '%s' has invalid value '%s'. Expected type: %s", fieldName, value,
-                        targetType.getSimpleName());
+                message = String.format("Trường '%s' có giá trị không hợp lệ '%s'. Kiểu dữ liệu mong đợi: %s", fieldName, value, targetType.getSimpleName());
             }
         } else {
             message = mostSpecificCause.getMessage();
@@ -98,93 +93,76 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    public ResponseEntity<Map<String, String>> handleMethodArgumentTypeMismatchException(
-            MethodArgumentTypeMismatchException ex, WebRequest request) {
+    public ResponseEntity<Map<String, String>> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException ex, WebRequest request) {
         Map<String, String> errors = new HashMap<>();
-        errors.put("message", ex.getMostSpecificCause().getMessage());
+        errors.put("message", "Tham số không đúng kiểu dữ liệu: " + ex.getMostSpecificCause().getMessage());
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<Object> handleNotFoundException(NotFoundException exception) {
-        return new ResponseEntity<>(exception.getMessage(), HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>("Không tìm thấy dữ liệu", HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(EnumValidationException.class)
-    public ResponseEntity<Map<String, String>> handleEnumValidationException(EnumValidationException ex,
-            WebRequest request) {
+    public ResponseEntity<Map<String, String>> handleEnumValidationException(EnumValidationException ex, WebRequest request) {
         Map<String, String> errors = new HashMap<>();
-        errors.put("message", ex.getMessage());
+        errors.put("message", "Giá trị enum không hợp lệ: " + ex.getMessage());
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(InvalidRefreshTokenException.class)
     public ResponseEntity<String> handleInvalidRefreshTokenException(InvalidRefreshTokenException ex) {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Token làm mới không hợp lệ");
     }
 
-    // Academic Resource Exception Handlers
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<DataResponseDTO<Object>> handleResourceNotFoundException(ResourceNotFoundException ex) {
-        log.error("Resource not found: {}", ex.getMessage());
-        return responseHandler.response(404, ex.getMessage(), null);
+        return responseHandler.response(404, "Không tìm thấy tài nguyên", null);
     }
 
     @ExceptionHandler(AcademicResourceException.class)
     public ResponseEntity<DataResponseDTO<Object>> handleAcademicResourceException(AcademicResourceException ex) {
-        log.error("Academic resource error: {}", ex.getMessage());
-        return responseHandler.response(400, ex.getMessage(), null);
+        return responseHandler.response(400, "Tài nguyên học thuật không hợp lệ", null);
     }
 
     @ExceptionHandler(MissingServletRequestPartException.class)
-    public ResponseEntity<DataResponseDTO<Object>> handleMissingServletRequestPartException(
-            MissingServletRequestPartException ex) {
-        log.error("Missing request part: {}", ex.getMessage());
-        return responseHandler.response(400, "Missing required request part: " + ex.getRequestPartName(), null);
+    public ResponseEntity<DataResponseDTO<Object>> handleMissingServletRequestPartException(MissingServletRequestPartException ex) {
+        return responseHandler.response(400, "Thiếu phần bắt buộc trong yêu cầu: " + ex.getRequestPartName(), null);
     }
 
     @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
-    public ResponseEntity<DataResponseDTO<Object>> handleHttpMediaTypeNotSupportedException(
-            HttpMediaTypeNotSupportedException ex) {
-        log.error("Unsupported media type: {}", ex.getMessage());
-        return responseHandler.response(415, "Unsupported media type", null);
+    public ResponseEntity<DataResponseDTO<Object>> handleHttpMediaTypeNotSupportedException(HttpMediaTypeNotSupportedException ex) {
+        return responseHandler.response(415, "Định dạng dữ liệu không được hỗ trợ", null);
     }
 
     @ExceptionHandler(FileUploadException.class)
     public ResponseEntity<DataResponseDTO<Object>> handleFileUploadException(FileUploadException ex) {
-        log.error("File upload error: {}", ex.getMessage());
-        return responseHandler.response(400, ex.getMessage(), null);
+        return responseHandler.response(400, "Tải tệp thất bại: " + ex.getMessage(), null);
     }
 
     @ExceptionHandler(IOException.class)
     public ResponseEntity<DataResponseDTO<Object>> handleIOException(IOException ex) {
-        log.error("IO error: {}", ex.getMessage());
-        return responseHandler.response(500, "File operation failed", null);
+        return responseHandler.response(500, "Thao tác với tệp thất bại", null);
     }
 
     @ExceptionHandler(MaxUploadSizeExceededException.class)
-    public ResponseEntity<DataResponseDTO<Object>> handleMaxUploadSizeExceededException(
-            MaxUploadSizeExceededException ex) {
-        log.error("File size exceeded: {}", ex.getMessage());
-        return responseHandler.response(400, "File size exceeds maximum allowed limit", null);
+    public ResponseEntity<DataResponseDTO<Object>> handleMaxUploadSizeExceededException(MaxUploadSizeExceededException ex) {
+        return responseHandler.response(400, "Kích thước tệp vượt quá giới hạn cho phép", null);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<DataResponseDTO<Object>> handleIllegalArgumentException(IllegalArgumentException ex) {
-        log.error("Invalid argument: {}", ex.getMessage());
-        return responseHandler.response(400, ex.getMessage(), null);
+        return responseHandler.response(400, "Tham số không hợp lệ: " + ex.getMessage(), null);
     }
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<DataResponseDTO<Object>> handleRuntimeException(RuntimeException ex) {
-        log.error("Runtime error: {}", ex.getMessage(), ex);
-        return responseHandler.response(500, "An error occurred: " + ex.getMessage(), null);
+        return responseHandler.response(500, "Đã xảy ra lỗi hệ thống: " + ex.getMessage(), null);
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<DataResponseDTO<Object>> handleGenericException(Exception ex) {
-        log.error("Unexpected error: {}", ex.getMessage(), ex);
-        return responseHandler.response(500, "An unexpected error occurred", null);
+        return responseHandler.response(500, "Đã xảy ra lỗi không xác định", null);
     }
-
 }
