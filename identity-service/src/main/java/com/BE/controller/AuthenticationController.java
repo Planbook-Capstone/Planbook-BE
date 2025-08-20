@@ -136,10 +136,10 @@ public class AuthenticationController {
 
     @PostMapping("/resend-verification")
     public ResponseEntity<?> resendVerification(
-            @Parameter(description = "Email người dùng cần gửi lại email xác thực", required = true)
-            @RequestParam String email
+            @Parameter(description = "Tài khoản người dùng cần gửi lại email xác thực", required = true)
+            @RequestParam String username
     ) {
-        iAuthenticationService.resendVerification(email);
+        iAuthenticationService.resendVerification(username);
         return ResponseEntity.ok("Kiểm tra email của bạn để xác thực tài khoản.");
     }
 

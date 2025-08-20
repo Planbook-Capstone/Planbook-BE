@@ -284,8 +284,11 @@ public class AuthenticationImpl implements IAuthenticationService {
     }
 
     @Override
-    public void resendVerification(String email) {
-        User user = authenRepository.findByEmail(email).orElseThrow(() -> new BadRequestException("Email không tồn tại."));
+    public void resendVerification(String username) {
+        User user = authenRepository.findByUsername(username).orElseThrow(() -> new BadRequestException("Tài khoản không tồn tại."));
+        if(StatusEnum.ACTIVE.equals(user.getStatus())){
+            throw new BadRequestException("Tài khoàn này đã xác thực rồi");
+        }
         sendEmailByTemplate(user, templateVerifyUser, linkVerifyUser);
     }
 }
