@@ -279,6 +279,9 @@ public class AuthenticationImpl implements IAuthenticationService {
     @Override
     public void verify() {
         User user = accountUtils.getCurrentUser();
+        if(StatusEnum.ACTIVE.equals(user.getStatus())){
+            throw new BadRequestException("Tài khoàn này đã xác thực rồi");
+        }
         user.setStatus(StatusEnum.ACTIVE);
         authenRepository.save(user);
     }
