@@ -130,6 +130,8 @@ public class AuthenticationImpl implements IAuthenticationService {
         User user = (User) authentication.getPrincipal();
         if(StatusEnum.INACTIVE.equals(user.getStatus())){
             throw new AuthenException("Tài khoản này chưa được xác thực");
+        }else if(StatusEnum.DELETED.equals(user.getStatus())){
+            throw new AuthenException("Tài khoản này đã bị vô hiệu hoá. Vui lòng liên hệ quản trị viên của hệ thống");
         }
         validateUserStatusForLogin(user);
         AuthenticationResponse authenticationResponse = authMapper.toAuthenticationResponse(user);
@@ -190,6 +192,10 @@ public class AuthenticationImpl implements IAuthenticationService {
                 user = authenRepository.save(user);
 
 
+            }else {
+                if(StatusEnum.DELETED.equals(user.getStatus())){
+                    throw new AuthenException("Tài khoản này đã bị vô hiệu hoá. Vui lòng liên hệ quản trị viên của hệ thống");
+                }
             }
             validateUserStatusForLogin(user);
             // Sinh token JWT như cũ

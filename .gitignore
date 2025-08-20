@@ -52,3 +52,4 @@ build/
 deploy/.env
 deploy/.env.local
 deploy/.env.production
+.DS_Store

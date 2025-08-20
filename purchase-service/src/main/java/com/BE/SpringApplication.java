@@ -17,14 +17,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableFeignClients
 @EnableCaching
 @EnableScheduling
-//@OpenAPIDefinition(info = @Info(title = "Do Minh API", version = "2.0", description = "Information"))
 @SecurityScheme(name = "api", scheme = "bearer", type = SecuritySchemeType.HTTP, in = SecuritySchemeIn.HEADER)
-@OpenAPIDefinition(
-		info = @Info(title = "Do Minh API", version = "2.0")
-		,servers = {
-				@Server(url = "https://api.planbook.vn/purchase-service", description = "Production Server")
-		}
-)
 public class SpringApplication {
 
 	public static void main(String[] args) {
