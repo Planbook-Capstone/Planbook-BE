@@ -50,4 +50,5 @@ public class SwaggerConfig {
                 .info(new Info().title(title).version(version))
                 .servers(servers);
     }
+
 }
