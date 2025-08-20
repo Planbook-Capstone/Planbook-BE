@@ -105,7 +105,7 @@ public class TagServiceImpl implements TagService {
         long resourceCount = resourceTagRepository.countByTagId(id);
         if (resourceCount > 0) {
             throw new AcademicResourceException(
-                    "Cannot delete tag. It is being used by " + resourceCount + " resource(s)");
+                    "Không thể xóa thẻ (tag) vì đang được sử dụng bởi " + resourceCount + " tài nguyên.");
         }
 
         tagRepository.delete(tag);
