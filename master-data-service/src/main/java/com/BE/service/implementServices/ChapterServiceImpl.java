@@ -171,4 +171,5 @@ public class ChapterServiceImpl implements IChapterService {
         );
         return chaptersPage.map(chapterMapper::toChapterResponse);
     }
+
 }

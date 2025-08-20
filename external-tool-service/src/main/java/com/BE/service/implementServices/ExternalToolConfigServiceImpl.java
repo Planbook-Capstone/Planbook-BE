@@ -41,7 +41,6 @@ public class ExternalToolConfigServiceImpl implements IExternalToolConfigService
 
 
 
-
     @Override
     public ExternalToolConfigResponse create(ExternalToolConfigRequest request) {
         ExternalToolConfig config = mapper.toEntity(request);
