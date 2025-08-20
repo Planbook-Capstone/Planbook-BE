@@ -108,10 +108,15 @@ public class AuthenticationImpl implements IAuthenticationService {
 //            }
             iWalletService.create(user);
             user = authenRepository.save(user);
+            sendEmailByTemplate(user, templateVerifyUser, linkVerifyUser);
             return authMapper.toAuthenticationResponse(user);
         } catch (DataIntegrityViolationException e) {
             System.out.println(e.getMessage());
-            throw new DataIntegrityViolationException("Đã có username này!");
+            if(e.getMessage().contains("users.UK_6dotkott2kjsp8vw4d0m25fb7")){
+                throw new DataIntegrityViolationException("Đã có email này!");
+            }else{
+                throw new DataIntegrityViolationException("Đã có username này!");
+            }
         }
     }
 
