@@ -121,7 +121,7 @@ public class UserController {
     })
     public ResponseEntity<?> updateStatus(
             @PathVariable UUID id,
-            @Parameter(description = "Trạng thái mới của tài khoản", required = true, schema = @Schema(implementation = StatusEnum.class, allowableValues = {"ACTIVE", "INACTIVE"}))
+            @Parameter(description = "Trạng thái mới của tài khoản", required = true, schema = @Schema(implementation = StatusEnum.class, allowableValues = {"ACTIVE", "INACTIVE", "DELETED"}))
             @RequestParam StatusEnum status
     ) {
         return responseHandler.response(200,"Cập nhật trạng thái người dùng thành công", userService.updateStatus(id, status));

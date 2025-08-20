@@ -132,7 +132,7 @@ public class ToolAggregatorServiceImpl implements IToolAggregatorService {
                 .lessonIds(lessons)
                 .academicYearId(request.getAcademicYearId())
                 .resultId(request.getResultId())
-                .tokenUsed(internalToolConfigResponse.getData().getTokenCostPerQuery())
+                .tokenUsed(totalTokenToDeduct)
                 .build();
         DataResponseDTO<ToolExecutionLogResponse> response = toolLogServiceClient.toolExecutionLog(toolExecutionLogRequest);
 
@@ -215,7 +215,7 @@ public class ToolAggregatorServiceImpl implements IToolAggregatorService {
                 .input(request.getInput())
 //                .lessonIds(lessons)
 //                .bookId(request.getBook_id())
-                .tokenUsed(externalToolConfigResponse.getData().getTokenCostPerQuery())
+                .tokenUsed(tokenCostPerQuery)
                 .build();
 
         DataResponseDTO<ToolExecutionLogResponse> response = toolLogServiceClient.toolExecutionLog(toolExecutionLogRequest);

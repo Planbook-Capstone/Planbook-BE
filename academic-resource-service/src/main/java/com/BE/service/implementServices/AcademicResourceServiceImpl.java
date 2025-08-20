@@ -37,6 +37,8 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.io.IOException;
 import java.util.*;
@@ -165,14 +167,19 @@ public class AcademicResourceServiceImpl implements AcademicResourceService {
         AcademicResource resource = academicResourceRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Academic resource", id));
 
-        // Delete file from storage if it's a Supabase URL
-        String fileName = supabaseStorageService.extractFileNameFromUrl(resource.getUrl());
-        if (fileName != null) {
-            supabaseStorageService.deleteFile(fileName);
-        }
+        // 1) Xoá liên kết con trước
+        resourceTagRepository.deleteByResourceId(id);
 
-        // Delete resource (cascade will handle resource_tag relationships)
+        // 2) Xoá resource
         academicResourceRepository.delete(resource);
+
+        // 3) Xoá file sau khi DB đã xoá thành công
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override public void afterCommit() {
+                String fileName = supabaseStorageService.extractFileNameFromUrl(resource.getUrl());
+                if (fileName != null) supabaseStorageService.deleteFile(fileName);
+            }
+        });
     }
 
     public PagedResponse<AcademicResourceInternalResponse> getResourcesByCreatorId(int page, int size){
