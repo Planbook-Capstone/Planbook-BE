@@ -4,7 +4,6 @@ import com.BE.enums.GenderEnum;
 import com.BE.enums.RoleEnum;
 import com.BE.enums.StatusEnum;
 import com.BE.model.request.CreateUserRequest;
-import com.BE.model.request.StatusRequest;
 import com.BE.model.request.UserProfileRequest;
 import com.BE.model.response.UserResponse;
 import com.BE.service.interfaceServices.IUserService;
@@ -22,6 +21,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -142,6 +142,7 @@ public class UserController {
                     @Parameter(name = "pageSize", description = "Số phần tử mỗi trang", schema = @Schema(example = "10"))
             }
     )
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     @GetMapping
     public ResponseEntity<?> getUsers(
             @RequestParam(required = false) String search,

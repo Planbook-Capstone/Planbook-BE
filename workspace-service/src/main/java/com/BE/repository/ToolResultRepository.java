@@ -4,8 +4,13 @@ import com.BE.enums.ToolResultStatus;
 import com.BE.model.entity.ToolResult;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -28,4 +33,9 @@ public interface ToolResultRepository extends JpaRepository<ToolResult, Long>, J
     // đã cung cấp đầy đủ functionality cho dynamic queries
 
     List<ToolResult> findByUserIdAndStatus(UUID userId, ToolResultStatus status);
+
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM ToolResult tr WHERE tr.status = com.BE.enums.ToolResultStatus.DELETED AND tr.updatedAt <= :threshold")
+    int deleteOldDeletedResults(@Param("threshold") LocalDateTime threshold);
 }

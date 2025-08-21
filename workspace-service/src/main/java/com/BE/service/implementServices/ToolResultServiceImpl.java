@@ -11,15 +11,18 @@ import com.BE.model.response.ToolResultResponse;
 import com.BE.repository.ToolResultRepository;
 import com.BE.service.interfaceServices.IToolResultService;
 import com.BE.specification.ToolResultSpecification;
+import com.BE.utils.DateNowUtils;
 import com.BE.utils.PageUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -35,6 +38,7 @@ public class ToolResultServiceImpl implements IToolResultService {
     private final ToolResultRepository toolResultRepository;
     private final ToolResultMapper toolResultMapper;
     private final PageUtil pageUtil;
+    private final DateNowUtils dateNowUtils;
     private static final int MAX_ARCHIVED_RESULTS = 50;
 
 
@@ -168,6 +172,15 @@ public class ToolResultServiceImpl implements IToolResultService {
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy ToolResult với id: " + id));
         existingEntity.setStatus(status);
         return toolResultMapper.toResponse(toolResultRepository.save(existingEntity));
+    }
+
+
+    @Scheduled(cron = "0 0 0 * * *", zone = "Asia/Ho_Chi_Minh")
+    @Transactional
+    public void cleanUpDeletedToolResults() {
+        LocalDateTime threshold = dateNowUtils.getCurrentDateTimeHCM().minusDays(30);
+        int deletedCount = toolResultRepository.deleteOldDeletedResults(threshold);
+        log.info("✅ Cronjob dọn dẹp ToolResult: đã xoá {} bản ghi DELETED quá 30 ngày", deletedCount);
     }
 
 
