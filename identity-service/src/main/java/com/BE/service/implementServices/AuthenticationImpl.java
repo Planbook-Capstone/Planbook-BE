@@ -228,7 +228,9 @@ public class AuthenticationImpl implements IAuthenticationService {
         sendEmailByTemplate(user,templateResetPassword,linkResetPassword);
     }
 
-    private void sendEmailByTemplate(User user, String templateId, String link){
+
+    @Override
+    public void sendEmailByTemplate(User user, String templateId, String link){
         EmailDataRequest emailDataRequest =  new EmailDataRequest();
         emailDataRequest.setToEmail(user.getEmail());
         emailDataRequest.setTemplateId(templateId);

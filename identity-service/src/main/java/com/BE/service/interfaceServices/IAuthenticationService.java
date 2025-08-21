@@ -19,4 +19,6 @@ public interface IAuthenticationService {
 
     void verify();
     void resendVerification(String username);
+
+    void sendEmailByTemplate(User user, String templateId, String link);
 }
