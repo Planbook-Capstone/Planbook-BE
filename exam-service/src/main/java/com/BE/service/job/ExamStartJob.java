@@ -34,6 +34,9 @@ public class ExamStartJob implements Job {
         String examInstanceIdStr = jobExecutionContext.getJobDetail().getJobDataMap().getString("examInstanceId");
         UUID examInstanceId = UUID.fromString(examInstanceIdStr);
 
+        log.info("🚀 ExamStartJob executing for exam {} at HCM time: {}",
+                examInstanceId, dateNowUtils.getCurrentDateTimeHCM());
+
         try {
             ExamInstance instance = examInstanceRepository.findById(examInstanceId)
                     .orElseThrow(() -> new JobExecutionException("Exam instance not found for ID: " + examInstanceId));
