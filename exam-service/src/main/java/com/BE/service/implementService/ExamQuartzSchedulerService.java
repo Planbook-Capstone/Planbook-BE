@@ -76,8 +76,8 @@ public class ExamQuartzSchedulerService {
                         .usingJobData("examInstanceId", examId)
                         .build();
 
-                // Tạo Trigger với múi giờ hệ thống
-                Date triggerTime = Date.from(startTime.atZone(ZoneId.systemDefault()).toInstant());
+                // Tạo Trigger với múi giờ HCM (cùng với DateNowUtils)
+                Date triggerTime = Date.from(startTime.atZone(ZoneId.of("Asia/Ho_Chi_Minh")).toInstant());
                 Trigger trigger = TriggerBuilder.newTrigger()
                         .withIdentity(getStartTriggerKey(examId), "exams")
                         .startAt(triggerTime)
@@ -86,7 +86,8 @@ public class ExamQuartzSchedulerService {
                 // Lên lịch job
                 scheduler.scheduleJob(jobDetail, trigger);
 
-                log.info("✅ Scheduled auto-start for exam {} at {}", examId, startTime);
+                log.info("✅ Scheduled auto-start for exam {} at HCM time: {} (UTC: {})",
+                        examId, startTime, triggerTime.toInstant());
             } catch (SchedulerException e) {
                 log.error("❌ Error scheduling exam start for {}: {}", examInstance.getId(), e.getMessage(), e);
             }
@@ -127,8 +128,8 @@ public class ExamQuartzSchedulerService {
                         .usingJobData("examInstanceId", examId)
                         .build();
 
-                // Tạo Trigger với múi giờ hệ thống
-                Date triggerTime = Date.from(endTime.atZone(ZoneId.systemDefault()).toInstant());
+                // Tạo Trigger với múi giờ HCM (cùng với DateNowUtils)
+                Date triggerTime = Date.from(endTime.atZone(ZoneId.of("Asia/Ho_Chi_Minh")).toInstant());
                 Trigger trigger = TriggerBuilder.newTrigger()
                         .withIdentity(getEndTriggerKey(examId), "exams")
                         .startAt(triggerTime)
