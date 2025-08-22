@@ -55,6 +55,7 @@ public class ExamInstanceServiceImpl implements IExamInstanceService {
     private final ExamSubmissionMapper examSubmissionMapper;
     private final ExamResultDetailMapper examResultDetailMapper;
     private final AccountUtils accountUtils;
+    private final ExamQuartzSchedulerService examQuartzSchedulerService;
 
     @Override
     public ExamInstanceResponse createExamInstance(CreateExamInstanceRequest request) {
@@ -76,6 +77,19 @@ public class ExamInstanceServiceImpl implements IExamInstanceService {
         instance.setCode(examUtils.generateUniqueCode());
 
         ExamInstance savedInstance = examInstanceRepository.save(instance);
+
+        log.info("📝 Created exam instance: ID={}, Status={}, StartAt={}",
+                savedInstance.getId(), savedInstance.getStatus(), savedInstance.getStartAt());
+
+        // Lên lịch tự động bắt đầu nếu status là SCHEDULED
+        if (savedInstance.getStatus() == ExamInstanceStatus.SCHEDULED) {
+            if (examQuartzSchedulerService != null) {
+                examQuartzSchedulerService.scheduleExamStart(savedInstance);
+            } else {
+                log.error("❌ ExamQuartzSchedulerService is null!");
+            }
+        }
+
         return examInstanceMapper.toResponse(savedInstance);
     }
 
@@ -122,6 +136,10 @@ public class ExamInstanceServiceImpl implements IExamInstanceService {
         }
 
         ExamInstance savedInstance = examInstanceRepository.save(instance);
+
+        // Update schedule khi có thay đổi về thời gian hoặc trạng thái
+        examQuartzSchedulerService.updateExamSchedule(savedInstance);
+
         return examInstanceMapper.toResponse(savedInstance);
     }
 
@@ -134,6 +152,9 @@ public class ExamInstanceServiceImpl implements IExamInstanceService {
         if (!instance.getTemplate().getCreatedBy().equals(teacherId)) {
             throw new BadRequestException("Truy cập bị từ chối đối với phiên thi này");
         }
+
+        // Hủy tất cả scheduled tasks trước khi xóa
+        examQuartzSchedulerService.cancelExamSchedules(instanceId.toString());
 
         // Delete related submissions and result details first
         List<ExamSubmission> submissions = examSubmissionRepository.findByExamInstanceIdOrderBySubmittedAtDesc(instanceId);
@@ -152,8 +173,8 @@ public class ExamInstanceServiceImpl implements IExamInstanceService {
         ExamInstance instance = examInstanceRepository.findByCode(code)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đề thi"));
 
-        // Check if exam is accessible to students
-        if (!instance.getStatus().isAccessible()) {
+        // Check if exam is accessible to students or completed (for viewing answers)
+        if (!instance.getStatus().isAccessible() && instance.getStatus() != ExamInstanceStatus.COMPLETED) {
             throw new BadRequestException(
                 String.format("Đề thi không khả dụng. Trạng thái hiện tại: %s (%s)",
                     instance.getStatus().getCode(), instance.getStatus().getDescription())
@@ -168,10 +189,15 @@ public class ExamInstanceServiceImpl implements IExamInstanceService {
             }
         }
 
-        // Remove correct answers from content for students
-        Map<String, Object> studentContent = examUtils.removeCorrectAnswers(instance.getTemplate().getContentJson());
+        // If exam is completed, show answers; otherwise remove them
+        Map<String, Object> content;
+        if (instance.getStatus() == ExamInstanceStatus.COMPLETED) {
+            content = instance.getTemplate().getContentJson(); // Include answers
+        } else {
+            content = examUtils.removeCorrectAnswers(instance.getTemplate().getContentJson()); // Remove answers
+        }
 
-        return examInstanceMapper.toContentResponse(instance, studentContent);
+        return examInstanceMapper.toContentResponse(instance, content);
     }
 
     @Override
@@ -238,7 +264,24 @@ public class ExamInstanceServiceImpl implements IExamInstanceService {
             log.error("Lỗi khi tạo báo cáo Excel: {}", e.getMessage());
         }
 
-        return examSubmissionMapper.toSubmitResponse(savedSubmission);
+        // Create response with additional info for completed exams
+        SubmitExamResponse response = examSubmissionMapper.toSubmitResponse(savedSubmission);
+
+        // If exam is completed, include answers and detailed results
+        if (instance.getStatus() == ExamInstanceStatus.COMPLETED) {
+            response.setExamCompleted(true);
+            response.setExamContentWithAnswers(instance.getTemplate().getContentJson());
+
+            // Get detailed results
+            List<ExamResultDetail> details = examResultDetailRepository.findBySubmissionOrderByQuestionNumber(savedSubmission);
+            response.setResultDetails(details.stream()
+                    .map(examResultDetailMapper::toData)
+                    .collect(Collectors.toList()));
+        } else {
+            response.setExamCompleted(false);
+        }
+
+        return response;
     }
 
     @Override
@@ -336,6 +379,9 @@ public class ExamInstanceServiceImpl implements IExamInstanceService {
         log.info("Changed exam instance {} status from {} to {} by teacher {}",
                 instanceId, currentStatus, newStatus, teacherId);
 
+        // Quản lý scheduled tasks dựa trên status mới
+        handleSchedulingForStatusChange(savedInstance, currentStatus, newStatus);
+
         return examInstanceMapper.toResponse(savedInstance);
     }
 
@@ -423,6 +469,37 @@ public class ExamInstanceServiceImpl implements IExamInstanceService {
             return 3; // PHẦN III
         }
         return 999; // Unknown parts at the end
+    }
+
+    /**
+     * Xử lý scheduling khi thay đổi status
+     */
+    private void handleSchedulingForStatusChange(ExamInstance instance, ExamInstanceStatus oldStatus, ExamInstanceStatus newStatus) {
+        String instanceId = instance.getId().toString();
+
+        switch (newStatus) {
+            case SCHEDULED:
+                examQuartzSchedulerService.scheduleExamStart(instance);
+                break;
+
+            case ACTIVE:
+                examQuartzSchedulerService.cancelExamSchedules(instanceId);
+                examQuartzSchedulerService.scheduleExamEnd(instance);
+                break;
+
+            case COMPLETED:
+            case CANCELLED:
+                // Cleanup và giải phóng bộ nhớ cho exam đã hoàn thành
+                examQuartzSchedulerService.cleanupCompletedExam(instanceId);
+                break;
+
+            case PAUSED:
+                examQuartzSchedulerService.cancelExamSchedules(instanceId);
+                break;
+
+            default:
+                break;
+        }
     }
 
 

@@ -49,7 +49,7 @@ public class ExamInstance {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
-    private ExamInstanceStatus status = ExamInstanceStatus.DRAFT;
+    private ExamInstanceStatus status = ExamInstanceStatus.SCHEDULED;
 
     @Column(name = "status_changed_at")
     private LocalDateTime statusChangedAt;

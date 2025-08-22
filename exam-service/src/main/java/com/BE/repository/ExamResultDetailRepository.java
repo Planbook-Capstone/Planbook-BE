@@ -1,6 +1,7 @@
 package com.BE.repository;
 
 import com.BE.model.entity.ExamResultDetail;
+import com.BE.model.entity.ExamSubmission;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -15,4 +16,7 @@ public interface ExamResultDetailRepository extends JpaRepository<ExamResultDeta
     @Modifying
     @Query("DELETE FROM ExamResultDetail erd WHERE erd.submission.id = :submissionId")
     void deleteBySubmissionId(@Param("submissionId") UUID submissionId);
+
+    // Method to find result details by submission ordered by question number
+    List<ExamResultDetail> findBySubmissionOrderByQuestionNumber(ExamSubmission submission);
 }
