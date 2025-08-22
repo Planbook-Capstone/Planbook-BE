@@ -1,5 +1,6 @@
 package com.BE.model.response;
 
+import com.BE.enums.ExamInstanceStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -26,4 +27,5 @@ public class ExamContentResponse {
     private LocalDateTime startAt;
     private LocalDateTime endAt;
     private String code;
+    private ExamInstanceStatus status;
 }

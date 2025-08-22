@@ -551,6 +551,7 @@ public class ExamInstanceController {
             - **Questions**: Complete question structure without answers
             - **Instructions**: Any special instructions for the exam
             - **Timing**: Start time, end time, remaining duration
+            - **Status**: Current exam instance status (ACTIVE, COMPLETED, etc.)
             - **Format**: Questions in student-friendly format
 
             ### Content Security:
@@ -644,7 +645,8 @@ public class ExamInstanceController {
                             },
                             "startAt": "2025-07-24T14:51:01.385105",
                             "endAt": "2025-07-31T17:00:00",
-                            "code": "DZ99YX"
+                            "code": "DZ99YX",
+                            "status": "ACTIVE"
                         }
                     }
                     """))),
