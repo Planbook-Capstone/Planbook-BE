@@ -73,32 +73,15 @@ public class ToolAggregatorServiceImpl implements IToolAggregatorService {
         return count;
     }
 
-
-
-
     @Override
     public String executeInternalTool(ToolExecuteRequest request) {
-        Integer totalCount = 0;
-        Integer totalTokenToDeduct = 0;
         DataResponseDTO<BookTypeResponse> internalToolConfigResponse = toolInternalServiceClient.getBookTypeById(request.getToolId());
         ToolCodeEnum code = internalToolConfigResponse.getData().getCode();
-        Integer tokenCostPerQuery = internalToolConfigResponse.getData().getTokenCostPerQuery();
-
-        if(ToolCodeEnum.LESSON_PLAN.equals(code)){
-            JsonNode jsonNode = mapper.convertValue(request.getInput(), JsonNode.class);
-            totalCount = countValidNodes(jsonNode);
-            totalTokenToDeduct = totalCount * tokenCostPerQuery;
-        }else if(ToolCodeEnum.EXAM_CREATOR.equals(code)){
-            totalCount = (Integer) request.getInput().get("totalCount");
-            totalTokenToDeduct = totalCount * tokenCostPerQuery;
-        }else{
-            totalTokenToDeduct = tokenCostPerQuery;
-        }
+        Integer totalTokenToDeduct =  estimateTokenInternalTool(request);
         deductToken(code,totalTokenToDeduct);
-
         List<Long> lessons = new ArrayList<>();
 
-        if (ToolCodeEnum.EXAM_CREATOR.equals(internalToolConfigResponse.getData().getCode())) {
+        if (ToolCodeEnum.EXAM_CREATOR.equals(code)) {
             Object matrixObj = request.getInput().get("matrix");
             if (matrixObj instanceof List<?> matrixList) {
                 for (Object item : matrixList) {
@@ -126,7 +109,7 @@ public class ToolAggregatorServiceImpl implements IToolAggregatorService {
                 .userId(accountUtils.getCurrentUserId())
                 .toolId(request.getToolId())
                 .toolType(request.getToolType())
-                .code(internalToolConfigResponse.getData().getCode())
+                .code(code)
                 .input(request.getInput())
                 .bookId(request.getBook_id())
                 .lessonIds(lessons)
@@ -137,6 +120,32 @@ public class ToolAggregatorServiceImpl implements IToolAggregatorService {
         DataResponseDTO<ToolExecutionLogResponse> response = toolLogServiceClient.toolExecutionLog(toolExecutionLogRequest);
 
         return response.getMessage();
+    }
+
+    @Override
+    public Integer estimateTokenExternalTool(ToolExecuteRequest request) {
+        DataResponseDTO<ExternalToolConfigResponse> externalToolConfigResponse = toolExternalServiceClient.getById(request.getToolId());
+        return externalToolConfigResponse.getData().getTokenCostPerQuery();
+    }
+
+    @Override
+    public Integer estimateTokenInternalTool(ToolExecuteRequest request) {
+        Integer totalCount = 0;
+        Integer totalTokenToDeduct = 0;
+        DataResponseDTO<BookTypeResponse> internalToolConfigResponse = toolInternalServiceClient.getBookTypeById(request.getToolId());
+        ToolCodeEnum code = internalToolConfigResponse.getData().getCode();
+        Integer tokenCostPerQuery = internalToolConfigResponse.getData().getTokenCostPerQuery();
+        if(ToolCodeEnum.LESSON_PLAN.equals(code)){
+            JsonNode jsonNode = mapper.convertValue(request.getInput(), JsonNode.class);
+            totalCount = countValidNodes(jsonNode);
+            totalTokenToDeduct = totalCount * tokenCostPerQuery;
+        }else if(ToolCodeEnum.EXAM_CREATOR.equals(code)){
+            totalCount = (Integer) request.getInput().get("totalCount");
+            totalTokenToDeduct = totalCount * tokenCostPerQuery;
+        }else{
+            totalTokenToDeduct = tokenCostPerQuery;
+        }
+        return totalTokenToDeduct;
     }
 
     @Override
@@ -201,17 +210,21 @@ public class ToolAggregatorServiceImpl implements IToolAggregatorService {
     public Map<String, Object> executeExternalTool(ToolExecuteRequest request) {
         DataResponseDTO<ExternalToolConfigResponse> externalToolConfigResponse = toolExternalServiceClient.getById(request.getToolId());
         ToolCodeEnum code = externalToolConfigResponse.getData().getCode();
-        Integer tokenCostPerQuery = externalToolConfigResponse.getData().getTokenCostPerQuery();
+
+        Integer tokenCostPerQuery = estimateTokenExternalTool(request);
+
         deductToken(code,tokenCostPerQuery);
+
         List<Long> lessons = new ArrayList<>();
         lessons.add(request.getLesson_id());
+
         ToolExecutionLogRequest toolExecutionLogRequest = ToolExecutionLogRequest.builder()
                 .userId(accountUtils.getCurrentUserId())
                 .toolId(request.getToolId())
                 .toolType(request.getToolType())
                 .academicYearId(request.getAcademicYearId())
 //                .code(externalToolConfigResponse.getData().getCode())
-                .code(ToolCodeEnum.FORMU_LENS)
+                .code(code)
                 .input(request.getInput())
 //                .lessonIds(lessons)
 //                .bookId(request.getBook_id())

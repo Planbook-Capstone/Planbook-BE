@@ -76,14 +76,14 @@ public class ToolAggregatorController {
     @Operation(
             summary = "Lấy danh sách công cụ và loại sách",
             description = """
-        API này trả về danh sách các công cụ external và các loại sách nội bộ.
+                        API này trả về danh sách các công cụ external và các loại sách nội bộ.
 
-        - Danh sách công cụ (`externalTools`) hỗ trợ lọc theo nhiều trạng thái: `PENDING`, `APPROVED`, `ACTIVE`, `INACTIVE`, `REJECTED`, `CANCELLED`, `DELETED`.
-        - Danh sách loại sách (`bookTypes`) **chỉ hỗ trợ lọc theo** `ACTIVE` và `INACTIVE`. 
-        Nếu truyền giá trị khác (`PENDING`, `DELETED`,...) thì sẽ **không áp dụng lọc trạng thái cho bookTypes**.
-        
-        Mục đích là để frontend gọi 1 API duy nhất lấy dữ liệu tổng hợp.
-    """
+                        - Danh sách công cụ (`externalTools`) hỗ trợ lọc theo nhiều trạng thái: `PENDING`, `APPROVED`, `ACTIVE`, `INACTIVE`, `REJECTED`, `CANCELLED`, `DELETED`.
+                        - Danh sách loại sách (`bookTypes`) **chỉ hỗ trợ lọc theo** `ACTIVE` và `INACTIVE`. 
+                        Nếu truyền giá trị khác (`PENDING`, `DELETED`,...) thì sẽ **không áp dụng lọc trạng thái cho bookTypes**.
+                        
+                        Mục đích là để frontend gọi 1 API duy nhất lấy dữ liệu tổng hợp.
+                    """
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Lấy thành công", content = @Content(
@@ -99,8 +99,33 @@ public class ToolAggregatorController {
         );
     }
 
-
-
+    @PostMapping("/estimate-token")
+    @Operation(
+            summary = "Tính toán token trước khi thực thi công cụ",
+            description = "Dự đoán số token sẽ tiêu tốn nếu thực thi công cụ với dữ liệu đã cung cấp.",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "Thông tin đầu vào công cụ",
+                    required = true,
+                    content = @Content(schema = @Schema(implementation = ToolExecuteRequest.class))
+            ),
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Tính toán thành công", content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(example = "{\"estimatedTokens\": 123}")
+                    )),
+                    @ApiResponse(responseCode = "400", description = "Dữ liệu không hợp lệ")
+            }
+    )
+    public ResponseEntity<?> estimateTokenUsage(@Valid @RequestBody ToolExecuteRequest request) {
+        switch (request.getToolType()) {
+            case EXTERNAL:
+                return responseHandler.response(200, "Tính toán thành công", iToolAggregatorService.estimateTokenExternalTool(request));
+            case INTERNAL:
+                return responseHandler.response(200, "Tính toán thành công", iToolAggregatorService.estimateTokenInternalTool(request));
+            default:
+                return responseHandler.response(400, "Không hỗ trợ ToolType: " + request.getToolType(), null);
+        }
+    }
 
 
 }
