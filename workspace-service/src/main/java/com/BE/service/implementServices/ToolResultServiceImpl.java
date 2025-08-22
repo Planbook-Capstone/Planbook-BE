@@ -168,6 +168,9 @@ public class ToolResultServiceImpl implements IToolResultService {
     public ToolResultResponse updateStatus(Long id, ToolResultStatus status) {
         ToolResult existingEntity = toolResultRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy ToolResult với id: " + id));
+        if (ToolResultStatus.ARCHIVED.equals(status)) {
+            validateArchivedToolResultLimit(existingEntity.getUserId());
+        }
         existingEntity.setStatus(status);
         return toolResultMapper.toResponse(toolResultRepository.save(existingEntity));
     }
