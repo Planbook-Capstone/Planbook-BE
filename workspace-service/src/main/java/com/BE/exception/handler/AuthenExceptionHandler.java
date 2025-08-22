@@ -1,7 +1,7 @@
 package com.BE.exception.handler;
 
 import com.BE.exception.exceptions.AppException;
-import org.apache.coyote.BadRequestException;
+import com.BE.exception.exceptions.BadRequestException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
