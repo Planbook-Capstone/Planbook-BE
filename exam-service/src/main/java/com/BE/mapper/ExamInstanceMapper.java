@@ -72,5 +72,6 @@ public interface ExamInstanceMapper {
     @Mapping(target = "startAt", source = "entity.startAt")
     @Mapping(target = "endAt", source = "entity.endAt")
     @Mapping(target = "code", source = "entity.code")
+    @Mapping(target = "status", source = "entity.status")
     ExamContentResponse toContentResponse(ExamInstance entity, Map<String, Object> studentContent);
 }
