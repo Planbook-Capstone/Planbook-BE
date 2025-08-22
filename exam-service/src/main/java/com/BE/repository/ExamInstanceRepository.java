@@ -21,4 +21,9 @@ public interface ExamInstanceRepository extends JpaRepository<ExamInstance, UUID
     List<ExamInstance> findByTeacherIdOrderByCreatedAtDesc(@Param("teacherId") UUID teacherId);
 
     boolean existsByCode(String code);
+
+    // Methods for scheduler service
+    List<ExamInstance> findByStatusAndStartAtBetween(ExamInstanceStatus status, LocalDateTime startTime, LocalDateTime endTime);
+
+    List<ExamInstance> findByStatusAndEndAtBetween(ExamInstanceStatus status, LocalDateTime startTime, LocalDateTime endTime);
 }
