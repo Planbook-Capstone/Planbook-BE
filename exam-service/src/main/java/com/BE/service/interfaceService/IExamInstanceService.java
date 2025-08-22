@@ -67,4 +67,9 @@ public interface IExamInstanceService {
      * Get valid status transitions for an exam instance
      */
     Map<String, Object> getValidStatusTransitions(UUID instanceId);
+
+    /**
+     * Get student submission result by submission ID (for students to view their results)
+     */
+    StudentSubmissionResultResponse getStudentSubmissionResult(UUID submissionId);
 }

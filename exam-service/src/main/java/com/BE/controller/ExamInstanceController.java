@@ -835,6 +835,95 @@ public class ExamInstanceController {
         return ResponseEntity.ok(dataResponse);
     }
 
+    // Student Result Review API (Public)
+
+    @GetMapping("/submission/{submissionId}")
+    @SecurityRequirement(name = "")  // Override controller-level security requirement - this endpoint is public
+    @Operation(
+        summary = "Get student submission result (Student API)",
+        description = """
+            ## Student Submission Review
+
+            **🎓 PUBLIC ENDPOINT - No Authentication Required**
+
+            Students use this endpoint to view their exam submission results and answers after the exam instance
+            has been completed. This allows students to review their performance and see correct answers.
+
+            ### Features:
+            - **Public Access**: No authentication required
+            - **Result Review**: View detailed submission results with scores
+            - **Answer Comparison**: See student answers vs correct answers
+            - **Performance Analysis**: Detailed breakdown by question and part
+            - **Access Control**: Only available when exam instance is COMPLETED
+
+            ### Access Requirements:
+            - **Valid Submission ID**: Must provide correct submission UUID
+            - **Completed Exam**: Exam instance must be in COMPLETED status
+            - **Result Availability**: Results must exist for the submission
+
+            ### Response Includes:
+
+            **Submission Information:**
+            - **Student Details**: Student name and submission timestamp
+            - **Score Summary**: Total score, percentage, correct/incorrect counts
+            - **Performance Metrics**: Detailed scoring breakdown
+
+            **Exam Content with Answers:**
+            - **Questions**: All exam questions with correct answers revealed
+            - **Student Responses**: What the student answered for each question
+            - **Correctness**: Whether each answer was correct or incorrect
+            - **Explanations**: Any available explanations for correct answers
+
+            **Detailed Results:**
+            - **Question-by-Question**: Detailed breakdown for each question
+            - **Part Analysis**: Performance by exam section/part
+            - **Answer Comparison**: Side-by-side comparison of student vs correct answers
+            - **Scoring Details**: Points earned per question
+
+            ### Use Cases:
+            - **Result Review**: Students check their exam performance
+            - **Learning**: Review correct answers for educational purposes
+            - **Verification**: Confirm submission was recorded correctly
+            - **Study Aid**: Use results to identify areas for improvement
+
+            ### Status Requirements:
+            - **COMPLETED**: ✅ Results available (exam has ended)
+            - **ACTIVE/PAUSED/SCHEDULED**: ❌ Results not available (exam still in progress)
+            - **DRAFT/CANCELLED**: ❌ Results not available (exam not valid)
+
+            ### Error Scenarios:
+            - **404**: Submission not found or invalid ID
+            - **403**: Exam not completed yet (results not available)
+            - **400**: Invalid submission ID format
+
+            ### Student Experience:
+            1. **Complete Exam**: Student submits exam and receives submission ID
+            2. **Wait for Completion**: Teacher marks exam instance as COMPLETED
+            3. **Access Results**: Student uses submission ID to view results
+            4. **Review Performance**: See scores, correct answers, and detailed breakdown
+            5. **Learn from Mistakes**: Use results for educational improvement
+            """
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Lấy kết quả bài nộp thành công"),
+        @ApiResponse(responseCode = "400", description = "Invalid submission ID format"),
+        @ApiResponse(responseCode = "403", description = "Exam not completed - results not available yet"),
+        @ApiResponse(responseCode = "404", description = "Submission not found")
+    })
+    public ResponseEntity<DataResponseDTO<StudentSubmissionResultResponse>> getStudentSubmissionResult(
+            @Parameter(description = "Submission ID", example = "550e8400-e29b-41d4-a716-446655440003")
+            @PathVariable UUID submissionId) {
+
+        log.info("Student accessing submission result: {}", submissionId);
+        StudentSubmissionResultResponse response = examInstanceService.getStudentSubmissionResult(submissionId);
+        DataResponseDTO<StudentSubmissionResultResponse> dataResponse = new DataResponseDTO<>(
+            HttpStatus.OK.value(),
+            "Lấy kết quả bài nộp thành công",
+            response
+        );
+        return ResponseEntity.ok(dataResponse);
+    }
+
     // Results Management APIs (Teacher Only)
 
     @GetMapping("/{instanceId}/submissions")

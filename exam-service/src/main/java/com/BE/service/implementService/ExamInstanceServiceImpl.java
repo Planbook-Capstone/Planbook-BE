@@ -4,6 +4,7 @@ import com.BE.enums.ExamInstanceStatus;
 import com.BE.mapper.ExamInstanceMapper;
 import com.BE.mapper.ExamResultDetailMapper;
 import com.BE.mapper.ExamSubmissionMapper;
+import com.BE.mapper.StudentSubmissionResultMapper;
 import com.BE.model.request.ChangeExamStatusRequest;
 import com.BE.model.request.CreateExamInstanceRequest;
 import com.BE.model.request.SubmitExamRequest;
@@ -54,6 +55,7 @@ public class ExamInstanceServiceImpl implements IExamInstanceService {
     private final ExamInstanceMapper examInstanceMapper;
     private final ExamSubmissionMapper examSubmissionMapper;
     private final ExamResultDetailMapper examResultDetailMapper;
+    private final StudentSubmissionResultMapper studentSubmissionResultMapper;
     private final AccountUtils accountUtils;
     private final ExamQuartzSchedulerService examQuartzSchedulerService;
 
@@ -436,6 +438,80 @@ public class ExamInstanceServiceImpl implements IExamInstanceService {
         return response;
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public StudentSubmissionResultResponse getStudentSubmissionResult(UUID submissionId) {
+        log.info("Getting student submission result for submission: {}", submissionId);
+
+        // Find submission with related data
+        ExamSubmission submission = examSubmissionRepository.findById(submissionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy bài nộp"));
+
+        ExamInstance instance = submission.getExamInstance();
+
+        // Check if exam is completed - only allow viewing results when exam is completed
+        if (instance.getStatus() != ExamInstanceStatus.COMPLETED) {
+            throw new BadRequestException(
+                String.format("Kết quả chưa khả dụng. Đề thi phải ở trạng thái hoàn thành. Trạng thái hiện tại: %s (%s)",
+                    instance.getStatus().getCode(), instance.getStatus().getDescription())
+            );
+        }
+
+        // Get detailed results
+        List<ExamResultDetail> resultDetails = examResultDetailRepository.findBySubmissionOrderByQuestionNumber(submission);
+        List<ExamResultDetailData> resultDetailData = resultDetails.stream()
+                .map(examResultDetailMapper::toData)
+                .collect(Collectors.toList());
+
+        // Sort result details by part and question number (same logic as teacher view)
+        resultDetailData.sort((a, b) -> {
+            // First sort by part order (PHẦN I, II, III)
+            int partComparison = Integer.compare(getPartOrder(a.getPartName()), getPartOrder(b.getPartName()));
+            if (partComparison != 0) {
+                return partComparison;
+            }
+            // Then sort by question number
+            if (a.getQuestionNumber() != null && b.getQuestionNumber() != null) {
+                int questionComparison = Integer.compare(a.getQuestionNumber(), b.getQuestionNumber());
+                if (questionComparison != 0) {
+                    return questionComparison;
+                }
+            } else if (a.getQuestionNumber() != null) {
+                return -1; // a has number, b doesn't - a comes first
+            } else if (b.getQuestionNumber() != null) {
+                return 1; // b has number, a doesn't - b comes first
+            }
+
+            // For Part II statements, sort by statement key (a, b, c, d)
+            if (a.getStatementKey() != null && b.getStatementKey() != null) {
+                return a.getStatementKey().compareTo(b.getStatementKey());
+            } else if (a.getStatementKey() != null) {
+                return 1; // statements come after main question
+            } else if (b.getStatementKey() != null) {
+                return -1; // statements come after main question
+            }
+
+            // Both null, sort by questionId as fallback
+            return a.getQuestionId().compareTo(b.getQuestionId());
+        });
+
+        // Calculate percentage
+        Float percentage = (submission.getScore() / submission.getMaxScore()) * 100;
+
+        // Use mapper to build response
+        StudentSubmissionResultResponse response = studentSubmissionResultMapper.toStudentSubmissionResult(
+                submission,
+                percentage,
+                instance.getTemplate().getContentJson(), // Exam content with answers
+                resultDetailData
+        );
+
+        log.info("Successfully retrieved submission result for student: {} with score: {}/{}",
+                submission.getStudentName(), submission.getScore(), submission.getMaxScore());
+
+        return response;
+    }
+
     private Map<String, String> createTransition(String status, String action) {
         ExamInstanceStatus statusEnum = ExamInstanceStatus.valueOf(status);
         Map<String, String> transition = new HashMap<>();
@@ -454,6 +530,8 @@ public class ExamInstanceServiceImpl implements IExamInstanceService {
         List<ExamResultDetail> resultDetails = examResultDetailMapper.toEntityList(details, submission);
         examResultDetailRepository.saveAll(resultDetails);
     }
+
+
 
     /**
      * Get part order for sorting (PHẦN I = 1, PHẦN II = 2, PHẦN III = 3)
