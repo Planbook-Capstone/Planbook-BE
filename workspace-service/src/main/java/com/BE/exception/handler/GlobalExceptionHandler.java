@@ -1,9 +1,6 @@
 package com.BE.exception.handler;
 
-import com.BE.exception.exceptions.DateException;
-import com.BE.exception.exceptions.EnumValidationException;
-import com.BE.exception.exceptions.InvalidRefreshTokenException;
-import com.BE.exception.exceptions.NotFoundException;
+import com.BE.exception.exceptions.*;
 import com.BE.utils.EnumUtils;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
@@ -12,7 +9,6 @@ import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -108,5 +104,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleInvalidRefreshTokenException(InvalidRefreshTokenException ex) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
     }
+
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity handlerBadRequestException(BadRequestException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
+
 
 }

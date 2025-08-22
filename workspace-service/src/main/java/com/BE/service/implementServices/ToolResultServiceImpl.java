@@ -46,13 +46,13 @@ public class ToolResultServiceImpl implements IToolResultService {
     public ToolResultResponse create(CreateToolResultRequest request) {
         log.info("Tạo mới ToolResult với userId: {}, workspaceId: {}, type: {}",
                 request.getUserId(), request.getAcademicYearId(), request.getType());
+        ToolResult entity = toolResultMapper.toEntity(request);
+
+        if (ToolResultStatus.ARCHIVED.equals(request.getStatus())) {
+            validateArchivedToolResultLimit(request.getUserId());
+        }
 
         try {
-            ToolResult entity = toolResultMapper.toEntity(request);
-
-            if(ToolResultStatus.ARCHIVED.equals(request.getStatus())){
-                validateArchivedToolResultLimit(request.getUserId());
-            }
             ToolResult savedEntity = toolResultRepository.save(entity);
 
             log.info("Tạo ToolResult thành công với id: {}", savedEntity.getId());
@@ -78,14 +78,12 @@ public class ToolResultServiceImpl implements IToolResultService {
 
         ToolResult existingEntity = toolResultRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy ToolResult với id: " + id));
+        toolResultMapper.updateEntityFromRequest(request, existingEntity);
 
+        if (ToolResultStatus.ARCHIVED.equals(request.getStatus())) {
+            validateArchivedToolResultLimit(existingEntity.getUserId());
+        }
         try {
-            toolResultMapper.updateEntityFromRequest(request, existingEntity);
-
-            if(ToolResultStatus.ARCHIVED.equals(request.getStatus())){
-                validateArchivedToolResultLimit(existingEntity.getUserId());
-            }
-
             ToolResult updatedEntity = toolResultRepository.save(existingEntity);
 
             log.info("Cập nhật ToolResult thành công với id: {}", id);
