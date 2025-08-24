@@ -47,6 +47,8 @@ public class ToolExecutionLog {
 
     Long resultId;
 
+    Long templateId;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     ToolCodeEnum code;

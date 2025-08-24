@@ -41,6 +41,8 @@ public class ToolExecutionLogRequest {
     )
     List<Long> lessonIds;
 
+    Long templateId;
+
     @Schema(description = "AcademicYearId", example = "456", required = true)
     @NotNull(message = "AcademicYearId không được để trống")
     Long academicYearId;

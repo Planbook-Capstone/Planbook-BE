@@ -228,6 +228,7 @@ public class ToolExecutionLogServiceImpl implements IToolExecutionLogService {
         request.setDescription("Tự động tạo từ tool execution log");
         request.setSource(ToolResultSource.AI);
         request.setStatus(ToolResultStatus.DRAFT);
+        request.setTemplateId(log.getTemplateId());
 
         try {
             DataResponseDTO<ToolResultResponse> response = workspaceServiceClient.create(request);

@@ -58,6 +58,12 @@ public class ToolExecuteRequest {
     )
     Long resultId;
 
+    @Schema(
+            description = "ID của templateId",
+            example = "1"
+    )
+    Long templateId;
+
 
     @NotNull(message = "Input không được để trống")
     @Schema(

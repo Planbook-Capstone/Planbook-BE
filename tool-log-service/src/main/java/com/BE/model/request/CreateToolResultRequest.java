@@ -59,4 +59,6 @@ public class CreateToolResultRequest {
             message = "source phải là một trong các giá trị: AI, USER_UPLOAD, SYSTEM"
     )
     private ToolResultSource source;
+
+    private Long templateId;
 }
