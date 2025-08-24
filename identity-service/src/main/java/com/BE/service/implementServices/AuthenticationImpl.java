@@ -145,9 +145,9 @@ public class AuthenticationImpl implements IAuthenticationService {
     }
 
     public AuthenticationResponse loginGoogle(LoginGoogleRequest loginGoogleRequest) {
-
+        String fullNameFromGoogle = null;
+        String email = null;
         try {
-
             // Supabase sử dụng thuật toán HS256
             Algorithm algorithm = Algorithm.HMAC256(supabaseJwtSecret);
 
@@ -163,10 +163,10 @@ public class AuthenticationImpl implements IAuthenticationService {
 
             // 4. Lấy thông tin từ payload. 'sub' chính là User ID (UUID) trong Supabase
             String supabaseUserId = decodedJWT.getSubject();
-            String email = decodedJWT.getClaim("email").asString();
+            email = decodedJWT.getClaim("email").asString();
             // (MỚI) Lấy tên đầy đủ từ 'user_metadata' do Google cung cấp
             Map<String, Object> userMetadata = decodedJWT.getClaim("user_metadata").asMap();
-            String fullNameFromGoogle = null;
+
             if (userMetadata != null) {
                 // Supabase thường đặt tên đầy đủ vào key 'full_name' hoặc 'name'
                 if (userMetadata.containsKey("full_name")) {
@@ -175,6 +175,9 @@ public class AuthenticationImpl implements IAuthenticationService {
                     fullNameFromGoogle = (String) userMetadata.get("name");
                 }
             }
+        } catch (Exception e) {
+           throw new AuthenException("Lỗi hệ thống không xác định");
+        }
 
             // Tìm hoặc tạo mới User
             User user = authenRepository.findByEmail(email).orElse(null);
@@ -185,16 +188,8 @@ public class AuthenticationImpl implements IAuthenticationService {
                 user.setUsername(email);
                 user.setRole(RoleEnum.TEACHER); // Hoặc kiểm tra quyền nếu cần
                 user.setStatus(StatusEnum.ACTIVE);
-                // Tạo workspace nếu là auth mới
-//                WorkSpace ws = academicYearService.createWorkspaceForNewUser(user);
-//                if (ws != null) {
-//                    user.getWorkSpaces().add(ws);
-//                    authenRepository.save(user);
-//                }
                 iWalletService.create(user);
                 user = authenRepository.save(user);
-
-
             }
             validateUserStatusForLogin(user);
             // Sinh token JWT như cũ
@@ -203,12 +198,6 @@ public class AuthenticationImpl implements IAuthenticationService {
             authenticationResponse.setToken(jwtService.generateToken(user, refresh, false));
             authenticationResponse.setRefreshToken(refresh);
             return authenticationResponse;
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-
     }
 
     private void validateUserStatusForLogin(User user){
