@@ -22,8 +22,6 @@ public class UpdateToolResultRequest {
     @Size(max = 1000, message = "description không được vượt quá 1000 ký tự")
     private String description;
 
-    private Long templateId;
-
     private Object data;
 
     @EnumValidator(enumClass = ToolResultStatus.class, message = "status phải là một trong các giá trị: DRAFT, PUBLISHED, ARCHIVED, DELETED, IN_REVIEW, APPROVED, REJECTED")

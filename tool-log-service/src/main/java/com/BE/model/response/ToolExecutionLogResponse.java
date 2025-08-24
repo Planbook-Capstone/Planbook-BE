@@ -41,6 +41,8 @@ public class ToolExecutionLogResponse {
 
     Long resultId;
 
+    Long templateId;
+
     @Schema(description = "Mã định danh cố định của tool, dùng để mapping với FastAPI", example = "LESSON_PLAN, SLIDE_GENERATOR, EXAM_CREATOR")
     ToolCodeEnum code;
 
