@@ -43,7 +43,7 @@ public class PublicEndpointConfig {
             "/*/api/payments/confirm-webhook",
             "/*/api/exam-instances/code/**",
             "/*/api/exam-instances/code/*/submit",
-            "/*/api/exam-instances/submission"
+            "/*/api/exam-instances/submission/**"
 
     );
 
