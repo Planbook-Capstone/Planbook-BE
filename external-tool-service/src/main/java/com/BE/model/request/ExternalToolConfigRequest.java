@@ -84,7 +84,6 @@ public class ExternalToolConfigRequest {
     )
     String description;
 
-    @NotNull(message = "Mã tool không được để trống")
     @EnumValidator(enumClass = ToolCodeEnum.class, message = "Code không hợp lệ")
     @Schema(description = "Mã định danh cố định của tool, dùng để mapping ", example = "TOOL", required = true)
     ToolCodeEnum code;

@@ -31,6 +31,7 @@ public class SlideTemplate {
     String name;
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     StatusEnum status;
 
     @Lob
