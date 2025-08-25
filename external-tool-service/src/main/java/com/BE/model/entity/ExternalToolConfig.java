@@ -42,7 +42,6 @@ public class ExternalToolConfig {
     Integer tokenCostPerQuery;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     ToolCodeEnum code;
 
     @Lob
