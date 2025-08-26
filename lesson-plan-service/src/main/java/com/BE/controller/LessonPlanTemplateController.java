@@ -7,6 +7,8 @@ import com.BE.model.request.UpdateLessonPlanRequest;
 import com.BE.service.interfaceServices.LessonPlanTemplateService;
 import com.BE.utils.ResponseHandler;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -134,6 +136,16 @@ public class LessonPlanTemplateController {
         } catch (Exception e) {
             return responseHandler.response(500, "Lỗi khi lấy danh sách giáo án: " + e.getMessage(), null);
         }
+    }
+
+
+    @PatchMapping("/{id}/status")
+    @Operation(summary = "Cập nhật trạng thái ACTIVE/INACTIVE", description = "Cập nhật trạng thái mẫu giáo án")
+    public ResponseEntity updateStatus(
+            @PathVariable @Parameter(description = "ID của mẫu giáo án") Long id,
+            @RequestParam @Parameter(description = "Trạng thái mới: ACTIVE hoặc INACTIVE", schema = @Schema(implementation = Status.class))
+            Status status) {
+        return responseHandler.response(200, "Cập nhật trạng thái thành công", lessonPlanTemplateService.updateStatus(id, status));
     }
 
 

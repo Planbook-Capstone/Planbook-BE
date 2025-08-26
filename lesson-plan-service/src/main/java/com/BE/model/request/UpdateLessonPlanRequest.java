@@ -20,7 +20,4 @@ public class UpdateLessonPlanRequest {
 
     @Schema(description = "Mô tả giáo án", example = "Giáo án về hàm số bậc nhất cho lớp 10")
     private String description;
-
-    @Schema(description = "Trạng thái", example = "ACTIVE")
-    private Status status;
 }

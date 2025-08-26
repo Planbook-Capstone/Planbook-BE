@@ -32,6 +32,8 @@ public interface LessonPlanTemplateService {
      */
     void deleteLessonPlan(Long id);
 
+    LessonPlanTemplateDTO updateStatus(Long id, Status status);
+
     /**
      * Get all lesson plans with pagination, search and status filter
      */
