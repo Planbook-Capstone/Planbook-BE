@@ -1,6 +1,7 @@
 package com.BE.service.implementServices;
 
 import com.BE.enums.Status;
+import com.BE.exception.exceptions.NotFoundException;
 import com.BE.mapper.LessonPlanTemplateMapper;
 import com.BE.model.response.LessonPlanTemplateDTO;
 import com.BE.model.entity.LessonPlanTemplate;
@@ -46,7 +47,7 @@ public class LessonPlanTemplateServiceImpl implements LessonPlanTemplateService 
         log.info("Getting lesson plan by ID: {}", id);
 
         LessonPlanTemplate lessonPlanTemplate = lessonPlanTemplateRepository.findByIdAndStatus(id, Status.ACTIVE)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy giáo án với ID: " + id));
+                .orElseThrow(() -> new NotFoundException("Không tìm thấy giáo án với ID: " + id));
 
         return lessonPlanTemplateMapper.toDTO(lessonPlanTemplate);
     }
@@ -66,7 +67,7 @@ public class LessonPlanTemplateServiceImpl implements LessonPlanTemplateService 
         log.info("Updating lesson plan with ID: {}", id);
 
         LessonPlanTemplate lessonPlanTemplate = lessonPlanTemplateRepository.findByIdAndStatus(id, Status.ACTIVE)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy giáo án với ID: " + id));
+                .orElseThrow(() -> new NotFoundException("Không tìm thấy giáo án với ID: " + id));
 
         // Update fields using mapper
         lessonPlanTemplateMapper.updateEntityFromRequest(lessonPlanTemplate, request);
@@ -82,7 +83,7 @@ public class LessonPlanTemplateServiceImpl implements LessonPlanTemplateService 
         log.info("Soft deleting lesson plan with ID: {}", id);
 
         LessonPlanTemplate lessonPlanTemplate = lessonPlanTemplateRepository.findByIdAndStatus(id, Status.ACTIVE)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy giáo án với ID: " + id));
+                .orElseThrow(() -> new NotFoundException("Không tìm thấy giáo án với ID: " + id));
 
         lessonPlanTemplate.setStatus(Status.INACTIVE);
         lessonPlanTemplateRepository.save(lessonPlanTemplate);
@@ -92,8 +93,8 @@ public class LessonPlanTemplateServiceImpl implements LessonPlanTemplateService 
 
     @Override
     public LessonPlanTemplateDTO updateStatus(Long id, Status status) {
-        LessonPlanTemplate lessonPlanTemplate = lessonPlanTemplateRepository.findByIdAndStatus(id, Status.ACTIVE)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy giáo án với ID: " + id));
+        LessonPlanTemplate lessonPlanTemplate = lessonPlanTemplateRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Không tìm thấy giáo án với ID: " + id));
         lessonPlanTemplate.setStatus(status);
         return lessonPlanTemplateMapper.toDTO(lessonPlanTemplateRepository.save(lessonPlanTemplate));
     }
