@@ -89,4 +89,12 @@ public class LessonPlanTemplateServiceImpl implements LessonPlanTemplateService 
         
         log.info("Soft deleted lesson plan with ID: {}", id);
     }
+
+    @Override
+    public LessonPlanTemplateDTO updateStatus(Long id, Status status) {
+        LessonPlanTemplate lessonPlanTemplate = lessonPlanTemplateRepository.findByIdAndStatus(id, Status.ACTIVE)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy giáo án với ID: " + id));
+        lessonPlanTemplate.setStatus(status);
+        return lessonPlanTemplateMapper.toDTO(lessonPlanTemplateRepository.save(lessonPlanTemplate));
+    }
 }
