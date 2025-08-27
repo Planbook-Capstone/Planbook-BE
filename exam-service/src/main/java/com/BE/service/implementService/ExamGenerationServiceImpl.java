@@ -3,12 +3,14 @@ package com.BE.service.implementService;
 import com.BE.enums.ToolCodeEnum;
 import com.BE.enums.ToolTypeEnum;
 import com.BE.exception.BadRequestException;
+import com.BE.feign.IdentityServiceClient;
 import com.BE.feign.ToolLogServiceClient;
 import com.BE.model.dto.DifficultyCountDTO;
 import com.BE.model.dto.IndividualBankExamDTO;
 import com.BE.model.dto.SystemBankQuestionDTO;
 import com.BE.model.request.ExamGenerationRequest;
 import com.BE.model.request.ToolExecutionLogRequest;
+import com.BE.model.response.BookTypeResponse;
 import com.BE.model.response.DataResponseDTO;
 import com.BE.model.response.ToolExecutionLogResponse;
 import com.BE.service.interfaceService.IExamGenerationService;
@@ -31,10 +33,13 @@ public class ExamGenerationServiceImpl implements IExamGenerationService {
     AccountUtils accountUtils;
     ToolLogServiceClient toolLogServiceClient;
     ObjectMapper objectMapper;
+    IdentityServiceClient toolInternalServiceClient;
 
     @Override
     public List<Map<String, Object>> generateExams(ExamGenerationRequest request) {
         Map<String, List<Map<String, Object>>> questionBank = new HashMap<>();
+        DataResponseDTO<BookTypeResponse> internalToolConfigResponse = toolInternalServiceClient.getBookTypeById(request.getToolId());
+
 
         // Load personal exams
         if (request.getPersonalExams() != null) {
@@ -95,9 +100,11 @@ public class ExamGenerationServiceImpl implements IExamGenerationService {
         }
         Map<String, Object> input = objectMapper.convertValue(request, new TypeReference<>() {});
 
+
+
         ToolExecutionLogRequest toolExecutionLogRequest = ToolExecutionLogRequest.builder()
                 .userId(accountUtils.getCurrentUserId())
-                .toolId(request.getToolId())
+                .toolId(internalToolConfigResponse.getData().getId())
                 .toolType(ToolTypeEnum.INTERNAL)
                 .code(ToolCodeEnum.MANUAL_EXAM_CREATOR)
                 .input(input)
@@ -105,7 +112,7 @@ public class ExamGenerationServiceImpl implements IExamGenerationService {
                 .bookId(null)
                 .lessonIds(new ArrayList<>())
                 .academicYearId(request.getAcademicYearId())
-                .tokenUsed(0)
+                .tokenUsed(internalToolConfigResponse.getData().getTokenCostPerQuery())
                 .build();
         DataResponseDTO<ToolExecutionLogResponse> response = toolLogServiceClient.toolExecutionLog(toolExecutionLogRequest);
 
