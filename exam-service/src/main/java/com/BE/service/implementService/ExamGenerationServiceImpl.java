@@ -206,7 +206,8 @@ public class ExamGenerationServiceImpl implements IExamGenerationService {
                         }
 
                         questionItem.put("options", shuffledOptions);
-                        questionItem.put("answer", newAnswerKey);
+                        questionItem.remove("answer");
+//                      questionItem.put("answer", newAnswerKey);
                         answerItem.put("answer", newAnswerKey);
                         answerItem.put("options", shuffledOptions);
                     } else {
