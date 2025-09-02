@@ -16,7 +16,7 @@ public enum ToolCodeEnum {
             case EXAM_CREATOR -> "Tạo đề kiểm tra từ AI";
             case MANUAL_EXAM_CREATOR -> "Trộn đề kiểm tra";
             case QUIZ_GAME -> "Tạo bài thi luyện tập online";
-            case FORMU_LENS -> "Nhận diện công thức";
+            case FORMU_LENS -> "Phân tích học tập chuyên sâu";
             case EXAM_GRADING -> "Chấm điểm thi trắc nghiệm";
         };
     }
