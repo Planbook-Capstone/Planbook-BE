@@ -6,7 +6,9 @@ public enum ToolCodeEnum {
     EXAM_CREATOR,
     MANUAL_EXAM_CREATOR,
     QUIZ_GAME,
-    FORMU_LENS
+    FORMU_LENS,
+
+    EXAM_GRADING
 
 
 }
