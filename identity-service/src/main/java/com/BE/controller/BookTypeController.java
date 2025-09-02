@@ -57,7 +57,8 @@ public class BookTypeController {
                                                     "  \"href\": \"example\",\n" +
                                                     "  \"icon\": null,\n" +
                                                     "  \"tokenCostPerQuery\": 10,\n" +
-                                                    "  \"code\": \"LESSON_PLAN\"\n" +
+                                                    "  \"code\": \"LESSON_PLAN,\"\n" +
+                                                    "  \"isApp\": false\n" +
                                                     "}"
                                     ),
                                     @ExampleObject(
@@ -70,7 +71,8 @@ public class BookTypeController {
                                                     "  \"href\": \"example\",\n" +
                                                     "  \"icon\": null,\n" +
                                                     "  \"tokenCostPerQuery\": 15,\n" +
-                                                    "  \"code\": \"SLIDE_GENERATOR\"\n" +
+                                                    "  \"code\": \"SLIDE_GENERATOR,\"\n" +
+                                                    "  \"isApp\": false\n" +
                                                     "}"
                                     ),
                                     @ExampleObject(
@@ -83,7 +85,8 @@ public class BookTypeController {
                                                     "  \"href\": \"example\",\n" +
                                                     "  \"icon\": null,\n" +
                                                     "  \"tokenCostPerQuery\": 20,\n" +
-                                                    "  \"code\": \"EXAM_CREATOR\"\n" +
+                                                    "  \"code\": \"EXAM_CREATOR,\"\n" +
+                                                    "  \"isApp\": false\n" +
                                                     "}"
                                     )
                             }
@@ -185,7 +188,8 @@ public class BookTypeController {
                                                     "  \"href\": \"example\",\n" +
                                                     "  \"icon\": null,\n" +
                                                     "  \"tokenCostPerQuery\": 10,\n" +
-                                                    "  \"code\": \"LESSON_PLAN\"\n" +
+                                                    "  \"code\": \"LESSON_PLAN,\"\n" +
+                                                    "  \"isApp\": false\n" +
                                                     "}"
                                     ),
                                     @ExampleObject(
@@ -198,7 +202,8 @@ public class BookTypeController {
                                                     "  \"href\": \"example\",\n" +
                                                     "  \"icon\": null,\n" +
                                                     "  \"tokenCostPerQuery\": 15,\n" +
-                                                    "  \"code\": \"SLIDE_GENERATOR\"\n" +
+                                                    "  \"code\": \"SLIDE_GENERATOR,\"\n" +
+                                                    "  \"isApp\": false\n" +
                                                     "}"
                                     ),
                                     @ExampleObject(
@@ -211,7 +216,8 @@ public class BookTypeController {
                                                     "  \"href\": \"example\",\n" +
                                                     "  \"icon\": null,\n" +
                                                     "  \"tokenCostPerQuery\": 20,\n" +
-                                                    "  \"code\": \"EXAM_CREATOR\"\n" +
+                                                    "  \"code\": \"EXAM_CREATOR,\"\n" +
+                                                    "  \"isApp\": false\n" +
                                                     "}"
                                     )
                             }
