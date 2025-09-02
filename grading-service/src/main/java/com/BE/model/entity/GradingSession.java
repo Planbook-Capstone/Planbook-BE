@@ -1,6 +1,7 @@
 package com.BE.model.entity;
 
 import com.BE.config.TimestampEntityListener;
+import com.BE.enums.StatusEnum;
 import com.BE.utils.JsonNodeConverter;
 import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.persistence.*;
@@ -9,7 +10,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -35,6 +35,12 @@ public class GradingSession {
 
     @Column(name = "book_type_id", nullable = false)
     private UUID bookTypeId;
+
+    @Column(name = "user_id", nullable = false)
+    private UUID userId;
+
+    @Enumerated(EnumType.STRING)
+    private StatusEnum status = StatusEnum.ACTIVE;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "omr_template_id", nullable = false)

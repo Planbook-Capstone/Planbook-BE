@@ -1,6 +1,8 @@
 package com.BE.controller;
 
 import com.BE.model.request.AnswerSheetKeyRequest;
+import com.BE.model.request.AnswerSheetKeyUpdateRequest;
+import com.BE.model.request.GradingSessionUpdateRequest;
 import com.BE.model.response.AnswerSheetKeyResponse;
 import com.BE.model.response.DataResponseDTO;
 import com.BE.service.interfaceServices.AnswerSheetKeyService;
@@ -43,7 +45,7 @@ public class AnswerSheetKeyController {
                                             value = """
                                                     {
                                                       "grading_session_id": 1,
-                                                      "code": "M123",
+                                                      "code": "123",
                                                       "answer_json": [
                                                         {
                                                           "sectionOrder": 1,
@@ -96,6 +98,22 @@ public class AnswerSheetKeyController {
     public ResponseEntity<DataResponseDTO<List<AnswerSheetKeyResponse>>> getByGradingSessionId(@RequestParam Long gradingSessionId) {
         List<AnswerSheetKeyResponse> keys = answerSheetKeyService.getByGradingSessionId(gradingSessionId);
         return responseHandler.response(HttpStatus.OK.value(), "Lấy danh sách mã đề thành công", keys);
+    }
+
+
+    @Operation(summary = "Cập nhật thông tin đáp án đúng")
+    @PutMapping("/{id}")
+    public ResponseEntity update(
+            @PathVariable Long id,
+            @Valid @RequestBody AnswerSheetKeyUpdateRequest request) {
+        return responseHandler.response(HttpStatus.OK.value(), "Cập nhật đáp án đúng thành công", answerSheetKeyService.update(id, request));
+    }
+
+    @Operation(summary = "Xoá thông tin đáp án đúng")
+    @DeleteMapping("/{id}")
+    public ResponseEntity delete(
+            @PathVariable Long id) {
+        return responseHandler.response(HttpStatus.OK.value(), "Xoá đáp án đúng thành công", answerSheetKeyService.delete(id));
     }
 }
 

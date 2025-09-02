@@ -1,5 +1,6 @@
 package com.BE.model.response;
 
+import com.BE.enums.StatusEnum;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
@@ -17,6 +18,10 @@ public class GradingSessionResponse {
 
     @JsonProperty("book_type_id")
     private UUID bookTypeId;
+
+    private UUID userId;
+
+    private StatusEnum status;
 
     @JsonProperty("omr_template")
     private com.BE.model.response.OmrTemplateResponse omrTemplate;

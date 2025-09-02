@@ -1,11 +1,12 @@
 package com.BE.service.implementServices;
 
-import com.BE.exception.ResourceNotFoundException;
 import com.BE.exception.exceptions.NotFoundException;
 import com.BE.mapper.AnswerSheetKeyMapper;
 import com.BE.model.entity.AnswerSheetKey;
 import com.BE.model.entity.GradingSession;
 import com.BE.model.request.AnswerSheetKeyRequest;
+import com.BE.model.request.AnswerSheetKeyUpdateRequest;
+import com.BE.model.request.GradingSessionUpdateRequest;
 import com.BE.model.response.AnswerSheetKeyResponse;
 import com.BE.repository.AnswerSheetKeyRepository;
 import com.BE.repository.GradingSessionRepository;
@@ -45,6 +46,22 @@ public class AnswerSheetKeyServiceImpl implements AnswerSheetKeyService {
         return keys.stream()
                 .map(answerSheetKeyMapper::toResponse)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public AnswerSheetKeyResponse update(Long id, AnswerSheetKeyUpdateRequest request) {
+        AnswerSheetKey answerSheetKey = answerSheetKeyRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Không tìm mã đề đúng với ID: " + id));
+        answerSheetKeyMapper.updateEntity(answerSheetKey, request);
+        return answerSheetKeyMapper.toResponse(answerSheetKeyRepository.save(answerSheetKey));
+    }
+
+    @Override
+    public String delete(Long id) {
+        AnswerSheetKey answerSheetKey = answerSheetKeyRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Không tìm mã đề đúng với ID: " + id));
+        answerSheetKeyRepository.delete(answerSheetKey);
+       return "Xoá đáp án đúng thành công";
     }
 }
 

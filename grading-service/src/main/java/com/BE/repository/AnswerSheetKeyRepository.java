@@ -1,6 +1,7 @@
 package com.BE.repository;
 
 import com.BE.model.entity.AnswerSheetKey;
+import com.BE.model.request.GradingSessionUpdateRequest;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
