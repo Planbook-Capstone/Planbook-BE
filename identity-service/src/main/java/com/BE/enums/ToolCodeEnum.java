@@ -6,5 +6,5 @@ public enum ToolCodeEnum {
     EXAM_CREATOR,
     MANUAL_EXAM_CREATOR,
     QUIZ_GAME,
-    EXAN_GRADING
+    EXAM_GRADING
 }
