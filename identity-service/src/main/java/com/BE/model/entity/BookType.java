@@ -32,6 +32,8 @@ public class BookType {
 
     int priority;
 
+    boolean isApp = false;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, unique = true)
     ToolCodeEnum code;

@@ -105,4 +105,6 @@ public class BookTypeResponse {
     )
     String updatedAt;
 
+    boolean isApp;
+
 }

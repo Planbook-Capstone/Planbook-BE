@@ -76,4 +76,6 @@ public class BookTypeRequest {
     @NotNull(message = "Token cost per query cannot be null") // Nếu bạn muốn nó bắt buộc
     @Min(value = 0, message = "Token cost per query must be a non-negative integer") // Đảm bảo giá trị không âm
             Integer tokenCostPerQuery;
+
+    boolean isApp;
 }
