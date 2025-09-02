@@ -27,14 +27,14 @@ public class OmrTemplate {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "name", nullable = false, columnDefinition = "TEXT")
+    @Column(name = "name",nullable = false, unique = true , columnDefinition = "TEXT")
     private String name;
 
     @Column(name = "sample_image_url", length = 500)
     private String sampleImageUrl;
 
     @Enumerated(EnumType.STRING)
-    private StatusEnum status;
+    private StatusEnum status = StatusEnum.ACTIVE;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

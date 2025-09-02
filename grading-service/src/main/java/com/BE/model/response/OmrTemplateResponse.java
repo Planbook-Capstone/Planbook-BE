@@ -1,5 +1,6 @@
 package com.BE.model.response;
 
+import com.BE.enums.StatusEnum;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
@@ -14,6 +15,8 @@ public class OmrTemplateResponse {
 
     @JsonProperty("sample_image_url")
     private String sampleImageUrl;
+
+    private StatusEnum status;
 
     @JsonProperty("created_at")
     private LocalDateTime createdAt;

@@ -18,10 +18,7 @@ public class GradingSessionResponse {
     @JsonProperty("book_type_id")
     private UUID bookTypeId;
 
-    @JsonProperty("session_date")
-    private LocalDate sessionDate;
-
-        @JsonProperty("omr_template")
+    @JsonProperty("omr_template")
     private com.BE.model.response.OmrTemplateResponse omrTemplate;
 
     @JsonProperty("answer_sheet_keys")
