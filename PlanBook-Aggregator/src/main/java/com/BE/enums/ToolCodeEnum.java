@@ -6,7 +6,7 @@ public enum ToolCodeEnum {
     EXAM_CREATOR,
     MANUAL_EXAM_CREATOR,
     QUIZ_GAME,
-    EXAN_GRADING,
+    EXAM_GRADING,
     FORMU_LENS;
 
     public static String toVietnamese(ToolCodeEnum code) {
@@ -17,7 +17,7 @@ public enum ToolCodeEnum {
             case MANUAL_EXAM_CREATOR -> "Trộn đề kiểm tra";
             case QUIZ_GAME -> "Tạo bài thi luyện tập online";
             case FORMU_LENS -> "Nhận diện công thức";
-            case EXAN_GRADING -> "Chấm điểm thi trắc nghiệm";
+            case EXAM_GRADING -> "Chấm điểm thi trắc nghiệm";
         };
     }
 }
