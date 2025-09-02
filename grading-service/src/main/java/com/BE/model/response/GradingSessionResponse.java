@@ -2,6 +2,7 @@ package com.BE.model.response;
 
 import com.BE.enums.StatusEnum;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -25,6 +26,8 @@ public class GradingSessionResponse {
 
     @JsonProperty("omr_template")
     private com.BE.model.response.OmrTemplateResponse omrTemplate;
+
+    private JsonNode sectionConfigJson;
 
     @JsonProperty("answer_sheet_keys")
     private List<com.BE.model.response.AnswerSheetKeyResponse> answerSheetKeys;
