@@ -34,8 +34,8 @@ public class GradingServiceImpl implements GradingService {
                 .orElseThrow(() -> new NotFoundException("Không tìm thấy phiên chấm điểm với ID: " + request.getGradingSessionId()));
 
         AnswerSheetKey answerSheetKey = answerSheetKeyRepository
-                .findByGradingSessionIdAndCode(request.getGradingSessionId(), request.getDetectedCode())
-                .orElseThrow(() -> new NotFoundException("Không tìm thấy mã đề với mã: " + request.getDetectedCode()));
+                .findByGradingSessionIdAndCode(request.getGradingSessionId(), request.getExamCode())
+                .orElseThrow(() -> new NotFoundException("Không tìm thấy mã đề với mã: " + request.getExamCode()));
 
         JsonNode answerKeyJson = answerSheetKey.getAnswerJson();
         JsonNode studentAnswersJson = request.getStudentAnswerJson();
@@ -90,8 +90,8 @@ public class GradingServiceImpl implements GradingService {
                 .gradingSession(gradingSession)
                 .answerSheetKey(answerSheetKey)
                 .studentCode(request.getStudentCode())
-                .detectedCode(request.getDetectedCode())
-                .imageUrl(request.getImageUrl())
+                .examCode(request.getExamCode())
+                .imageBase64(request.getImageBase64())
                 .score(totalScore)
                 .totalCorrect(totalCorrect)
                 .submittedAt(LocalDateTime.now())

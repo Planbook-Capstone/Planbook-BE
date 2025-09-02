@@ -20,11 +20,11 @@ public class StudentSubmissionResponse {
     @JsonProperty("student_code")
     private String studentCode;
 
-    @JsonProperty("detected_code")
-    private String detectedCode;
+    @JsonProperty("exam_code")
+    private String examCode;
 
-    @JsonProperty("image_url")
-    private String imageUrl;
+    @JsonProperty("image_base64")
+    private String imageBase64;
 
     private Float score;
 
