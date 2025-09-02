@@ -1,6 +1,7 @@
 package com.BE.controller;
 
 import com.BE.enums.StatusEnum;
+import com.BE.model.request.OmrTemplateFilterRequest;
 import com.BE.model.request.OmrTemplateRequest;
 import com.BE.model.response.DataResponseDTO;
 import com.BE.model.response.OmrTemplateResponse;
@@ -15,6 +16,8 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.query.Page;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -54,11 +57,11 @@ public class OmrTemplateController {
         return responseHandler.response(HttpStatus.CREATED.value(), "Tạo mẫu OMR thành công", newTemplate);
     }
 
-    @Operation(summary = "Lấy tất cả các mẫu OMR")
-    @GetMapping
-    public ResponseEntity<DataResponseDTO<List<OmrTemplateResponse>>> getAll() {
-        List<OmrTemplateResponse> templates = omrTemplateService.getAll();
-        return responseHandler.response(HttpStatus.OK.value(), "Lấy danh sách tất cả các mẫu OMR thành công", templates);
+    @GetMapping()
+    public ResponseEntity filterOmrTemplates(
+            @ParameterObject OmrTemplateFilterRequest request
+    ) {
+        return responseHandler.response(HttpStatus.OK.value(), "Lọc danh sách OMR thành công",  omrTemplateService.getAllFiltered(request));
     }
 
     @Operation(summary = "Lấy một mẫu OMR bằng ID")

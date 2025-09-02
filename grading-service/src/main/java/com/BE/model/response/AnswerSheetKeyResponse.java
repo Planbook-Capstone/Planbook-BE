@@ -13,9 +13,6 @@ public class AnswerSheetKeyResponse {
 
     private String code;
 
-    @JsonProperty("image_url")
-    private String imageUrl;
-
     @JsonProperty("grading_session_id")
     private Long gradingSessionId;
 
