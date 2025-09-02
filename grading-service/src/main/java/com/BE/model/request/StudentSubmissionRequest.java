@@ -18,11 +18,12 @@ public class StudentSubmissionRequest {
     private String studentCode;
 
     @NotBlank(message = "Mã đề nhận diện không được để trống")
-    @JsonProperty("detected_code")
-    private String detectedCode;
+    @JsonProperty("exam_code")
+    private String examCode;
 
-    @JsonProperty("image_url")
-    private String imageUrl;
+    @JsonProperty("image_base64")
+    @NotBlank(message = "Ảnh (base64) không được để trống")
+    private String imageBase64;
 
     @NotNull(message = "Dữ liệu JSON bài làm của học sinh không được để trống")
     @JsonProperty("student_answer_json")

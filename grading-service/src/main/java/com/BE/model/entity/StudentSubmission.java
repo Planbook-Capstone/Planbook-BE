@@ -38,11 +38,11 @@ public class StudentSubmission {
     @Column(name = "student_code", nullable = false, length = 50)
     private String studentCode;
 
-    @Column(name = "detected_code", nullable = false, length = 50)
-    private String detectedCode;
+    @Column(name = "exam_code", nullable = false, length = 50)
+    private String examCode;
 
-    @Column(name = "image_url", length = 500)
-    private String imageUrl;
+    @Column(name = "image_base64", columnDefinition = "LONGTEXT")
+    private String imageBase64;
 
     @Column(name = "score", nullable = false)
     private Float score;

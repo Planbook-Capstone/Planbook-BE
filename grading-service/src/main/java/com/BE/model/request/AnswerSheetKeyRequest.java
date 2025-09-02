@@ -12,9 +12,6 @@ public class AnswerSheetKeyRequest {
     @NotBlank(message = "Mã đề không được để trống")
     private String code;
 
-    @JsonProperty("image_url")
-    private String imageUrl;
-
     @NotNull(message = "ID phiên chấm không được để trống")
     @JsonProperty("grading_session_id")
     private Long gradingSessionId;

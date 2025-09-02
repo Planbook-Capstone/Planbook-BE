@@ -6,6 +6,9 @@ import com.BE.model.response.DataResponseDTO;
 import com.BE.service.interfaceServices.AnswerSheetKeyService;
 import com.BE.utils.ResponseHandler;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -20,20 +23,75 @@ import java.util.List;
 @RequestMapping("/api/answer-sheet-keys")
 @SecurityRequirement(name = "api")
 @RequiredArgsConstructor
-@Tag(name = "Answer Sheet Key", description = "APIs for managing answer sheet keys")
+@Tag(name = "Mã đề và Đáp án", description = "Các API để quản lý mã đề và đáp án")
 public class AnswerSheetKeyController {
 
     private final AnswerSheetKeyService answerSheetKeyService;
     private final ResponseHandler responseHandler;
 
-    @Operation(summary = "Upload a new answer sheet key with its JSON answers")
+    @Operation(
+            summary = "Tải lên một mã đề mới cùng với đáp án JSON",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "Dữ liệu để tải lên một mã đề mới.",
+                    required = true,
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = AnswerSheetKeyRequest.class),
+                            examples = {
+                                    @ExampleObject(
+                                            name = "Ví dụ mã đề đầy đủ",
+                                            value = """
+                                                    {
+                                                      "grading_session_id": 1,
+                                                      "code": "M123",
+                                                      "answer_json": [
+                                                        {
+                                                          "sectionOrder": 1,
+                                                          "sectionType": "MULTIPLE_CHOICE",
+                                                          "questions": [
+                                                            { "questionNumber": 1, "answer": "A" },
+                                                            { "questionNumber": 2, "answer": "C" }
+                                                          ]
+                                                        },
+                                                        {
+                                                          "sectionOrder": 2,
+                                                          "sectionType": "TRUE_FALSE",
+                                                          "questions": [
+                                                            {
+                                                              "questionNumber": 1,
+                                                              "answer": {
+                                                                "a": "Đ",
+                                                                "b": "S",
+                                                                "c": "Đ",
+                                                                "d": "S"
+                                                              }
+                                                            }
+                                                          ]
+                                                        },
+                                                        {
+                                                          "sectionOrder": 3,
+                                                          "sectionType": "ESSAY_CODE",
+                                                          "questions": [
+                                                            { "questionNumber": 1, "answer": "2810" }
+                                                          ]
+                                                        }
+                                                      ]
+                                                    }
+                                                    """
+                                    )
+                            }
+                    )
+            )
+    )
     @PostMapping
-    public ResponseEntity<DataResponseDTO<AnswerSheetKeyResponse>> create(@Valid @RequestBody AnswerSheetKeyRequest request) {
+    public ResponseEntity<DataResponseDTO<AnswerSheetKeyResponse>> create(
+            @Valid @RequestBody AnswerSheetKeyRequest request) {
         AnswerSheetKeyResponse newKey = answerSheetKeyService.create(request);
         return responseHandler.response(HttpStatus.CREATED.value(), "Tạo mã đề thành công", newKey);
     }
 
-    @Operation(summary = "Get all answer sheet keys for a specific grading session")
+
+    @Operation(summary = "Lấy tất cả các mã đề cho một phiên chấm điểm cụ thể")
     @GetMapping
     public ResponseEntity<DataResponseDTO<List<AnswerSheetKeyResponse>>> getByGradingSessionId(@RequestParam Long gradingSessionId) {
         List<AnswerSheetKeyResponse> keys = answerSheetKeyService.getByGradingSessionId(gradingSessionId);
