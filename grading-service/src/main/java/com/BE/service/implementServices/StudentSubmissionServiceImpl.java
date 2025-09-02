@@ -1,6 +1,7 @@
 package com.BE.service.implementServices;
 
 import com.BE.exception.ResourceNotFoundException;
+import com.BE.exception.exceptions.NotFoundException;
 import com.BE.mapper.StudentSubmissionMapper;
 import com.BE.model.entity.StudentSubmission;
 import com.BE.model.request.StudentSubmissionRequest;
@@ -36,14 +37,14 @@ public class StudentSubmissionServiceImpl implements StudentSubmissionService {
     @Override
     public StudentSubmissionResponse getById(Long id) {
         StudentSubmission submission = studentSubmissionRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy bài làm của học sinh với ID: " + id));
+                .orElseThrow(() -> new NotFoundException("Không tìm thấy bài làm của học sinh với ID: " + id));
         return studentSubmissionMapper.toResponse(submission);
     }
 
     @Override
     public java.util.List<StudentSubmissionResponse> getByGradingSessionId(Long gradingSessionId) {
         if (!gradingSessionRepository.existsById(gradingSessionId)) {
-            throw new ResourceNotFoundException("Không tìm thấy phiên chấm điểm với ID: " + gradingSessionId);
+            throw new NotFoundException("Không tìm thấy phiên chấm điểm với ID: " + gradingSessionId);
         }
         return studentSubmissionRepository.findByGradingSessionId(gradingSessionId).stream()
                 .map(studentSubmissionMapper::toResponse)

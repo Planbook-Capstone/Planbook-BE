@@ -1,11 +1,16 @@
 package com.BE.controller;
 
+import com.BE.enums.StatusEnum;
+import com.BE.model.request.GradingSessionFilterRequest;
 import com.BE.model.request.GradingSessionRequest;
+import com.BE.model.request.GradingSessionUpdateRequest;
 import com.BE.model.response.DataResponseDTO;
 import com.BE.model.response.GradingSessionResponse;
+import com.BE.model.response.OmrTemplateResponse;
 import com.BE.service.interfaceServices.GradingSessionService;
 import com.BE.utils.ResponseHandler;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -13,6 +18,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -85,11 +91,36 @@ public class GradingSessionController {
     }
 
 
-    @Operation(summary = "Lấy tất cả các phiên chấm điểm", description = "Lấy danh sách tất cả các phiên chấm điểm, có thể lọc theo bookTypeId.")
+    @Operation(summary = "Lấy danh sách phiên chấm điểm với lọc, tìm kiếm, phân trang")
     @GetMapping
-    public ResponseEntity<DataResponseDTO<List<GradingSessionResponse>>> getAll(@RequestParam(required = false) UUID bookTypeId) {
-        List<GradingSessionResponse> sessions = gradingSessionService.getAll(bookTypeId);
-        return responseHandler.response(HttpStatus.OK.value(), "Lấy danh sách phiên chấm điểm thành công", sessions);
+    public ResponseEntity getAll(@ParameterObject GradingSessionFilterRequest request) {
+        return responseHandler.response(HttpStatus.OK.value(), "Lấy danh sách phiên chấm điểm thành công", gradingSessionService.getAllWithFilter(request));
     }
+
+    @Operation(summary = "Lấy phiên chấm điểm với id")
+    @GetMapping("{id}")
+    public ResponseEntity getById(@PathVariable Long id) {
+        return responseHandler.response(HttpStatus.OK.value(), "Lấy phiên chấm điểm với id thành công", gradingSessionService.getById(id));
+    }
+
+    @Operation(summary = "Cập nhật trạng thái phiên chấm điểm")
+    @PatchMapping("/{id}/status")
+    public ResponseEntity updateStatus(
+            @PathVariable Long id,
+            @Parameter(description = "Trạng thái mới phiên chấm điểm", required = true, schema = @Schema(implementation = StatusEnum.class, allowableValues = {"ACTIVE", "INACTIVE"}))
+            @RequestParam StatusEnum status
+    ) {
+        return responseHandler.response(HttpStatus.OK.value(), "Cập nhật trạng thái phiên chấm điểm", gradingSessionService.updateStatus(id,status));
+    }
+
+    @Operation(summary = "Cập nhật thông tin phiên chấm điểm")
+    @PutMapping("/{id}")
+    public ResponseEntity update(
+            @PathVariable Long id,
+            @Valid @RequestBody GradingSessionUpdateRequest request) {
+
+        return responseHandler.response(HttpStatus.OK.value(), "Cập nhật phiên chấm thành công", gradingSessionService.update(id, request));
+    }
+
 }
 
