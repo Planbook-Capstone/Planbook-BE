@@ -9,8 +9,8 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface StudentSubmissionMapper {
 
-    @Mapping(source = "gradingSession.id", target = "gradingSessionId")
-    @Mapping(source = "answerSheetKey.id", target = "answerSheetKeyId")
+
+
     StudentSubmissionResponse toResponse(StudentSubmission studentSubmission);
 
 
