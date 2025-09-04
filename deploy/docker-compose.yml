@@ -468,7 +468,6 @@ services:
     networks:
       - planbook
 
-
   # Grading Service
   grading-service:
     image: ${DOCKERHUB_USERNAME}/planbook-grading-service:latest
