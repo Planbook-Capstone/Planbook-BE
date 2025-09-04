@@ -29,10 +29,13 @@ public class StudentSubmissionRequest {
     @JsonProperty("student_answer_json")
     private JsonNode studentAnswerJson;
 
-    @NotBlank(message = "Tổng đáp án đúng không được để trống")
+    @NotNull(message = "Tổng đáp án đúng không được để trống")
     @JsonProperty("total_correct")
     private Integer totalCorrect;
 
-    @NotBlank(message = "Điểm không được để trống")
+    @NotNull(message = "Điểm không được để trống")
     private Float score;
+
+    @NotNull(message = "Năm Học không được để trống")
+    private Long academicYearId;
 }

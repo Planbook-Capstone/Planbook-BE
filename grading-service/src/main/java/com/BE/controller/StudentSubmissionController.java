@@ -65,7 +65,8 @@ public class StudentSubmissionController {
                                                       "exam_code": "M123",
                                                       "image_base64": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABo4AAARVC...",
                                                       "total_correct": 10,
-                                                      "score": 6,                                                                                  
+                                                      "score": 6,
+                                                      "academicYearId": 1,                                                                                 
                                                       "student_answer_json": [
                                                         {
                                                           "sectionOrder": 1,
