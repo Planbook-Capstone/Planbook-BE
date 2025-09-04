@@ -2,6 +2,7 @@ package com.BE.service.implementServices;
 
 import com.BE.enums.ToolCodeEnum;
 import com.BE.enums.ToolTypeEnum;
+import com.BE.exception.exceptions.BadRequestException;
 import com.BE.exception.exceptions.NotFoundException;
 import com.BE.exception.exceptions.WalletTokenException;
 import com.BE.feign.IdentityServiceClient;
@@ -25,10 +26,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -65,6 +63,13 @@ public class StudentSubmissionServiceImpl implements StudentSubmissionService {
 
         GradingSession gradingSession = gradingSessionRepository.findById(request.getGradingSessionId()).orElseThrow(() -> new NotFoundException("Không tìm thấy mẫu OMR với ID: " + request.getGradingSessionId()));
         DataResponseDTO<BookTypeResponse> internalToolConfigResponse = toolInternalServiceClient.getBookTypeById(gradingSession.getBookTypeId());
+
+        Optional<StudentSubmission> existing = studentSubmissionRepository
+                .findByGradingSessionIdAndStudentCode(request.getGradingSessionId(), request.getStudentCode());
+
+        if (existing.isPresent()) {
+            throw new BadRequestException("Học sinh với mã " + request.getStudentCode() + " đã nộp bài trong phiên chấm này.");
+        }
 
         deductToken(internalToolConfigResponse.getData().getCode(), internalToolConfigResponse.getData().getTokenCostPerQuery(), gradingSession.getUserId());
 
