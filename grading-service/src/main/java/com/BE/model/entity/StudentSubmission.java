@@ -2,6 +2,7 @@ package com.BE.model.entity;
 
 import com.BE.config.TimestampEntityListener;
 import com.BE.utils.JsonNodeConverter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -29,10 +30,12 @@ public class StudentSubmission {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "grading_session_id", nullable = false)
+    @JsonIgnore
     private GradingSession gradingSession;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "answer_sheet_key_id", nullable = false)
+    @JsonIgnore
     private AnswerSheetKey answerSheetKey;
 
     @Column(name = "student_code", nullable = false, length = 50)

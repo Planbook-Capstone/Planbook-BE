@@ -47,6 +47,7 @@ public class GradingSessionServiceImpl implements GradingSessionService {
 
         GradingSession gradingSession = gradingSessionMapper.toEntity(request);
         gradingSession.setOmrTemplate(omrTemplate);
+        omrTemplate.setGradingSession(gradingSession);
         gradingSession.setUserId(accountUtils.getCurrentUserId());
         gradingSession.setStatus(StatusEnum.ACTIVE);
 
