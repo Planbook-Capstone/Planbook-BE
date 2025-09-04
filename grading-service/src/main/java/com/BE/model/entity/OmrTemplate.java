@@ -11,6 +11,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Entity representing OMR template for exam sheets
@@ -34,10 +36,9 @@ public class OmrTemplate {
     @Column(name = "sample_image_url", length = 500)
     private String sampleImageUrl;
 
-    @OneToOne(mappedBy = "omrTemplate", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "omrTemplate", fetch = FetchType.LAZY)
     @JsonIgnore
-    private GradingSession gradingSession;
-
+    private List<GradingSession> gradingSessions = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     private StatusEnum status = StatusEnum.ACTIVE;

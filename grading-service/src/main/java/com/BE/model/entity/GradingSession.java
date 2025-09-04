@@ -43,7 +43,7 @@ public class GradingSession {
     @Enumerated(EnumType.STRING)
     private StatusEnum status = StatusEnum.ACTIVE;
 
-    @OneToOne()
+    @ManyToOne()
     @JoinColumn(name = "omr_template_id", nullable = false)
     private OmrTemplate omrTemplate;
 
