@@ -50,9 +50,6 @@ public class StudentSubmission {
     @Column(name = "total_correct", nullable = false)
     private Integer totalCorrect;
 
-    @Column(name = "submitted_at", nullable = false)
-    private LocalDateTime submittedAt;
-
     @Convert(converter = JsonNodeConverter.class)
     @Column(name = "student_answer_json", columnDefinition = "TEXT")
     private JsonNode studentAnswerJson;

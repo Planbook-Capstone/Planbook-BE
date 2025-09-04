@@ -31,14 +31,8 @@ public class StudentSubmissionResponse {
     @JsonProperty("total_correct")
     private Integer totalCorrect;
 
-    @JsonProperty("submitted_at")
-    private LocalDateTime submittedAt;
-
     @JsonProperty("student_answer_json")
     private JsonNode studentAnswerJson;
-
-    @JsonProperty("graded_answers")
-    private JsonNode gradedAnswers;
 
     @JsonProperty("created_at")
     private LocalDateTime createdAt;
