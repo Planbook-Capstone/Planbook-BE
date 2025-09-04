@@ -70,7 +70,7 @@ public class ToolExecutionLogServiceImpl implements IToolExecutionLogService {
 
 
         } else {
-            if (!ToolCodeEnum.MANUAL_EXAM_CREATOR.equals(request.getCode()) || !ToolCodeEnum.EXAM_GRADING.equals(request.getCode())) {
+            if (!ToolCodeEnum.MANUAL_EXAM_CREATOR.equals(request.getCode()) && !ToolCodeEnum.EXAM_GRADING.equals(request.getCode())) {
                 try {
                     // Serialize log response thành JSON
                     Map<String, Object> input = request.getInput();
