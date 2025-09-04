@@ -8,12 +8,9 @@ import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface StudentSubmissionMapper {
-
-
-
     StudentSubmissionResponse toResponse(StudentSubmission studentSubmission);
 
-
     StudentSubmission toEntity(StudentSubmissionRequest submissionRequest);
+    
 }
 
