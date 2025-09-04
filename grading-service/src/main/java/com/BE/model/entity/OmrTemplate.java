@@ -3,6 +3,7 @@ package com.BE.model.entity;
 import com.BE.config.TimestampEntityListener;
 import com.BE.enums.StatusEnum;
 import com.BE.exception.EnumValidator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -32,6 +33,11 @@ public class OmrTemplate {
 
     @Column(name = "sample_image_url", length = 500)
     private String sampleImageUrl;
+
+    @OneToOne(mappedBy = "omrTemplate", fetch = FetchType.LAZY)
+    @JsonIgnore
+    private GradingSession gradingSession;
+
 
     @Enumerated(EnumType.STRING)
     private StatusEnum status = StatusEnum.ACTIVE;

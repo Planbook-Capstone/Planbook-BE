@@ -2,6 +2,7 @@ package com.BE.model.entity;
 
 import com.BE.config.TimestampEntityListener;
 import com.BE.utils.JsonNodeConverter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -10,6 +11,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -33,6 +35,7 @@ public class AnswerSheetKey {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "grading_session_id", nullable = false)
+    @JsonIgnore
     private GradingSession gradingSession;
 
     @Convert(converter = JsonNodeConverter.class)
@@ -40,7 +43,7 @@ public class AnswerSheetKey {
     private JsonNode answerJson;
 
     @OneToMany(mappedBy = "answerSheetKey", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<StudentSubmission> studentSubmissions;
+    private List<StudentSubmission> studentSubmissions = new ArrayList<>();
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
