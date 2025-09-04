@@ -1,5 +1,7 @@
 package com.BE.model.response;
 
+import com.BE.model.entity.AnswerSheetKey;
+import com.BE.model.entity.GradingSession;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.Data;
@@ -11,11 +13,9 @@ public class StudentSubmissionResponse {
 
     private Long id;
 
-    @JsonProperty("grading_session_id")
-    private Long gradingSessionId;
+    private GradingSession gradingSession;
 
-    @JsonProperty("answer_sheet_key_id")
-    private Long answerSheetKeyId;
+    private AnswerSheetKey answerSheetKey;
 
     @JsonProperty("student_code")
     private String studentCode;
