@@ -87,10 +87,8 @@ public class StudentSubmissionServiceImpl implements StudentSubmissionService {
         input.put("imagePath", request.getImageBase64());
         input.put("answerSheetKey", answerSheetKey);
 
-        Map<String, Object> answerMap = mapper.convertValue(
-                request.getStudentAnswerJson(),
-                new TypeReference<Map<String, Object>>() {}
-        );
+        Map<String, Object> answerMap = new HashMap<>();
+        answerMap.put("sections", request.getStudentAnswerJson());
 
         ToolExecutionLogRequest toolExecutionLogRequest = ToolExecutionLogRequest.builder()
                 .userId(gradingSession.getUserId())
