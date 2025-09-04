@@ -58,7 +58,11 @@ public class ToolExecutionLogServiceImpl implements IToolExecutionLogService {
     @Transactional
     public ToolExecutionLogResponse save(ToolExecutionLogRequest request) {
         ToolExecutionLog log = mapper.toEntity(request);
-        log.setStatus(ExecutionStatus.PENDING);
+        if (ToolCodeEnum.MANUAL_EXAM_CREATOR.equals(request.getCode()) || ToolCodeEnum.EXAM_GRADING.equals(request.getCode())) {
+            log.setStatus(ExecutionStatus.SUCCESS);
+        }else{
+            log.setStatus(ExecutionStatus.PENDING);
+        }
         ToolExecutionLog saved = repository.save(log);
         ToolExecutionLogResponse response = mapper.toResponse(saved);
 
@@ -66,7 +70,7 @@ public class ToolExecutionLogServiceImpl implements IToolExecutionLogService {
 
 
         } else {
-            if (!ToolCodeEnum.MANUAL_EXAM_CREATOR.equals(request.getCode())) {
+            if (!ToolCodeEnum.MANUAL_EXAM_CREATOR.equals(request.getCode()) || !ToolCodeEnum.EXAM_GRADING.equals(request.getCode())) {
                 try {
                     // Serialize log response thành JSON
                     Map<String, Object> input = request.getInput();
