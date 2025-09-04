@@ -13,9 +13,9 @@ public class StudentSubmissionResponse {
 
     private Long id;
 
-    private GradingSession gradingSession;
+    private GradingSessionResponse gradingSession;
 
-    private AnswerSheetKey answerSheetKey;
+    private AnswerSheetKeyResponse answerSheetKey;
 
     @JsonProperty("student_code")
     private String studentCode;
