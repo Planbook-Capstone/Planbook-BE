@@ -1,10 +1,7 @@
 package com.BE.exception.handler;
 
-import com.BE.exception.exceptions.BadRequestException;
-import com.BE.exception.exceptions.EnumValidationException;
-import com.BE.exception.exceptions.InvalidRefreshTokenException;
+import com.BE.exception.exceptions.*;
 import com.BE.exception.ResourceNotFoundException;
-import com.BE.exception.exceptions.WalletTokenException;
 import com.BE.utils.EnumUtils;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
@@ -92,6 +89,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<Object> handleResourceNotFoundException(ResourceNotFoundException exception) {
+        return new ResponseEntity<>(exception.getMessage(), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<Object> handleNotFoundException(NotFoundException exception) {
         return new ResponseEntity<>(exception.getMessage(), HttpStatus.NOT_FOUND);
     }
 
