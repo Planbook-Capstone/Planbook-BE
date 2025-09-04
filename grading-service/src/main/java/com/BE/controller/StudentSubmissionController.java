@@ -63,7 +63,9 @@ public class StudentSubmissionController {
                                                       "grading_session_id": 1,
                                                       "student_code": "HS123456",
                                                       "exam_code": "M123",
-                                                      "image_base64": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABo4AAARVC...",                                                                                            
+                                                      "image_base64": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABo4AAARVC...",
+                                                      "total_correct": 10,
+                                                      "score": 6,                                                                                  
                                                       "student_answer_json": [
                                                         {
                                                           "sectionOrder": 1,

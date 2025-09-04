@@ -11,6 +11,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -51,10 +52,10 @@ public class GradingSession {
     private JsonNode sectionConfigJson;
 
     @OneToMany(mappedBy = "gradingSession", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<AnswerSheetKey> answerSheetKeys;
+    private List<AnswerSheetKey> answerSheetKeys = new ArrayList<>();;
 
     @OneToMany(mappedBy = "gradingSession", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<StudentSubmission> studentSubmissions;
+    private List<StudentSubmission> studentSubmissions = new ArrayList<>();
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

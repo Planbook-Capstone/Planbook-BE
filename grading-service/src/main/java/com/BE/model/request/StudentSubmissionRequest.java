@@ -28,4 +28,11 @@ public class StudentSubmissionRequest {
     @NotNull(message = "Dữ liệu JSON bài làm của học sinh không được để trống")
     @JsonProperty("student_answer_json")
     private JsonNode studentAnswerJson;
+
+    @NotBlank(message = "Tổng đáp án đúng không được để trống")
+    @JsonProperty("total_correct")
+    private Integer totalCorrect;
+
+    @NotBlank(message = "Điểm không được để trống")
+    private Float score;
 }
